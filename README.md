@@ -1,1 +1,3 @@
 # magnetosphere
+
+# read this first
