@@ -1,12 +1,10 @@
-# B_field_line_tracer_analytic
+# B_field_line_tracer_python3_analytic
 
 import sys
-sys.path.append('../../../../lib/python2.7/site-packages/')
 import numpy as np
 import matplotlib.pyplot as plt
 #import scipy as sp
-from scipy.integrate import odeint
-#import solve_ivp
+from scipy.integrate import solve_ivp
 
 def Bx(x,y,z):
 	M = -31000.
@@ -85,36 +83,29 @@ for k in range(s.size-1):
 # dU[1]/dt = By(U[0],U[1],0)
  
 # New function
-def dUdt(U, t):
-	Ux, Uy = U
-	a=Bx(Ux,Uy,0.)
-	b=By(Ux,Uy,0.)
+def dUdt(t, U):
+	a=Bx(U[0],U[1],0.)
+	b=By(U[0],U[1],0.)
 	ret=[a, b]
 	return ret
 # New initial condition
 U0 = [X0, Y0]    # Initial condition
 
 t_even = np.linspace(0, 1.1e-8, 100)
+print(t_even)
+t_span = [t_even[0], t_even[-1]]
+print(t_span)
 
-"""
-r = ode(dUdt, jac=None).set_integrator('zvode', method='bdf')
-r.set_initial_value(U0, 0)
-dt = 1000./30.
-T=0
-while r.successful() and r.t < 1000:
-	T=T+dt
-	print(r.t+dt, r.integrate(r.t+dt))
-"""
-
-sol = odeint(dUdt, U0, t_even)  #, method='RK23', t_eval=None)
-print(sol[:,0])
-
+sol = solve_ivp(dUdt, t_span, U0, method='RK23', t_eval=t_even) # None or t_even
+print("t=",sol.t)
+print("x=",sol.y[0])
+print("y=",sol.y[1])
 
 fig, ax = plt.subplots()
 
 q = ax.quiver(x, y, B_x, B_y, units='xy', angles='xy', scale=300)
 
 plt.plot(X, Y)
-plt.plot(sol[:, 0], sol[:, 1], '.')
+plt.plot(sol.y[0], sol.y[1], '.')
 
 plt.show()

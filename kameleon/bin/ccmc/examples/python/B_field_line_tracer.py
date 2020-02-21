@@ -1,9 +1,13 @@
 # B_field_line_tracer
 
+#~/magnetosphere/kameleon/bin/ccmc/examples/python$ ../../../python2 B_field_line_tracer.py
+
 import sys
+sys.path.append('../../../../lib/python2.7/site-packages/')
 import kameleon_pull as kp
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.integrate import odeint
 
 filename='/home/gary/3d__var_3_e20031120-070000-000.out.cdf'
 
@@ -63,22 +67,40 @@ Y[0]=Y0
 #print("Bx(X[0],Y[0],0)=", Bx(X[0],Y[0],0.))
 #print(X[0])
 for k in range(s.size-1):
-    L=np.sqrt(Bx(X[k],Y[k],0)*Bx(X[k],Y[k],0)+By(X[k],Y[k],0)*By(X[k],Y[k],0))
-    if L>0.000001:
+	L=np.sqrt(Bx(X[k],Y[k],0)*Bx(X[k],Y[k],0)+By(X[k],Y[k],0)*By(X[k],Y[k],0))
+	if L>0.000001:
 		ds=eps/L
-    else:
+	else:
 		ds=0
 		print("B near ZERO")
-    s[k+1] = s[k]+ds #determine parameterd
-    X[k+1] = X[k]+ds*Bx(X[k],Y[k],0) #iterate eom
-    Y[k+1] = Y[k]+ds*By(X[k],Y[k],0) #iterate eom
-    #print(X[k],Y[k],s[k])
+	s[k+1] = s[k]+ds #determine parameterd
+	X[k+1] = X[k]+ds*Bx(X[k],Y[k],0) #iterate eom
+	Y[k+1] = Y[k]+ds*By(X[k],Y[k],0) #iterate eom
+	#print(X[k],Y[k],s[k])
 
+# dx/dt = Bx(x,y,0)
+# dy/dt = By(x,y,0)
+#
+# Let U = [x, y]
+# dU[0]/dt = Bx(U[0],U[1],0)
+# dU[1]/dt = By(U[0],U[1],0)
+ 
+# New function
+def dUdt(U, t):
+	L=np.sqrt(Bx(U[0],U[1],0.)*Bx(U[0],U[1],0.)+By(U[0],U[1],0.)*By(U[0],U[1],0.))
+	return [Bx(U[0],U[1],0.)/L, By(U[0],U[1],0.)/L]
+# New initial condition
+U0 = [X0, Y0]    # Initial condition
+t_even = np.linspace(0., 0.1, 100)
+sol = odeint(dUdt, U0, t_even)  #, method='RK23', t_eval=None)
+
+#------------------------------
 kp.k_close()
+#-------------------------------
 
 fig, ax = plt.subplots()
-
 q = ax.quiver(x, y, B_x, B_y, units='xy', angles='xy', scale=300)
-
 plt.plot(X, Y)
+plt.plot(sol[:, 0], sol[:, 1], '.')
+
 plt.show()

@@ -28,7 +28,7 @@ def main(argv):
 	    #kameleon.close()
 	    return var
 	else:
-		print 'Usage: <filename> <variable> x, y, z \n python kameleon_test rho -40 0 0' 
+		print('Usage: <filename> <variable> x, y, z \n python kameleon_test rho -40 0 0')
 
 def k_open(name):
 	kameleon.open(name)
