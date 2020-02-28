@@ -5,7 +5,9 @@ sys.path.append('../../../../lib/python2.7/site-packages/ccmc/')
 import _CCMC as ccmc
 
 kameleon = ccmc.Kameleon()
-
+#interpolator = None
+#interpolator = kameleon.createNewInterpolator()
+#print("interpreter created")
 def main(argv):
 	#print("main ran")
 	if (len(argv) == 5):
@@ -19,7 +21,6 @@ def main(argv):
 	    #kameleon = ccmc.Kameleon()
 	    #kameleon.open(filename)
 	    kameleon.loadVariable(variable)
-
 	    interpolator = kameleon.createNewInterpolator()
 	    var = interpolator.interpolate(variable,c0, c1, c2)
 
@@ -32,6 +33,7 @@ def main(argv):
 
 def k_open(name):
 	kameleon.open(name)
+	#interpolator = kameleon.createNewInterpolator()
 	print("file", name,"opened")
 
 def k_close():
