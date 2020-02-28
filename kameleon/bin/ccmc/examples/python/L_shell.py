@@ -24,10 +24,11 @@ def Bz(x,y,z):
 	return ret
 
 phi_st=np.linspace(0, 2*np.pi, 10)
-theta=np.pi/8.
-y_st=np.sin(theta)*np.sin(phi_st)
-z_st=np.sin(theta)*np.cos(phi_st)
-x_st=np.cos(theta)*np.ones(phi_st.size)
+theta=np.pi/2.
+R=3.
+x_st=R*np.sin(theta)*np.sin(phi_st)
+y_st=R*np.sin(theta)*np.cos(phi_st)
+z_st=R*np.cos(theta)*np.ones(phi_st.size)
 
 print(x_st)
 print(y_st)
@@ -72,7 +73,10 @@ for i in range(n): # iterate over rows
 # New function
 def dUdt(U, t):
 	L=np.sqrt(Bx(U[0],U[1],U[2])*Bx(U[0],U[1],U[2])+By(U[0],U[1],U[2])*By(U[0],U[1],U[2])+Bz(U[0],U[1],U[2])*Bz(U[0],U[1],U[2]))
-	return [Bx(U[0],U[1],U[2])/L, By(U[0],U[1],U[2])/L, Bz(U[0],U[1],U[2])/L]
+	if 1e-6<L<1e+6:
+		return [Bx(U[0],U[1],U[2])/L, By(U[0],U[1],U[2])/L, Bz(U[0],U[1],U[2])/L]
+	else:
+		return [0., 0., 0.]
 
 t_even = np.linspace(0, 10., 100)
 solns = (np.nan)*np.empty((t_even.size, 3, x_st.size))
@@ -102,9 +106,9 @@ for i in range(x_st.size):
 ax.set_xlabel('X Label')
 ax.set_ylabel('Y Label')
 ax.set_zlabel('Z Label')
-ax.set_xlim(-3,3)
-ax.set_ylim(-3,3)
-ax.set_zlim(-3,3)
+ax.set_xlim(-5,5)
+ax.set_ylim(-5,5)
+ax.set_zlim(-5,5)
 #plt.plot(sol[:, 0], sol[:, 1], '.')
 
 plt.show()
