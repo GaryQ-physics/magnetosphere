@@ -2,7 +2,9 @@
 
 import sys
 sys.path.append('../../../../lib/python2.7/site-packages/')
-import kameleon_pull as kp
+#import kameleon_pull as kp
+sys.path.append('../../../../lib/python2.7/site-packages/ccmc/')
+import _CCMC as ccmc
 import numpy as np
 from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
@@ -10,20 +12,37 @@ from scipy.integrate import odeint
 
 filename='/home/gary/3d__var_3_e20031120-070000-000.out.cdf'
 
-kp.k_open(filename)
+kameleon = ccmc.Kameleon()
+kameleon.open(filename)
+print(filename, "OPENED")
+interpolator = kameleon.createNewInterpolator()
+
+def filePull(argv):
+	#print("main ran")
+	if (len(argv) == 4):
+	    variable = argv[0]
+	    c0 = float(argv[1])
+	    c1 = float(argv[2])
+	    c2 = float(argv[3])
+	    kameleon.loadVariable(variable)
+	    var = interpolator.interpolate(variable,c0, c1, c2)
+	    return var
+	else:
+		print('Usage: <filename> <variable> x, y, z \n python kameleon_test rho -40 0 0')
 
 def Bx(x,y,z):
-	ret=kp.main([filename,'bx',x,y,z])
+	#ret=kp.main([filename,'bx',x,y,z])
+	ret=filePull(['bx',x,y,z])
 	return ret
 
 def By(x,y,z):
-	ret=kp.main([filename,'by',x,y,z])
+	ret=filePull(['by',x,y,z])
 	return ret
 def Bz(x,y,z):
-	ret=kp.main([filename,'bz',x,y,z])
+	ret=filePull(['bz',x,y,z])
 	return ret
 
-phi_st=np.linspace(0, 2*np.pi, 10)
+phi_st=np.linspace(0, 2*np.pi, 30)
 theta=np.pi/2.
 R=3.
 x_st=R*np.sin(theta)*np.sin(phi_st)
@@ -86,7 +105,9 @@ for i in range(x_st.size):
 	solns[:,:,i]=sol
 
 #------------------------------
-kp.k_close()
+#kp.k_close()
+kameleon.close()
+print("KAMELEON CLOSED")
 #-------------------------------
 
 
