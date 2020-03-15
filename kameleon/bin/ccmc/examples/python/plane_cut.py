@@ -89,33 +89,6 @@ print(x_st)
 print(y_st)
 print(z_st)
 
-X0=1.
-Y0=0.
-Z0=0.
-n=50
-m=50
-x_1d = np.linspace(-3, 3, n)
-y_1d = np.linspace(-3, 3, m)
-x, y = np.meshgrid(x_1d, y_1d)
-
-B_x = np.empty((n, m)) # Bx on  grid
-B_x[:] = np.nan 
-B_y = np.empty((n, m)) # By on grid
-B_y[:] = np.nan 
-B_z = np.empty((n, m)) # By on grid
-B_z[:] = np.nan 
-L=0
-for i in range(n): # iterate over rows
-    if(i==0): print("i=", i)
-    if(i==1): print("i=", i)
-    if(i==40): print("i=", i)
-    for j in range(m): # iterate over columns    
-        #x[i,j]=i*gridsize
-        #y[i,j]=j*gridsize
-        L=np.sqrt(Bx(x[i,j],y[i,j],0)*Bx(x[i,j],y[i,j],0)+By(x[i,j],y[i,j],0)*By(x[i,j],y[i,j],0))
-        B_x[i,j]=Bx(x[i,j],y[i,j],0)*np.log(L)/L
-        B_y[i,j]=By(x[i,j],y[i,j],0)*np.log(L)/L
-        #print(i,j,x[i,j],y[i,j])
 
 # dx/dt = Bx(x,y,z)
 # dy/dt = By(x,y,z)
@@ -140,12 +113,6 @@ for i in range(x_st.size):
 	U0 = [x_st[i], y_st[i], z_st[i]]    # Initial condition
 	sol = odeint(dUdt, U0, t_even)  # method='RK23', t_eval=None)
 	solns[:,:,i]=sol
-
-#------------------------------
-#kp.k_close()
-kameleon.close()
-print("KAMELEON CLOSED")
-#-------------------------------
 
 
 plt.clf()
@@ -185,60 +152,31 @@ for i in range(u_st.size):
 
 	else:
 		ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'gray')
-		
+
+def BU1(u,v):
+	x,y,z =u*U1+v*U2
+	B=np.array([Bx(x,y,z),By(x,y,z),Bz(x,y,z)])
+	return np.dot(B,U1)
+
+n=50
+m=50
+x_1d = np.linspace(0, 4, n)
+y_1d = np.linspace(-3, 3, m)
+X, Y = np.meshgrid(x_1d, y_1d)
+Z=np.zeros((n,m))
+for i in range(n):
+	for j in range(m):
+		Z[i,j]=BU1(X[i,j],Y[i,j])
+
+ax2.pcolormesh(X, Y, Z)
 
 
 
-"""
-v2=np.array([0,0,0])
-T=0.
-for i in range(t_even.size):
-	Rsol=np.sqrt(sol[i,0]**2+sol[i,1]**2+sol[i,2]**2)
-	if Rsol<=1. and t_even[i]>0.1:
-		v2=np.array([sol[i,0],sol[i,1],sol[i,2]])
-		T=t_even[i]
-		break
-v3=np.array([0,0,0])
-for i in range(t_even.size):
-	if t_even[i]>=T/2. :
-		v3=np.array([sol[i,0],sol[i,1],sol[i,2]])
-		break
+#------------------------------
+#kp.k_close()
+kameleon.close()
+print("KAMELEON CLOSED")
+#-------------------------------
 
-
-for i in range(solns.shape[0]):
-	solCut[i,0]=np.dot(solns[i,:,0],U1)
-	solCut[i,1]=np.dot(solns[i,:,0],U2)
-
-
-
-# plot p first:
-ax1 = plt.subplot(121)
-ax1.set_aspect('equal', 'box')
-data2d.add_contour('x', 'z', 'p', target = ax1)
-
-plt.grid(True)
-
-ax2 = plt.subplot(122)
-ax2.set_aspect('equal', 'box')
-
-plt.clf()
-fig = plt.figure(figsize=plt.figaspect(0.5))
-ax1 = fig.add_subplot(1, 2, 1, projection='3d')
-#ax1=plt.subplot(121)
-ax2 = fig.add_subplot(1,2,2)
-#for k in range(sol.shape[0]):
-#    ax1.scatter(sol[k, 0], sol[k, 1], sol[k, 0], marker=m)
-ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'gray')
-#ax1.plot(solCut[:,0],solCut[:,1])
-ax2.plot(solCut[:,0],solCut[:,1])
-
-ax.set_xlabel('X Label')
-ax.set_ylabel('Y Label')
-ax.set_zlabel('Z Label')
-ax.set_xlim(-5,5)
-ax.set_ylim(-5,5)
-ax.set_zlim(-5,5)
-"""
-#plt.plot(sol[:, 0], sol[:, 1], '.')
 
 plt.show()
