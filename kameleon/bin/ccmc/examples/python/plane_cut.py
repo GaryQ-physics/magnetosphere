@@ -1,4 +1,5 @@
-# L_shell
+# plane_cut
+
 
 import sys
 sys.path.append('../../../../lib/python2.7/site-packages/')
@@ -47,17 +48,10 @@ def Bz(x,y,z):
 	ret=filePull(['bz',x,y,z])
 	return ret
 
-sign=+1
+deg=(np.pi/180)
 
-"""
-phi_st=0.
-theta=np.linspace(0, 0.5*np.pi, 10)
-R=1.
-u_st=R*np.sin(theta)*np.sin(phi_st)
-v_st=R*np.sin(theta)*np.cos(phi_st)
-w_st=R*np.cos(theta)
+sign=-1
 
-"""
 phi_st=np.linspace(0, 2*np.pi, 30)
 theta=np.pi/2.
 R=3.
@@ -65,6 +59,14 @@ u_st=R*np.sin(theta)*np.sin(phi_st)
 v_st=R*np.sin(theta)*np.cos(phi_st)
 w_st=R*np.cos(theta)*np.ones(phi_st.size)
 
+MLON=68.50*deg  #68.50
+MLAT=50.00*deg  #50.00
+phiMAG=MLON
+thetaMAG=np.pi/2. - MLAT
+R=1.
+u_st=np.insert(u_st,0,R*np.sin(thetaMAG)*np.sin(phiMAG))
+v_st=np.insert(v_st,0,R*np.sin(thetaMAG)*np.cos(phiMAG))
+w_st=np.insert(w_st,0,R*np.cos(thetaMAG))
 
 x_st=np.zeros((np.size(u_st),)) #initialize 
 y_st=np.zeros((np.size(u_st),))
@@ -76,22 +78,8 @@ for i in range(np.size(u_st)):
 	y_st[i]=v[1]
 	z_st[i]=v[2]
 
-"""
-phi_st=np.linspace(0, 2*np.pi, 30)
-theta=np.pi/2.
-R=3.
-x_st=R*np.sin(theta)*np.sin(phi_st)
-y_st=R*np.sin(theta)*np.cos(phi_st)
-z_st=R*np.cos(theta)*np.ones(phi_st.size)
 
 
-phi_st=0.
-theta=np.linspace(0, 0.5*np.pi, 10)
-R=1.
-x_st=R*np.sin(theta)*np.sin(phi_st)
-y_st=R*np.sin(theta)*np.cos(phi_st)
-z_st=R*np.cos(theta)
-"""
 print("---------")
 print(u_st)
 print(v_st)
@@ -145,6 +133,7 @@ def dUdt(U, t):
 	else:
 		return [0., 0., 0.] #or nan
 
+
 t_even = np.linspace(0, 10., 100)
 solns = (np.nan)*np.empty((t_even.size, 3, x_st.size))
 for i in range(x_st.size):
@@ -159,20 +148,89 @@ print("KAMELEON CLOSED")
 #-------------------------------
 
 
+plt.clf()
+fig = plt.figure(figsize=plt.figaspect(0.5))
+ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+ax2 = fig.add_subplot(1,2,2)
+
+v1=np.array([0,0,0])
+v2=np.array([0,0,0])
+v3=np.array([0,0,0])
+U1=np.array([0,0,0])
+U2=np.array([0,0,0])
+U3=np.array([0,0,0])
+for i in range(u_st.size):
+	tr=np.array( solns[:,0,i]**2+solns[:,1,i]**2+solns[:,2,i]**2 >=1. )
+	solx=solns[:,0,i]
+	solx=solx[tr]
+	soly=solns[:,1,i]
+	soly=soly[tr]
+	solz=solns[:,2,i]
+	solz=solz[tr]
+	sol=np.column_stack([solx,soly,solz])
+	if (i==0):
+		ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'blue')
+		v1=sol[0,:]
+		v2=sol[-1,:]
+		v3=sol[20,:]
+		U2 = (v1-v2)/np.linalg.norm(v1-v2)
+		U3 = np.cross(v3-v1,U2)/np.linalg.norm(np.cross(v3-v1,U2))
+		U1 = np.cross(U2,U3)
+		solCut=np.zeros((sol.shape[0],2))
+		for k in range(sol.shape[0]):
+			solCut[k,0]=np.dot(sol[k,:],U1)
+			solCut[k,1]=np.dot(sol[k,:],U2)
+		print(solCut)
+		ax2.plot(solCut[:,0],solCut[:,1], 'blue')
+
+	else:
+		ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'gray')
+		
 
 
 
+"""
+v2=np.array([0,0,0])
+T=0.
+for i in range(t_even.size):
+	Rsol=np.sqrt(sol[i,0]**2+sol[i,1]**2+sol[i,2]**2)
+	if Rsol<=1. and t_even[i]>0.1:
+		v2=np.array([sol[i,0],sol[i,1],sol[i,2]])
+		T=t_even[i]
+		break
+v3=np.array([0,0,0])
+for i in range(t_even.size):
+	if t_even[i]>=T/2. :
+		v3=np.array([sol[i,0],sol[i,1],sol[i,2]])
+		break
 
-fig = plt.figure()
-#ax = fig.add_subplot(111, projection='3d')
-ax = plt.axes(projection='3d')
 
+for i in range(solns.shape[0]):
+	solCut[i,0]=np.dot(solns[i,:,0],U1)
+	solCut[i,1]=np.dot(solns[i,:,0],U2)
+
+
+
+# plot p first:
+ax1 = plt.subplot(121)
+ax1.set_aspect('equal', 'box')
+data2d.add_contour('x', 'z', 'p', target = ax1)
+
+plt.grid(True)
+
+ax2 = plt.subplot(122)
+ax2.set_aspect('equal', 'box')
+
+plt.clf()
+fig = plt.figure(figsize=plt.figaspect(0.5))
+ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+#ax1=plt.subplot(121)
+ax2 = fig.add_subplot(1,2,2)
 #for k in range(sol.shape[0]):
-#    ax.scatter(sol[k, 0], sol[k, 1], sol[k, 0], marker=m)
-for i in range(x_st.size):
-	ax.plot3D(solns[:,0,i], solns[:,1,i], solns[:,2,i], 'gray')
-ax.plot3D(x_st,y_st,z_st,'red')
-ax.plot3D(u_st,v_st,w_st,'green')
+#    ax1.scatter(sol[k, 0], sol[k, 1], sol[k, 0], marker=m)
+ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'gray')
+#ax1.plot(solCut[:,0],solCut[:,1])
+ax2.plot(solCut[:,0],solCut[:,1])
 
 ax.set_xlabel('X Label')
 ax.set_ylabel('Y Label')
@@ -180,6 +238,7 @@ ax.set_zlabel('Z Label')
 ax.set_xlim(-5,5)
 ax.set_ylim(-5,5)
 ax.set_zlim(-5,5)
+"""
 #plt.plot(sol[:, 0], sol[:, 1], '.')
 
 plt.show()
