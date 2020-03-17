@@ -47,6 +47,9 @@ def By(x,y,z):
 def Bz(x,y,z):
 	ret=filePull(['bz',x,y,z])
 	return ret
+def p(x,y,z):
+	ret=filePull(['p',x,y,z])
+	return ret
 
 deg=(np.pi/180)
 
@@ -120,12 +123,12 @@ fig = plt.figure(figsize=plt.figaspect(0.5))
 ax1 = fig.add_subplot(1, 2, 1, projection='3d')
 ax2 = fig.add_subplot(1,2,2)
 
-v1=np.array([0,0,0])
-v2=np.array([0,0,0])
-v3=np.array([0,0,0])
-U1=np.array([0,0,0])
-U2=np.array([0,0,0])
-U3=np.array([0,0,0])
+v1=(np.nan)*np.empty((3,))
+v2=(np.nan)*np.empty((3,))
+v3=(np.nan)*np.empty((3,))
+U1=(np.nan)*np.empty((3,))
+U2=(np.nan)*np.empty((3,))
+U3=(np.nan)*np.empty((3,))
 for i in range(u_st.size):
 	tr=np.array( solns[:,0,i]**2+solns[:,1,i]**2+solns[:,2,i]**2 >=1. )
 	solx=solns[:,0,i]
@@ -136,7 +139,7 @@ for i in range(u_st.size):
 	solz=solz[tr]
 	sol=np.column_stack([solx,soly,solz])
 	if (i==0):
-		ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'blue')
+		ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'red')
 		v1=sol[0,:]
 		v2=sol[-1,:]
 		v3=sol[20,:]
@@ -148,7 +151,7 @@ for i in range(u_st.size):
 			solCut[k,0]=np.dot(sol[k,:],U1)
 			solCut[k,1]=np.dot(sol[k,:],U2)
 		print(solCut)
-		ax2.plot(solCut[:,0],solCut[:,1], 'blue')
+		ax2.plot(solCut[:,0],solCut[:,1], 'red')
 
 	else:
 		ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'gray')
@@ -157,6 +160,17 @@ def BU1(u,v):
 	x,y,z =u*U1+v*U2
 	B=np.array([Bx(x,y,z),By(x,y,z),Bz(x,y,z)])
 	return np.dot(B,U1)
+def BU2(u,v):
+	x,y,z =u*U1+v*U2
+	B=np.array([Bx(x,y,z),By(x,y,z),Bz(x,y,z)])
+	return np.dot(B,U2)
+def BU3(u,v):
+	x,y,z =u*U1+v*U2
+	B=np.array([Bx(x,y,z),By(x,y,z),Bz(x,y,z)])
+	return np.dot(B,U3)
+def p_U(u,v):
+	x,y,z =u*U1+v*U2
+	return p(x,y,z)
 
 n=50
 m=50
@@ -166,7 +180,7 @@ X, Y = np.meshgrid(x_1d, y_1d)
 Z=np.zeros((n,m))
 for i in range(n):
 	for j in range(m):
-		Z[i,j]=BU1(X[i,j],Y[i,j])
+		Z[i,j]=p_U(X[i,j],Y[i,j])
 
 ax2.pcolormesh(X, Y, Z)
 
@@ -177,6 +191,20 @@ ax2.pcolormesh(X, Y, Z)
 kameleon.close()
 print("KAMELEON CLOSED")
 #-------------------------------
+
+para1, para2 = np.meshgrid(np.linspace(-1., 3., n), np.linspace(-2., 2., m))
+X_slice=U1[0]*para1+U2[0]*para2+v1[0]*np.ones((n,m))
+Y_slice=U1[1]*para1+U2[1]*para2+v1[1]*np.ones((n,m))
+Z_slice=U1[2]*para1+U2[2]*para2+v1[2]*np.ones((n,m))
+
+X_o=-1*para1+0*para2+v1[0]*np.ones((n,m))
+Y_o=0*para1+0*para2+v1[1]*np.ones((n,m))
+Z_o=0*para1+1*para2+v1[2]*np.ones((n,m))
+
+ax1.plot_surface(X_slice, Y_slice, Z_slice)
+ax1.plot_surface(X_o, Y_o, Z_o)
+
+#ax.set(xlabel='x', ylabel='y', zlabel='z')
 
 
 plt.show()
