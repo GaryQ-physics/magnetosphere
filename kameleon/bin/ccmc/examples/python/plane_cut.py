@@ -13,6 +13,8 @@ from scipy.integrate import odeint
 import pos_sun as ct
 #coordinate_transformations_magnetosphere           pos_sun
 
+#for OS-X
+#mpl.use('TkAgg')
 
 filename='/home/gary/3d__var_3_e20031120-070000-000.out.cdf'
 month=11
@@ -54,6 +56,7 @@ def p(x,y,z):
 deg=(np.pi/180)
 
 sign=-1
+UT=7.
 
 phi_st=np.linspace(0, 2*np.pi, 30)
 theta=np.pi/2.
@@ -75,7 +78,7 @@ x_st=np.zeros((np.size(u_st),)) #initialize
 y_st=np.zeros((np.size(u_st),))
 z_st=np.zeros((np.size(u_st),))
 for i in range(np.size(u_st)):
-	v=ct.MAGtoGSM([u_st[i],v_st[i],w_st[i]],month,day,year)
+	v=ct.MAGtoGSM([u_st[i],v_st[i],w_st[i]],month,day,year,UT)
 	print(v)
 	x_st[i]=v[0]
 	y_st[i]=v[1]
@@ -183,8 +186,6 @@ for i in range(n):
 		Z[i,j]=p_U(X[i,j],Y[i,j])
 
 ax2.pcolormesh(X, Y, Z)
-
-
 
 #------------------------------
 #kp.k_close()

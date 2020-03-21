@@ -1,122 +1,89 @@
 # plane_cut
+
 import sys
+sys.path.append('/home/gary/magnetosphere/kameleon/lib/python2.7/site-packages/')
+sys.path.append('/home/gary/magnetosphere/kameleon/lib/python2.7/site-packages/ccmc/')
+import _CCMC as ccmc
 import numpy as np
-import matplotlib as mpl
+from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
-
-sys.path.append('~/kameleon/lib/python2.7/site-packages/')
-sys.path.append('~/kameleon/lib/python2.7/site-packages/ccmc/')
-import _CCMC as ccmc
-import pos_sun as ct
-#coordinate_transformations_magnetosphere           pos_sun
-
+import pos_sun as ps
 # For OS-X
-mpl.use('TkAgg')
+#mpl.use('TkAgg')
+
+#units
+deg = (np.pi/180.)
+amin=deg/60.
+hr=1.
+minn=hr/60.
+s=minn/60.
 
 debug = False
 Nb = 30
+sign=-1
 
 year = 2003
 day = 20
 month = 11
-filename = '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
-deg = (np.pi/180)
+hours=7.
+minutes=0.
+seconds=0.
+filename = '/home/gary/3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
+UT=hours*hr+minutes*minn+seconds*s
 
 # Start point of main field line
 MLON = 68.50*deg
 MLAT = 50.00*deg
 
-def extract_parameter(variable, x,y,z):
-	#print("main ran")
-    kameleon.loadVariable(variable)
-    data = interpolator.interpolate(variable, x, y, z)
-    return data
-    
-def filePull(argv):
-	#print("main ran")
-	if (len(argv) == 4):
-	    variable = argv[0]
-	    c0 = float(argv[1])
-	    c1 = float(argv[2])
-	    c2 = float(argv[3])
-	    kameleon.loadVariable(variable)
-	    var = interpolator.interpolate(variable, c0, c1, c2)
-	    return var
-	else:
-        # TODO
-		print('Usage: ')
-
-def Bx(x,y,z):
-	ret=filePull(['bx',x,y,z])
-	return ret
-
-
-def By(x,y,z):
-	ret=filePull(['by',x,y,z])
-	return ret
-
-
-def Bz(x,y,z):
-	ret=filePull(['bz',x,y,z])
-	return ret
-
-
-def p(x,y,z):
-	ret=filePull(['p',x,y,z])
-	return ret
-
-def BU(u,v,U1,U2,dir):
-    	x,y,z =u*U1+v*U2
-    	B=np.array([Bx(x,y,z),By(x,y,z),Bz(x,y,z)])
-
-    if dir == 1:
-        return np.dot(B,U1)
-    if dir == 2:
-        return np.dot(B,U2)
-    if dir == 3:
-        return np.dot(B,U3)
-
-    
-def BU2(u,v):
-	x,y,z =u*U1+v*U2
-	B=np.array([Bx(x,y,z),By(x,y,z),Bz(x,y,z)])
-	return np.dot(B,U2)
-def BU3(u,v):
-	x,y,z =u*U1+v*U2
-	B=np.array([Bx(x,y,z),By(x,y,z),Bz(x,y,z)])
-	return np.dot(B,U3)
-def p_U(u,v):
-	x,y,z =u*U1+v*U2
-	return p(x,y,z)
-# Field line ODE
-#def dUds(B, s):
-def dUdt(U, t):
-
-    '''
-    dx/ds = Bx(x,y,z)/Bm
-    dy/ds = By(x,y,z)/Bm
-    dz/ds = Bz(x,y,z)/Bm
-    
-    U = [x, y, z]
-    B = [Bx, By, Bz]
-    Bm = sqrt(Bx**2 + By**2 + Bz**2)    
-    '''
-
-    L=np.sqrt(Bx(U[0],U[1],U[2])*Bx(U[0],U[1],U[2])+By(U[0],U[1],U[2])*By(U[0],U[1],U[2])+Bz(U[0],U[1],U[2])*Bz(U[0],U[1],U[2]))
-    if 1e-6<L<1e+6:
-        return [sign*Bx(U[0],U[1],U[2])/L, sign*By(U[0],U[1],U[2])/L, sign*Bz(U[0],U[1],U[2])/L]
-    else:
-        return [0., 0., 0.] #or nan
 
 kameleon = ccmc.Kameleon()
 kameleon.open(filename)
 print(filename, "Opened " + filename)
 interpolator = kameleon.createNewInterpolator()
 
-sign=-1
 
-# Background field lines
+
+#function to use kameleon to get data from file
+def ex_data(variable, x,y,z):
+	#print("main ran")
+    kameleon.loadVariable(variable)
+    data = interpolator.interpolate(variable, x, y, z)
+    return data
+
+#function to get the data in the U coordinates (defined by the cut plane vectors U1 and U2  (to be calculated)  which need to be inputted)
+def data_in_U(variable,u,v,U1,U2):
+    x,y,z = u*U1+v*U2
+    B=np.array([ex_data('bx', x,y,z), ex_data('by', x,y,z), ex_data('bz', x,y,z)])
+    if variable == 'bu1':
+        return np.dot(B,U1)
+    if variable == 'bu2':
+        return np.dot(B,U2)
+    if variable == 'bu3':
+        return np.dot(B,U3)
+    else:
+		return ex_data(variable, x,y,z)
+
+# define derivate function for Field line ODE
+    '''
+    dx/ds = Bx(x,y,z)/Bm
+    dy/ds = By(x,y,z)/Bm
+    dz/ds = Bz(x,y,z)/Bm
+    
+    X = [x, y, z]
+    B = [Bx, By, Bz]
+    Bm = sqrt(Bx**2 + By**2 + Bz**2)
+    s=arclength    
+    '''
+def dXds(X, t):
+    B=np.array([ex_data('bx', X[0],X[1],X[2]), ex_data('by', X[0],X[1],X[2]), ex_data('bz', X[0],X[1],X[2])])
+    Bm=np.sqrt(np.dot(B,B))
+    if 1e-6<Bm<1e+6:
+        return (sign/Bm)*B
+    else:
+        return [0., 0., 0.] #or nan
+
+# Background field lines start points (in MAG)
 phi_st=np.linspace(0, 2*np.pi, Nb)
 theta=np.pi/2.
 R=3.
@@ -124,7 +91,7 @@ u_st=R*np.sin(theta)*np.sin(phi_st)
 v_st=R*np.sin(theta)*np.cos(phi_st)
 w_st=R*np.cos(theta)*np.ones(phi_st.size)
 
-# Create other field lines and insert main field line as first
+# insert main field line start point as first entry (in MAG)
 phiMAG=MLON
 thetaMAG=np.pi/2. - MLAT
 R=1.
@@ -133,12 +100,12 @@ u_st=np.insert(u_st,0,R*np.sin(thetaMAG)*np.sin(phiMAG))
 v_st=np.insert(v_st,0,R*np.sin(thetaMAG)*np.cos(phiMAG))
 w_st=np.insert(w_st,0,R*np.cos(thetaMAG))
 
-# Convert field line initial points from MAG to GSM
+# Convert field line start points points from MAG to GSM
 x_st = np.zeros((np.size(u_st),))
 y_st = np.zeros((np.size(u_st),))
 z_st = np.zeros((np.size(u_st),))
 for i in range(np.size(u_st)):
-	v = ct.MAGtoGSM([u_st[i], v_st[i], w_st[i]], month, day, year)
+	v = ps.MAGtoGSM([u_st[i], v_st[i], w_st[i]], month, day, year, UT)
 	print(v)
 	x_st[i] = v[0]
 	y_st[i] = v[1]
@@ -155,11 +122,11 @@ if debug:
     print(z_st)
 
 # Trace field lines
-t_grid = np.linspace(0, 10., 100)
-solns = (np.nan)*np.empty((t_grid.size, 3, x_st.size))
+s_grid = np.linspace(0, 10., 100)
+solns = (np.nan)*np.empty((s_grid.size, 3, x_st.size))
 for i in range(x_st.size):
-	U0 = [x_st[i], y_st[i], z_st[i]] # Initial condition
-	sol = odeint(dUdt, U0, t_grid)
+	X0 = [x_st[i], y_st[i], z_st[i]] # Initial condition
+	sol = odeint(dXds, X0, s_grid)
 	solns[:,:,i] = sol
 
 
@@ -227,12 +194,12 @@ X, Y = np.meshgrid(x_1d, y_1d)
 Z=np.zeros((n,m))
 for i in range(n):
 	for j in range(m):
-		Z[i,j]=p_U(X[i,j],Y[i,j])
+		Z[i,j]=data_in_U('p',X[i,j],Y[i,j],U1,U2)
 
 pcm = ax2.pcolormesh(X, Y, Z)
 
 cb = fig.colorbar(pcm, ax=ax2)
-cb.set_title('p')
+#cb.set_title('p')
 
 #------------------------------
 #kp.k_close()

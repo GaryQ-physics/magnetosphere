@@ -2,22 +2,22 @@
 import numpy as np
 deg=np.pi/180
 amin=deg/60.
-hour=1.
-minute=hour/60.
-sec=minute/60.
+hr=1.
+minn=hr/60.
+s=minn/60.
 
 
 
-def MAGtoGSM(v_MAG,month,day,year):
+def MAGtoGSM(v_MAG,month,day,year,UT):
 	v_MAG=np.array(v_MAG)
 	#month=11
 	#day=20
 	#year=2003
-	UT=7*hour+0*minute+0*sec
+	#UT=7*hr+0*minn+0*s
 	a = int((14-month)/12)
 	y = year+4800-a
 	m = month + 12*a - 3
-	t = (UT-12.*hour)/(24.*hour)
+	t = (UT-12.*hr)/(24.*hr)
 	JD = day + int((153*m+2)/5) + y*365 + int(y/4) - int(y/100) + int(y/400) - 32045 + t
 	#JD=2452963.79167  #julian day (calculated from UTC date and time)       http://www.onlineconversion.com/julian_date.htm
 	MJD = JD - 2400000.5 #modified julian day
