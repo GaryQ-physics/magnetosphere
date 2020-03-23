@@ -1,4 +1,6 @@
 # pos_sun
+
+#units
 import numpy as np
 deg=np.pi/180
 amin=deg/60.
@@ -6,19 +8,16 @@ hr=1.
 minn=hr/60.
 s=minn/60.
 
+#function to convert coordinate vector in MAG coordinates to one in GSM coordinates
 def MAGtoGSM(v_MAG,month,day,year,UT):
 	v_MAG=np.array(v_MAG)
-	#month=11
-	#day=20
-	#year=2003
-	#UT=7*hr+0*minn+0*s
 	a = int((14-month)/12)
 	y = year+4800-a
 	m = month + 12*a - 3
 	t = (UT-12.*hr)/(24.*hr)
 	JD = day + int((153*m+2)/5) + y*365 + int(y/4) - int(y/100) + int(y/400) - 32045 + t
-	#JD=2452963.79167  #julian day (calculated from UTC date and time)       http://www.onlineconversion.com/julian_date.htm
 	MJD = JD - 2400000.5 #modified julian day
+	
 	T0=(MJD-51544.5)/36525.0       #https://www.spenvis.oma.be/help/background/coortran/coortran.html#Transformations
 	thetaGST=100.461 + 36000.770*T0+15.04107*UT
 
@@ -36,13 +35,13 @@ def MAGtoGSM(v_MAG,month,day,year,UT):
 	f = np.cos(thetaGST)*X + np.sin(thetaGST)*Y    #fgh is pos sun in GEO    [a_dot_x](t)
 	g = -np.sin(thetaGST)*X + np.cos(thetaGST)*Y
 	h = Z
-	AA=83*deg+6*amin   #N 
-	BB=117*deg+48*amin   #W 
-	m1=np.cos(BB)*np.cos(AA)   # M dot a (assume constant) (this is 2009 acording to wikipedia)
+	AA=83*deg+6*amin   #North 
+	BB=117*deg+48*amin   #West 
+	m1=np.cos(BB)*np.cos(AA)   # coordinates of M in GEO coordinates (assume constant) (this is 2009 acording to wikipedia)
 	m2=-np.sin(BB)*np.cos(AA)
 	m3=np.sin(AA)
 
-	#  a,b,c  x,y,z  u,v,w  
+	#  a,b,c  x,y,z  u,v,w   are coordinate vector in GEO for the unit vectors for GEO , GSM , MAG respectively
 	a=np.array([1,0,0])
 	b=np.array([0,1,0])
 	c=np.array([0,0,1])
@@ -54,11 +53,11 @@ def MAGtoGSM(v_MAG,month,day,year,UT):
 	u= np.cross(v,w)
 	y=(1./np.linalg.norm(np.cross(m,x)))*np.cross(m,x)
 	z=np.cross(x,y)
-	#---
-
+	
+	#define the coordinate transformaton matrix
 	A=np.row_stack([u,v,w])
 	B=np.row_stack([x,y,z])
-	
 	T_inv=np.matmul(B, np.linalg.inv(A))
+	
 	v_GSM=np.matmul(T_inv,v_MAG)
 	return(v_GSM)

@@ -26,13 +26,14 @@ sign=-1  #changes sign of magnetic field used to trace the field lines
 n=50 #n,m are number of pts on cutplane grid 
 m=50
 
-#input of magnetic field
+#inputs to get magnetic field
 year = 2003
 day = 20
 month = 11
 hours=7.
 minutes=0.
 seconds=0.
+
 filename = '/home/gary/3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
 UT=hours*hr+minutes*minn+seconds*s
 
@@ -78,7 +79,7 @@ def data_in_U(variable,u,v,U1,U2):
     Bm = sqrt(Bx**2 + By**2 + Bz**2)
     s=arclength    
     '''
-def dXds(X, t):
+def dXds(X, s):
     B=np.array([ex_data('bx', X[0],X[1],X[2]), ex_data('by', X[0],X[1],X[2]), ex_data('bz', X[0],X[1],X[2])])
     Bm=np.sqrt(np.dot(B,B))
     if 1e-6<Bm<1e+6:
@@ -104,10 +105,9 @@ v_st=np.insert(v_st,0,R*np.sin(thetaMAG)*np.cos(phiMAG))
 w_st=np.insert(w_st,0,R*np.cos(thetaMAG))
 
 # Convert field line start points points from MAG to GSM
-x_st = np.zeros((np.size(u_st),))
-y_st = np.zeros((np.size(u_st),))
-z_st = np.zeros((np.size(u_st),))
-
+x_st = (np.nan)*np.empty((Nb+1,))
+y_st = (np.nan)*np.empty((Nb+1,))
+z_st = (np.nan)*np.empty((Nb+1,))
 for i in range(Nb+1):
 	v = ps.MAGtoGSM([u_st[i], v_st[i], w_st[i]], month, day, year, UT)
 	x_st[i] = v[0]
@@ -132,6 +132,7 @@ for i in range(Nb+1):
 	sol = odeint(dXds, X0, s_grid)
 	solns[:,:,i] = sol
 
+# initialize vectors for defining cut plane
 v1=(np.nan)*np.empty((3,))
 v2=(np.nan)*np.empty((3,))
 v3=(np.nan)*np.empty((3,))
@@ -139,15 +140,20 @@ U1=(np.nan)*np.empty((3,))
 U2=(np.nan)*np.empty((3,))
 U3=(np.nan)*np.empty((3,))
 
-solns_restr=[]
-for i in range(Nb+1):
+
+#restrict the field lines to stop when reaching 1*R_E from the origin
+solns_restr=[] #initialize list of np_arrays, one for each restricted field line
+for i in range(Nb+1):  #loop over field lines
+	#define condition on the field line points
 	tr = np.logical_and(solns[:,0,i]**2+solns[:,1,i]**2+solns[:,2,i]**2 >=1.,solns[:,0,i]**2+solns[:,1,i]**2+solns[:,2,i]**2 < 20.)
+	#created the arrays of the restricted field line componentwise
 	solx=solns[:,0,i]
 	solx=solx[tr]
 	soly=solns[:,1,i]
 	soly=soly[tr]
 	solz=solns[:,2,i]
 	solz=solz[tr]
+	#reasemble and add to the list
 	sol=np.column_stack([solx,soly,solz])
 	solns_restr.append(sol)
 	if (i == 0): # do for main field line
@@ -205,13 +211,13 @@ ax2 = fig.add_subplot(1,2,2)
 for i in range(Nb+1): #loop over field lines
 	from_list=solns_restr[i]
 	sol=np.array(from_list)
-	if (i == 0):
+	if (i == 0): #for main field line
 		solCut=np.zeros((sol.shape[0],2))
 		for k in range(sol.shape[0]):
 			solCut[k,0]=np.dot(sol[k,:],U1)
 			solCut[k,1]=np.dot(sol[k,:],U2)
-		ax2.plot(solCut[:,0],solCut[:,1], 'red', lw=1)
-		ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'red', lw=4)
+		ax2.plot(solCut[:,0],solCut[:,1], 'red', lw=1) #add to 2D plot
+		ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'red', lw=4) #add to 3D plot
 	else:
 		ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'gray')
 
@@ -231,6 +237,7 @@ pcm = ax2.pcolormesh(X, Y, Z)
 cb = fig.colorbar(pcm, ax=ax2)
 #cb.set_title('p')
 
+#define the cut plane (as span U1, U2) and the plane parrallell to x-z plane
 para1, para2 = np.meshgrid(np.linspace(-1., 3., n), np.linspace(-2., 2., m))
 X_slice=U1[0]*para1+U2[0]*para2+v1[0]*np.ones((n,m))
 Y_slice=U1[1]*para1+U2[1]*para2+v1[1]*np.ones((n,m))
@@ -240,6 +247,7 @@ X_o=-1*para1+0*para2+v1[0]*np.ones((n,m))
 Y_o=0*para1+0*para2+v1[1]*np.ones((n,m))
 Z_o=0*para1+1*para2+v1[2]*np.ones((n,m))
 
+#plot the planes in the 3D plot
 from matplotlib import cm as cmap
 ax1.plot_surface(X_slice, Y_slice, Z_slice, cmap=cmap.gray)
 ax1.plot_surface(X_o, Y_o, Z_o)
