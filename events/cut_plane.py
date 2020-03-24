@@ -25,6 +25,9 @@ sys.path.append(k_path + 'kameleon/lib/python2.7/site-packages/ccmc/')
 import _CCMC as ccmc
 import pos_sun as ps
 
+# parameter to plot
+parameter =  'p'
+parameter_unit = 'nPa'
 # Inputs for file and magnetic field model
 year = 2003
 day = 20
@@ -39,10 +42,10 @@ filename = f_path + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000
 
 # units
 deg = (np.pi/180.)
-amin=deg/60.
-hr=1.
-minn=hr/60.
-s=minn/60.
+amin = deg/60.
+hr = 1.
+minn = hr/60.
+s = minn/60.
 
 # run parameters
 debug = False
@@ -51,7 +54,7 @@ sign=-1  # changes sign of magnetic field used to trace the field lines
 n=50 # number of pts on cutplane grid 
 m=50
 
-UT=hours*hr+minutes*minn+seconds*s
+UT=hours*hr + minutes*minn + seconds*s
 
 # Start point of main field line
 MLON = 68.50*deg
@@ -190,7 +193,7 @@ Z = np.zeros((n, m))
 for i in range(n):
 	for j in range(m):
 		# grid of the corresponding values of variable. To be color plotted
-		Z[i,j]=data_in_U('p',X[i,j],Y[i,j],U1,U2)
+		Z[i,j]=data_in_U(parameter,X[i,j],Y[i,j],U1,U2)
 
 #------------------------------
 #kp.k_close()
@@ -260,7 +263,7 @@ pcm = ax2.pcolormesh(X, Y, Z)
 # Reason for choice of fraction and pad:
 # https://stackoverflow.com/a/39948312/1491619
 cb = fig.colorbar(pcm, ax=ax2, fraction=0.046, pad=0.04)
-cb.ax.set_title('p [nPa]')
+cb.ax.set_title(parameter + ' [' + parameter_unit + ']')
 #cb.ax.set_ylabel('nPa')
 
 
