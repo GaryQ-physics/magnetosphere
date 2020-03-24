@@ -1,14 +1,18 @@
 # cut_plane
 
 # Directory with kameleon subdirectory
-k_path = '/Users/robertweigel/'
-#kpath = '/home/gary/magnetosphere/'
+#k_path = '/Users/robertweigel/'
+k_path = '/home/gary/magnetosphere/'
 
 # Directory of .cdf file
 f_path = './'
 
 import sys
 import numpy as np
+
+# !!!path append needs to be ahead of import odeint for my computor!!!
+sys.path.append(k_path + 'kameleon/lib/python2.7/site-packages/')
+sys.path.append(k_path + 'kameleon/lib/python2.7/site-packages/ccmc/')
 
 # For OS-X
 import matplotlib as mpl
@@ -19,9 +23,13 @@ import matplotlib.pyplot as plt
 # will warn that not used
 from mpl_toolkits import mplot3d
 from scipy.integrate import odeint
+from matplotlib.patches import Circle, PathPatch
+from matplotlib.text import TextPath
+from matplotlib.transforms import Affine2D
+# This import registers the 3D projection, but is otherwise unused.
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
+import mpl_toolkits.mplot3d.art3d as art3d
 
-sys.path.append(k_path + 'kameleon/lib/python2.7/site-packages/')
-sys.path.append(k_path + 'kameleon/lib/python2.7/site-packages/ccmc/')
 import _CCMC as ccmc
 import pos_sun as ps
 
@@ -229,6 +237,8 @@ plt.clf()
 fig = plt.figure(figsize=plt.figaspect(0.5))
 ax1 = fig.add_subplot(1, 2, 1, projection='3d')
 ax2 = fig.add_subplot(1,2,2)
+#ax = fig.add_subplot(111, projection='3d')
+
 
 # Plot field lines
 for i in range(Nb+1): 
@@ -252,6 +262,10 @@ ax1.set(xlabel="$X/R_E$ (GSM)")
 ax1.set(ylabel="$Y/R_E$ (GSM)")
 ax1.set(zlabel="$Z/R_E$ (GSM)")
 ax1.axis('square')
+
+ax1.set_xlim(-4, 4)
+ax1.set_ylim(-4, 4)
+ax1.set_zlim(-4, 4)
 
 # Plot cut plane data in right panel
 ax2.set(title=title)
@@ -278,12 +292,32 @@ X_o = -1*para1 + 0*para2 + v1[0]*np.ones((n, m))
 Y_o =  0*para1 + 0*para2 + v1[1]*np.ones((n, m))
 Z_o =  0*para1 + 1*para2 + v1[2]*np.ones((n, m))
 
+u = np.linspace(0, 2 * np.pi, 100)
+v = np.linspace(0, np.pi/2., 100)
+z_day = np.outer(np.cos(u), np.sin(v))
+y_day = np.outer(np.sin(u), np.sin(v))
+x_day = np.outer(np.ones(np.size(u)), np.cos(v))
+v = np.linspace(np.pi/2., np.pi, 100)
+z_night = np.outer(np.cos(u), np.sin(v))
+y_night = np.outer(np.sin(u), np.sin(v))
+x_night = np.outer(np.ones(np.size(u)), np.cos(v))
+
 #plot the planes in the 3D plot
 from matplotlib import cm as cmap
-ax1.plot_surface(X_slice, Y_slice, Z_slice, cmap=cmap.gray)
-ax1.plot_surface(X_o, Y_o, Z_o)
-
+ax1.plot_surface(X_slice, Y_slice, Z_slice, color='g', rstride=1, cstride=1,
+                       linewidth=0, antialiased=False)
+ax1.plot_surface(X_o, Y_o, Z_o, color='b', rstride=1, cstride=1,
+                       linewidth=0, antialiased=False)
+ax1.plot_surface(x_day, y_day, z_day, color='w', rstride=1, cstride=1,
+                       linewidth=0, antialiased=False)
+ax1.plot_surface(x_night, y_night, z_night, color='black', rstride=1, cstride=1,
+                       linewidth=0, antialiased=False)
 #ax.set(xlabel='x', ylabel='y', zlabel='z')
+#p = Circle((1, 1), 1)
+#p = Rectangle((0,0), 2., 4.)
+#ax1.add_patch(p)
+#art3d.pathpatch_2d_to_3d(p, z=-4, zdir="y")
+
 
 plt.show()
 
