@@ -26,5 +26,14 @@ Install SciPy compatable with Python 2.7 (Kameleon is not Python 3 compatable)
 Run Kameleon using Python 2.7
 
 ```
-~/kameleon/bin/python2 cut_plane.py
+cd events; ~/kameleon/bin/python2 cut_plane.py
+```
+
+With Anaconda,
+
+```
+conda create -n python2.7 python=2.7
+conda activate python2.7
+conda install scipy=0.16
+spyder
 ```
