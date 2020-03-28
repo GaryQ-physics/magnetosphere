@@ -136,10 +136,10 @@ x_st = (np.nan)*np.empty((Nb+1,))
 y_st = (np.nan)*np.empty((Nb+1,))
 z_st = (np.nan)*np.empty((Nb+1,))
 for i in range(Nb+1):
-	v = ps.MAGtoGSM([u_st[i], v_st[i], w_st[i]], month, day, year, UT)
-	x_st[i] = v[0]
-	y_st[i] = v[1]
-	z_st[i] = v[2]
+    v = ps.MAGtoGSM([u_st[i], v_st[i], w_st[i]], month, day, year, UT)
+    x_st[i] = v[0]
+    y_st[i] = v[1]
+    z_st[i] = v[2]
 
 if debug:
     print("---------")
@@ -155,9 +155,9 @@ if debug:
 s_grid = np.linspace(0, 10., 100.)
 solns = (np.nan)*np.empty((s_grid.size, 3, x_st.size))
 for i in range(Nb+1):
-	X0 = [x_st[i], y_st[i], z_st[i]] # Initial condition
-	sol = odeint(dXds, X0, s_grid)
-	solns[:,:,i] = sol
+    X0 = [x_st[i], y_st[i], z_st[i]] # Initial condition
+    sol = odeint(dXds, X0, s_grid)
+    solns[:,:,i] = sol
 
 # initialize vectors for defining field line cut plane
 v1=(np.nan)*np.empty((3,))
@@ -171,28 +171,28 @@ U3=(np.nan)*np.empty((3,))
 # restrict the field lines to stop when reaching 1*R_E from the origin
 solns_restr=[] # initialize list of np_arrays, one for each restricted field line
 for i in range(Nb+1):  # loop over field lines
-	# define condition on the field line points
-	tr = np.logical_and(solns[:,0,i]**2+solns[:,1,i]**2+solns[:,2,i]**2 >=1.,solns[:,0,i]**2+solns[:,1,i]**2+solns[:,2,i]**2 < 20.)
-	# create the arrays of the restricted field line componentwise
-	solx=solns[:,0,i]
-	solx=solx[tr]
-	soly=solns[:,1,i]
-	soly=soly[tr]
-	solz=solns[:,2,i]
-	solz=solz[tr]
-	# reasemble and add to the list
-	sol=np.column_stack([solx,soly,solz])
-	solns_restr.append(sol)
-	if (i == 0): 
+    # define condition on the field line points
+    tr = np.logical_and(solns[:,0,i]**2+solns[:,1,i]**2+solns[:,2,i]**2 >=1.,solns[:,0,i]**2+solns[:,1,i]**2+solns[:,2,i]**2 < 20.)
+    # create the arrays of the restricted field line componentwise
+    solx=solns[:,0,i]
+    solx=solx[tr]
+    soly=solns[:,1,i]
+    soly=soly[tr]
+    solz=solns[:,2,i]
+    solz=solz[tr]
+    # reasemble and add to the list
+    sol=np.column_stack([solx,soly,solz])
+    solns_restr.append(sol)
+    if (i == 0): 
         # do for main field line
-		v1 = sol[0,:]
-		v2 = sol[-1,:]
-		v3 = sol[10,:]
-		# define cut plane coordinates based on main field line 
+        v1 = sol[0,:]
+        v2 = sol[-1,:]
+        v3 = sol[10,:]
+        # define cut plane coordinates based on main field line 
         # (U3 normal to the plane)
-		U2 = (v1-v2)/np.linalg.norm(v1-v2)
-		U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
-		U1 = np.cross(U2, U3)   
+        U2 = (v1-v2)/np.linalg.norm(v1-v2)
+        U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
+        U1 = np.cross(U2, U3)   
 
 
 x_1d = np.linspace(0, 4, n)
@@ -200,9 +200,9 @@ y_1d = np.linspace(-3, 3, m)
 X, Y = np.meshgrid(x_1d, y_1d) # grid of points on the cutplane
 Z = np.zeros((n, m))
 for i in range(n):
-	for j in range(m):
-		# grid of the corresponding values of variable. To be color plotted
-		Z[i,j]=data_in_U(parameter,X[i,j],Y[i,j],U1,U2)
+    for j in range(m):
+        # grid of the corresponding values of variable. To be color plotted
+        Z[i,j]=data_in_U(parameter,X[i,j],Y[i,j],U1,U2)
 
 #------------------------------
 #kp.k_close()
@@ -212,23 +212,23 @@ print("Closed " + filename)
 
 
 if debug:
-	print 'U are',U1, U2, U3
-	testDot=0.
-	for i in range(Nb+1):
-		from_list=solns_restr[i]
-		sol=np.array(from_list)
-		print 'i=', i, '  solns_restr=' , solns_restr
-		if (i == 0): # do for main field line
-			solCut=np.zeros((sol.shape[0],2))
-			for k in range(sol.shape[0]):
-				solCut[k,0]=np.dot(sol[k,:],U1)
-				solCut[k,1]=np.dot(sol[k,:],U2)
-			testDot=np.dot(solCut[1,:],solCut[2,:])
-			print 'i=', i, '  sol=' , sol
-		else:
-			print 'i=', i, '  sol=' , sol
-	print 'solCut=', solCut
-	print 'testDot=', testDot
+    print 'U are',U1, U2, U3
+    testDot=0.
+    for i in range(Nb+1):
+        from_list=solns_restr[i]
+        sol=np.array(from_list)
+        print 'i=', i, '  solns_restr=' , solns_restr
+        if (i == 0): # do for main field line
+            solCut=np.zeros((sol.shape[0],2))
+            for k in range(sol.shape[0]):
+                solCut[k,0]=np.dot(sol[k,:],U1)
+                solCut[k,1]=np.dot(sol[k,:],U2)
+            testDot=np.dot(solCut[1,:],solCut[2,:])
+            print 'i=', i, '  sol=' , sol
+        else:
+            print 'i=', i, '  sol=' , sol
+    print 'solCut=', solCut
+    print 'testDot=', testDot
 
 
 print('Close plot to exit')
@@ -243,20 +243,20 @@ ax2 = fig.add_subplot(1,2,2)
 
 # Plot field lines
 for i in range(Nb+1): 
-	from_list=solns_restr[i]
-	sol=np.array(from_list)
-	if (i == 0):
+    from_list=solns_restr[i]
+    sol=np.array(from_list)
+    if (i == 0):
         # Event field line
-		solCut=np.zeros((sol.shape[0],2))
-		for k in range(sol.shape[0]):
-			solCut[k,0]=np.dot(sol[k,:],U1)
-			solCut[k,1]=np.dot(sol[k,:],U2)
+        solCut=np.zeros((sol.shape[0],2))
+        for k in range(sol.shape[0]):
+            solCut[k,0]=np.dot(sol[k,:],U1)
+            solCut[k,1]=np.dot(sol[k,:],U2)
         # Add field line to 3D plot
-		ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'red', lw=4) 
+        ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'red', lw=4) 
         # Add field line to 2D plot        
-		ax2.plot(solCut[:,0],solCut[:,1], 'red', lw=1) 
-	else:
-		ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'gray')
+    ax2.plot(solCut[:,0],solCut[:,1], 'red', lw=1)
+    else:
+        ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'gray')
 
 ax1.view_init(elev=-120., azim=-16)
 ax1.set(xlabel="$X/R_E$ (GSM)")
@@ -306,10 +306,10 @@ x_night = np.outer(np.ones(np.size(u)), np.cos(v))
 #plot the planes in the 3D plot
 from matplotlib import cm as cmap
 if usePatch == False:
-	ax1.plot_surface(X_slice, Y_slice, Z_slice, color='g', rstride=1, cstride=1,
-						   linewidth=0, antialiased=False)
-	ax1.plot_surface(X_o, Y_o, Z_o, color='b', rstride=1, cstride=1,
-						   linewidth=0, antialiased=False)
+    ax1.plot_surface(X_slice, Y_slice, Z_slice, color='g', rstride=1, cstride=1,
+                            linewidth=0, antialiased=False)
+    ax1.plot_surface(X_o, Y_o, Z_o, color='b', rstride=1, cstride=1,
+                            linewidth=0, antialiased=False)
 ax1.plot_surface(x_day, y_day, z_day, color='w', rstride=1, cstride=1,
                        linewidth=0, antialiased=False)
 ax1.plot_surface(x_night, y_night, z_night, color='black', rstride=1, cstride=1,
@@ -378,16 +378,16 @@ def pathpatch_translate(pathpatch, delta):
     pathpatch._segment3d += delta
 
 if usePatch:
-	p = Rectangle((-2, -4), 4, 8, color='b')
-	q = Rectangle((-2, -4), 4, 8, color='g')
-	ax1.add_patch(p)
-	ax1.add_patch(q)
-	n=np.array([0,1,0])
-	m=U3
-	pathpatch_2d_to_3d(p, 0., n)
-	pathpatch_2d_to_3d(q, 0., m)
-	pathpatch_translate(p, v1)
-	pathpatch_translate(q, v1)
+    p = Rectangle((-2, -4), 4, 8, color='b')
+    q = Rectangle((-2, -4), 4, 8, color='g')
+    ax1.add_patch(p)
+    ax1.add_patch(q)
+    n=np.array([0,1,0])
+    m=U3
+    pathpatch_2d_to_3d(p, 0., n)
+    pathpatch_2d_to_3d(q, 0., m)
+    pathpatch_translate(p, v1)
+    pathpatch_translate(q, v1)
 
 
 plt.show()
