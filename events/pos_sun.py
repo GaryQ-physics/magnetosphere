@@ -9,8 +9,8 @@ minn=hr/60.
 s=minn/60.
 
 #function to convert coordinate vector in MAG coordinates to one in GSM coordinates
-def MAGtoGSM(v_MAG,month,day,year,UT):
-	v_MAG=np.array(v_MAG)
+def MAGtoGSM(v_MAG_l,month,day,year,UT):
+	v_MAG=np.array(v_MAG_l)
 	a = int((14-month)/12)
 	y = year+4800-a
 	m = month + 12*a - 3
