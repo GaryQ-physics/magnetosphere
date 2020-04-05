@@ -29,6 +29,7 @@ from matplotlib.transforms import Affine2D
 # This import registers the 3D projection, but is otherwise unused.
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 import mpl_toolkits.mplot3d.art3d as art3d
+import time
 
 import _CCMC as ccmc
 import pos_sun as ps
@@ -58,7 +59,9 @@ usePatch = True
 sign=-1  # changes sign of magnetic field used to trace the field lines
 l=4
 UT=hours*hr + minutes*minn + seconds*s
-epochTime = long(1069311600) # from https://www.epochconverter.com/
+#epochTime = long(1069311600) # from https://www.epochconverter.com/
+
+
 
 # open kameleon
 kameleon = ccmc.Kameleon()
@@ -67,7 +70,7 @@ print(filename, "Opened " + filename)
 interpolator = kameleon.createNewInterpolator()
 coordinate_interpolator = kameleon.createCoordinateInterpolator() # no arguments assumes native
 print 'epoch time:', coordinate_interpolator.getEphemTime(), 'seconds'
-coordinate_interpolator.setEphemTime(1069311600)
+coordinate_interpolator.setEphemTime(1069311600000)
 print 'epoch time:', coordinate_interpolator.getEphemTime(), 'seconds'
 print coordinate_interpolator.get_model_coords()
 

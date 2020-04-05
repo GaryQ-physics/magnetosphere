@@ -68,7 +68,7 @@ for k in range(Z.size):
     for j in range(Y.size):
         for i in range(X.size):
             R=np.sqrt(X[i]**2+Y[j]**2+Z[k]**2)
-            if(R>0.01):
+            if(R>0.1):
                 B[l,0]=M*(3*X[i]**2 - R**2)/R**5
                 B[l,1]=3*M*Y[j]*X[i]/R**5
                 B[l,2]=3*M*Z[k]*X[i]/R**5
