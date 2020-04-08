@@ -252,9 +252,9 @@ for i in range(Nb+1):
             solCut[k,0]=np.dot(sol[k,:],U1)
             solCut[k,1]=np.dot(sol[k,:],U2)
         # Add field line to 3D plot
-        ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'red', lw=4) 
+        ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'red', lw=4)
         # Add field line to 2D plot        
-    ax2.plot(solCut[:,0],solCut[:,1], 'red', lw=1)
+        ax2.plot(solCut[:,0],solCut[:,1], 'red', lw=1)
     else:
         ax1.plot3D(sol[:,0], sol[:,1], sol[:,2], 'gray')
 

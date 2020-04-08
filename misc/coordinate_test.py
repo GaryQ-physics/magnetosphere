@@ -70,7 +70,7 @@ print(filename, "Opened " + filename)
 interpolator = kameleon.createNewInterpolator()
 coordinate_interpolator = kameleon.createCoordinateInterpolator() # no arguments assumes native
 print 'epoch time:', coordinate_interpolator.getEphemTime(), 'seconds'
-coordinate_interpolator.setEphemTime(1069311600000)
+coordinate_interpolator.setEphemTime(1069311600)
 print 'epoch time:', coordinate_interpolator.getEphemTime(), 'seconds'
 print coordinate_interpolator.get_model_coords()
 
