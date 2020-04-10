@@ -4,7 +4,6 @@
 
 k_path = '/home/gary/magnetosphere/'
 fieldFile_path = k_path + 'vtk/kameleon_field_paraview.vtk'
-lineFile_path = k_path + 'vtk/field_line.vtk'
 
 import sys
 import numpy as np
@@ -118,9 +117,6 @@ renderView1.Update()
 # Properties modified on renderView1.AxesGrid
 renderView1.AxesGrid.Visibility = 1
 
-# create a new 'Legacy VTK Reader'
-field_linevtk = LegacyVTKReader(FileNames=[lineFile_path])
-
 # find source
 legacyVTKReader1 = FindSource('LegacyVTKReader1')
 
@@ -130,67 +126,9 @@ glyph1 = FindSource('Glyph1')
 # find source
 plane1 = FindSource('Plane1')
 
-# Properties modified on plane1
-plane1.Origin = [4.32941593011924, -2.80002404457948, -2.32723506629789]
-plane1.Point1 = [-0.713399586162049, 2.89333858275426, -4.80829001579661]
-plane1.Point2 = [0.713399586162049, -2.89333858275426, 4.80829001579661]
-
-# get active view
-renderView1 = GetActiveViewOrCreate('RenderView')
-# uncomment following to set a specific view size
-# renderView1.ViewSize = [964, 802]
-
-# show data in view
-field_linevtkDisplay = Show(field_linevtk, renderView1)
-# trace defaults for the display properties.
-field_linevtkDisplay.Representation = 'Surface'
-field_linevtkDisplay.ColorArrayName = [None, '']
-field_linevtkDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
-field_linevtkDisplay.SelectOrientationVectors = 'None'
-field_linevtkDisplay.ScaleFactor = 0.20896326303482057
-field_linevtkDisplay.SelectScaleArray = 'None'
-field_linevtkDisplay.GlyphType = 'Arrow'
-field_linevtkDisplay.GlyphTableIndexArray = 'None'
-field_linevtkDisplay.DataAxesGrid = 'GridAxesRepresentation'
-field_linevtkDisplay.PolarAxes = 'PolarAxesRepresentation'
-
-# update the view to ensure updated data information
-renderView1.Update()
-
-# create a new 'Tube'
-tube1 = Tube(Input=field_linevtk)
-tube1.Scalars = [None, '']
-tube1.Vectors = [None, '1']
-tube1.Radius = 0.05
-
-# Properties modified on tube1
-tube1.Vectors = [None, '']
-
-# show data in view
-tube1Display = Show(tube1, renderView1)
-# trace defaults for the display properties.
-tube1Display.Representation = 'Surface'
-tube1Display.ColorArrayName = [None, '']
-tube1Display.OSPRayScaleArray = 'TubeNormals'
-tube1Display.OSPRayScaleFunction = 'PiecewiseFunction'
-tube1Display.SelectOrientationVectors = 'None'
-tube1Display.ScaleFactor = 0.2129082262516022
-tube1Display.SelectScaleArray = 'None'
-tube1Display.GlyphType = 'Arrow'
-tube1Display.GlyphTableIndexArray = 'None'
-tube1Display.DataAxesGrid = 'GridAxesRepresentation'
-tube1Display.PolarAxes = 'PolarAxesRepresentation'
-
-# hide data in view
-Hide(field_linevtk, renderView1)
-
-# change solid color
-tube1Display.DiffuseColor = [0.8862745098039215, 0.0, 0.0]
 
 # change solid color
 glyph1Display.DiffuseColor = [0.0, 0.0, 0.8705882352941177]
 
 # update the view to ensure updated data information
 renderView1.Update()
-
-

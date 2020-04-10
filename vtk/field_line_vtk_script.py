@@ -1,7 +1,5 @@
 # field_line_vtk_script
 
-
-
 # Directory with kameleon subdirectory
 #k_path = '/Users/robertweigel/'
 k_path = '/home/gary/magnetosphere/'
@@ -38,20 +36,16 @@ minn = hr/60.
 s = minn/60.
 
 # run parameters
-debug = False
-Nb = 10
+Nb = 4
 sign=-1  # changes sign of magnetic field used to trace the field lines
 n=50 # number of pts on cutplane grid 
 m=50
 
 UT=hours*hr + minutes*minn + seconds*s
 
-parameter='p'
 # Start point of main field line
 MLON = 68.50*deg
 MLAT = 50.00*deg
-fname = 'field_line.vtk'
-
 
 # open kameleon
 kameleon = ccmc.Kameleon()
@@ -97,22 +91,26 @@ def dXds(X, s):
     else:
         return [0., 0., 0.] #or nan
 
-# Background field lines start points (in MAG)
-phi_st = np.linspace(0, 2*np.pi, Nb)
-theta = np.pi/2.
-R = 3.
-u_st = R*np.sin(theta)*np.sin(phi_st)
-v_st = R*np.sin(theta)*np.cos(phi_st)
-w_st = R*np.cos(theta)*np.ones(phi_st.size)
 
-# insert main field line start point (in MAG) as first entry 
-phiMAG = MLON
-thetaMAG = np.pi/2. - MLAT
-R = 1.
+u_st = (np.nan)*np.empty((Nb+1,))
+v_st = (np.nan)*np.empty((Nb+1,))
+w_st = (np.nan)*np.empty((Nb+1,))
 
-u_st = np.insert(u_st, 0, R*np.sin(thetaMAG)*np.sin(phiMAG))
-v_st = np.insert(v_st, 0, R*np.sin(thetaMAG)*np.cos(phiMAG))
-w_st = np.insert(w_st, 0, R*np.cos(thetaMAG))
+R = 1.1
+eps=2.*deg
+for i in range(Nb+1):
+    if(i==0):
+        delta=0.
+    elif(i>Nb/2):
+        delta=(i-Nb/2)*eps
+    else:
+        delta=(i-Nb/2)*eps
+    phi = MLON
+    theta = np.pi/2. - MLAT + delta
+    u_st[i] = R*np.sin(theta)*np.sin(phi)
+    v_st[i] = R*np.sin(theta)*np.cos(phi)
+    w_st[i] = R*np.cos(theta)
+    
 
 # Convert field line start points points from MAG to GSM
 x_st = (np.nan)*np.empty((Nb+1,))
@@ -123,16 +121,6 @@ for i in range(Nb+1):
     x_st[i] = v[0]
     y_st[i] = v[1]
     z_st[i] = v[2]
-
-if debug:
-    print("---------")
-    print(u_st)
-    print(v_st)
-    print(w_st)
-    print("--------")
-    print(x_st)
-    print(y_st)
-    print(z_st)
 
 # Trace field lines
 s_grid = np.linspace(0, 10., 100.)
@@ -177,38 +165,28 @@ for i in range(Nb+1):  # loop over field lines
         U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
         U1 = np.cross(U2, U3)   
 
-#    return [U1, U2, U3]
-
-x_1d = np.linspace(0, 4, n)
-y_1d = np.linspace(-3, 3, m)
-X, Y = np.meshgrid(x_1d, y_1d) # grid of points on the cutplane
-Z = np.zeros((n, m))
-for i in range(n):
-    for j in range(m):
-        # grid of the corresponding values of variable. To be color plotted
-        Z[i,j]=data_in_U(parameter,X[i,j],Y[i,j],U1,U2)
 
 #------------------------------
 kameleon.close()
 print("Closed " + filename)
 #-------------------------------
 
-from_list=solns_restr[0]
-sol=np.array(from_list)
+for i in range(Nb+1):
+    from_list=solns_restr[i]
+    sol=np.array(from_list)
+    f = open('field_line'+str(i)+'.vtk','w')
+    f.write('# vtk DataFile Version 3.0\n')
+    f.write('A dataset with one polyline and no attributes\n')
+    f.write('ASCII\n')
+    f.write('\n')
+    f.write('DATASET POLYDATA\n')
+    f.write('POINTS '+str(sol.shape[0])+' float\n')
+    for k in range(sol.shape[0]):
+        f.write('%e %e %e\n'%(sol[k,0],sol[k,1],sol[k,2]))
 
-f = open(fname,'w')
-f.write('# vtk DataFile Version 3.0\n')
-f.write('A dataset with one polyline and no attributes\n')
-f.write('ASCII\n')
-f.write('\n')
-f.write('DATASET POLYDATA\n')
-f.write('POINTS '+str(sol.shape[0])+' float\n')
-for k in range(sol.shape[0]):
-    f.write('%e %e %e\n'%(sol[k,0],sol[k,1],sol[k,2]))
+    f.write('LINES '+'1'+' '+str(sol.shape[0]+1)+'\n' )
+    f.write(str(sol.shape[0])+'\n')
+    for k in range(sol.shape[0]):
+        f.write(str(k)+'\n')
 
-f.write('LINES '+'1'+' '+str(sol.shape[0]+1)+'\n' )
-f.write(str(sol.shape[0])+'\n')
-for k in range(sol.shape[0]):
-    f.write(str(k)+'\n')
-
-f.close()
+    f.close()
