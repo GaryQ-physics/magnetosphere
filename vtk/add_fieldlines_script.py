@@ -1,6 +1,6 @@
 # add_fieldlines_script
 
-Nb = 4
+Nb = 6
 N=Nb+1
 
 for i in range(N):

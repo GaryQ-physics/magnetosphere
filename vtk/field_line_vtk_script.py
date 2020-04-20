@@ -23,6 +23,7 @@ month = 11
 hours = 7.
 minutes = 0.
 seconds = 0.
+debug = False
 
 # Plot title
 title = 'SCARR5 ' + str(year) + '-' + str(month) + '-' + str(day) + 'T07:00'
@@ -36,7 +37,7 @@ minn = hr/60.
 s = minn/60.
 
 # run parameters
-Nb = 4
+Nb = 6
 sign=-1  # changes sign of magnetic field used to trace the field lines
 n=50 # number of pts on cutplane grid 
 m=50
@@ -57,7 +58,10 @@ def ex_data(variable, x,y,z):
     # Get data from file, interpolate to point
     kameleon.loadVariable(variable)
     data = interpolator.interpolate(variable, x, y, z)
-    return data
+    if( x**2 + y**2 + z**2 >=1.):
+        return data
+    else:
+        return 0.
 
 def data_in_U(variable,u,v,U1,U2):
     # Get the data in the U coordinates (defined by the cut plane vectors U1 and U2)
@@ -86,9 +90,12 @@ def dXds(X, s):
     '''
     B=np.array([ex_data('bx', X[0],X[1],X[2]), ex_data('by', X[0],X[1],X[2]), ex_data('bz', X[0],X[1],X[2])])
     Bm=np.sqrt(np.dot(B,B))
-    if 1e-6<Bm<1e+6:
+    if 1e-9<Bm<1e+7:
         return (sign/Bm)*B
     else:
+        if(debug):
+            if(Bm >= 1e+7): print('FIELD TOO HIGH')
+            if(Bm <= 1e-7): print('FIELD TOO LOW')
         return [0., 0., 0.] #or nan
 
 
@@ -96,15 +103,17 @@ u_st = (np.nan)*np.empty((Nb+1,))
 v_st = (np.nan)*np.empty((Nb+1,))
 w_st = (np.nan)*np.empty((Nb+1,))
 
-R = 1.1
-eps=2.*deg
+R = 1.01
+eps=3.*deg
 for i in range(Nb+1):
     if(i==0):
         delta=0.
     elif(i>Nb/2):
-        delta=(i-Nb/2)*eps
+        #delta=(i-Nb/2)*eps
+        delta=(-i)*eps
     else:
-        delta=(i-Nb/2)*eps
+        #delta=(i-Nb/2)*eps
+        delta=(-i)*eps
     phi = MLON
     theta = np.pi/2. - MLAT + delta
     u_st[i] = R*np.sin(theta)*np.sin(phi)
@@ -123,7 +132,9 @@ for i in range(Nb+1):
     z_st[i] = v[2]
 
 # Trace field lines
-s_grid = np.linspace(0, 10., 100.)
+s_grid = np.linspace(0, 200., 2000.)
+if(debug): print(s_grid)
+if(debug): print(s_grid.size)
 solns = (np.nan)*np.empty((s_grid.size, 3, x_st.size))
 for i in range(Nb+1):
     X0 = [x_st[i], y_st[i], z_st[i]] # Initial condition
@@ -143,8 +154,18 @@ U3=(np.nan)*np.empty((3,))
 solns_restr=[] # initialize list of np_arrays, one for each restricted field line
 for i in range(Nb+1):  # loop over field lines
     # define condition on the field line points
-    tr = np.logical_and(solns[:,0,i]**2+solns[:,1,i]**2+solns[:,2,i]**2 >=1.,solns[:,0,i]**2+solns[:,1,i]**2+solns[:,2,i]**2 < 20.)
+    #tr = np.logical_and(solns[:,0,i]**2+solns[:,1,i]**2+solns[:,2,i]**2 >=1.,solns[:,0,i]**2+solns[:,1,i]**2+solns[:,2,i]**2 <= 224.**2+128.**2+128.**2)
     # create the arrays of the restricted field line componentwise
+    went_out=0
+    came_back=0
+    end_val=solns.shape[0]-1
+    for k in range(solns.shape[0]):
+        if(solns[k,0,i]**2 + solns[k,1,i]**2 + solns[k,2,i]**2 > 1.1**2): went_out=1
+        if(solns[k,0,i]**2 + solns[k,1,i]**2 + solns[k,2,i]**2 < 1.1**2 and went_out==1):
+            came_back=1
+            end_val=k
+            break
+    tr=np.arange(end_val+1)
     solx=solns[:,0,i]
     solx=solx[tr]
     soly=solns[:,1,i]
@@ -154,6 +175,8 @@ for i in range(Nb+1):  # loop over field lines
     # reasemble and add to the list
     sol=np.column_stack([solx,soly,solz])
     solns_restr.append(sol)
+    if(debug and i==Nb+1): print(solns[:,:,i])
+    if(debug and i==Nb+1): print(sol)
     if (i == 0): 
         # do for main field line
         v1 = sol[0,:]

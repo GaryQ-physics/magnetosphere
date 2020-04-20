@@ -8,9 +8,7 @@ fieldFile_path = k_path + 'vtk/kameleon_field_paraview.vtk'
 import sys
 import numpy as np
 sys.path.append(k_path + 'events/')
-from cut_plane import U1
-from cut_plane import U2
-from cut_plane import U3
+from cut_plane import U1,U2,U3
 
 
 #### import the simple module from the paraview
@@ -79,8 +77,8 @@ renderView1.Update()
 plane1 = Plane()
 
 w0=-4*U1-4*U2
-w1=4*U1-4*U2
-w2=4*U2-4*U1
+w1=-4*U1+4*U2
+w2=50*U1-4*U2
 
 # Properties modified on plane1
 plane1.Origin = w0
@@ -105,9 +103,36 @@ plane1Display.GlyphTableIndexArray = 'None'
 plane1Display.DataAxesGrid = 'GridAxesRepresentation'
 plane1Display.PolarAxes = 'PolarAxesRepresentation'
 
+
+# create a new 'Plane'
+plane2 = Plane()
+
+w0=[4., 0., 4.]
+w1=[4., 0., -4.]
+w2=[-200., 0., 4.]
+
+# Properties modified on plane1
+plane2.Origin = w0
+plane2.Point1 = w1
+plane2.Point2 = w2
+
+# show data in view
+plane2Display = Show(plane2, renderView1)
+# trace defaults for the display properties.
+plane2Display.Representation = 'Surface'
+plane2Display.ColorArrayName = [None, '']
+plane2Display.OSPRayScaleArray = 'Normals'
+plane2Display.OSPRayScaleFunction = 'PiecewiseFunction'
+plane2Display.SelectOrientationVectors = 'None'
+plane2Display.ScaleFactor = 0.9500000000000001
+plane2Display.SelectScaleArray = 'None'
+plane2Display.GlyphType = 'Arrow'
+plane2Display.GlyphTableIndexArray = 'None'
+plane2Display.DataAxesGrid = 'GridAxesRepresentation'
+plane2Display.PolarAxes = 'PolarAxesRepresentation'
+
 # update the view to ensure updated data information
 renderView1.Update()
-
 
 # get active view
 #renderView1 = GetActiveViewOrCreate('RenderView')
@@ -129,6 +154,48 @@ plane1 = FindSource('Plane1')
 
 # change solid color
 glyph1Display.DiffuseColor = [0.0, 0.0, 0.8705882352941177]
+
+
+
+# get active source.
+#plane1 = GetActiveSource()
+
+# get active view
+renderView1 = GetActiveViewOrCreate('RenderView')
+# uncomment following to set a specific view size
+# renderView1.ViewSize = [964, 800]
+
+# get display properties
+plane1Display = GetDisplayProperties(plane1, view=renderView1)
+
+# change solid color
+plane1Display.DiffuseColor = [0.6666666666666666, 0.0, 0.4980392156862745]
+
+# Properties modified on plane1Display
+plane1Display.Opacity = 0.5
+
+# get active source.
+#plane2 = GetActiveSource()
+
+# get active view
+renderView1 = GetActiveViewOrCreate('RenderView')
+# uncomment following to set a specific view size
+# renderView1.ViewSize = [964, 800]
+
+# get display properties
+plane2Display = GetDisplayProperties(plane2, view=renderView1)
+
+# change solid color
+plane2Display.DiffuseColor = [1.0, 0.6666666666666666, 0.0]
+
+# Properties modified on plane1Display
+plane2Display.Opacity = 0.5
+
+# change solid color
+plane1Display.DiffuseColor = [0.6666666666666666, 0.0, 0.4980392156862745]
+
+# Properties modified on plane1Display
+plane1Display.Opacity = 0.5
 
 # update the view to ensure updated data information
 renderView1.Update()
