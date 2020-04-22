@@ -1,7 +1,8 @@
 # add_fieldlines_script
 
+Nlong=5
 Nb = 6
-N=Nb+1
+N=Nb+1+Nlong
 
 for i in range(N):
     # create a new 'Legacy VTK Reader'
@@ -52,6 +53,8 @@ for i in range(N):
     # change solid color
     if(i==0):
         tube1Display.DiffuseColor = [0.8862745098039215, 0.0, 0.0]
+    elif(i > Nb):
+        tube1Display.DiffuseColor = [0., 0.0, 1.]
     else:
         tube1Display.DiffuseColor = [0.0, 0.88, 0.0]
 

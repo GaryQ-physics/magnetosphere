@@ -133,6 +133,7 @@ for i in range(Nb+1):
     y_st[i] = v[1]
     z_st[i] = v[2]
 
+
 if debug:
     print("---------")
     print(u_st)
@@ -158,7 +159,7 @@ v3=(np.nan)*np.empty((3,))
 U1=(np.nan)*np.empty((3,))
 U2=(np.nan)*np.empty((3,))
 U3=(np.nan)*np.empty((3,))
-
+Mdipole=(np.nan)*np.empty((3,))
 
 # restrict the field lines to stop when reaching 1*R_E from the origin
 solns_restr=[] # initialize list of np_arrays, one for each restricted field line
@@ -183,8 +184,10 @@ for i in range(Nb+1):  # loop over field lines
         # define cut plane coordinates based on main field line 
         # (U3 normal to the plane)
         U2 = (v1-v2)/np.linalg.norm(v1-v2)
+        Mdipole = ps.MAGtoGSM([0.,0.,1.], month, day, year, UT)
         U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
         U1 = np.cross(U2, U3)   
+
 
 #    return [U1, U2, U3]
 
@@ -204,4 +207,5 @@ print("Closed " + filename)
 
 print 'U1 = ', U1
 print 'U2 = ', U2
+print 'M = ', Mdipole
 print 'U3 = ', U3

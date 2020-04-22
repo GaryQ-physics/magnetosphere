@@ -37,6 +37,7 @@ minn = hr/60.
 s = minn/60.
 
 # run parameters
+Nlong=5
 Nb = 6
 sign=-1  # changes sign of magnetic field used to trace the field lines
 n=50 # number of pts on cutplane grid 
@@ -194,22 +195,45 @@ kameleon.close()
 print("Closed " + filename)
 #-------------------------------
 
-for i in range(Nb+1):
-    from_list=solns_restr[i]
-    sol=np.array(from_list)
-    f = open('field_line'+str(i)+'.vtk','w')
-    f.write('# vtk DataFile Version 3.0\n')
-    f.write('A dataset with one polyline and no attributes\n')
-    f.write('ASCII\n')
-    f.write('\n')
-    f.write('DATASET POLYDATA\n')
-    f.write('POINTS '+str(sol.shape[0])+' float\n')
-    for k in range(sol.shape[0]):
-        f.write('%e %e %e\n'%(sol[k,0],sol[k,1],sol[k,2]))
+mlong_array=[0., 10.*deg, -10.*deg, 20.*deg, -20.*deg]
+for i in range(Nb+1+Nlong):
+    if(i > Nb):
+        mlong=mlong_array[i-Nb-1]
+        mlat=np.linspace(-np.pi/2,np.pi/2,100)
+        sol=np.column_stack([np.cos(mlong)*np.cos(mlat), np.sin(mlong)*np.cos(mlat), np.sin(mlat)])
+        f = open('field_line'+str(i)+'.vtk','w')
+        f.write('# vtk DataFile Version 3.0\n')
+        f.write('A dataset with one polyline and no attributes\n')
+        f.write('ASCII\n')
+        f.write('\n')
+        f.write('DATASET POLYDATA\n')
+        f.write('POINTS '+str(sol.shape[0])+' float\n')
+        for k in range(sol.shape[0]):
+            f.write('%e %e %e\n'%(sol[k,0],sol[k,1],sol[k,2]))
 
-    f.write('LINES '+'1'+' '+str(sol.shape[0]+1)+'\n' )
-    f.write(str(sol.shape[0])+'\n')
-    for k in range(sol.shape[0]):
-        f.write(str(k)+'\n')
+        f.write('LINES '+'1'+' '+str(sol.shape[0]+1)+'\n' )
+        f.write(str(sol.shape[0])+'\n')
+        for k in range(sol.shape[0]):
+            f.write(str(k)+'\n')
 
-    f.close()
+        f.close()
+
+    else:
+        from_list=solns_restr[i]
+        sol=np.array(from_list)
+        f = open('field_line'+str(i)+'.vtk','w')
+        f.write('# vtk DataFile Version 3.0\n')
+        f.write('A dataset with one polyline and no attributes\n')
+        f.write('ASCII\n')
+        f.write('\n')
+        f.write('DATASET POLYDATA\n')
+        f.write('POINTS '+str(sol.shape[0])+' float\n')
+        for k in range(sol.shape[0]):
+            f.write('%e %e %e\n'%(sol[k,0],sol[k,1],sol[k,2]))
+
+        f.write('LINES '+'1'+' '+str(sol.shape[0]+1)+'\n' )
+        f.write(str(sol.shape[0])+'\n')
+        for k in range(sol.shape[0]):
+            f.write(str(k)+'\n')
+
+        f.close()
