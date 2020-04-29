@@ -25,6 +25,11 @@ minutes = 0.
 seconds = 0.
 debug = False
 
+# run parameters
+Nlong = 5
+Nb = 6
+sign=-1  # changes sign of magnetic field used to trace the field lines
+
 # Plot title
 title = 'SCARR5 ' + str(year) + '-' + str(month) + '-' + str(day) + 'T07:00'
 filename = f_path + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
@@ -36,15 +41,7 @@ hr = 1.
 minn = hr/60.
 s = minn/60.
 
-# run parameters
-Nlong=5
-Nb = 6
-sign=-1  # changes sign of magnetic field used to trace the field lines
-n=50 # number of pts on cutplane grid 
-m=50
-
 UT=hours*hr + minutes*minn + seconds*s
-
 # Start point of main field line
 MLON = 68.50*deg
 MLAT = 50.00*deg
@@ -150,7 +147,6 @@ U1=(np.nan)*np.empty((3,))
 U2=(np.nan)*np.empty((3,))
 U3=(np.nan)*np.empty((3,))
 
-
 # restrict the field lines to stop when reaching 1*R_E from the origin
 solns_restr=[] # initialize list of np_arrays, one for each restricted field line
 for i in range(Nb+1):  # loop over field lines
@@ -178,17 +174,6 @@ for i in range(Nb+1):  # loop over field lines
     solns_restr.append(sol)
     if(debug and i==Nb+1): print(solns[:,:,i])
     if(debug and i==Nb+1): print(sol)
-    if (i == 0): 
-        # do for main field line
-        v1 = sol[0,:]
-        v2 = sol[-1,:]
-        v3 = sol[10,:]
-        # define cut plane coordinates based on main field line 
-        # (U3 normal to the plane)
-        U2 = (v1-v2)/np.linalg.norm(v1-v2)
-        U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
-        U1 = np.cross(U2, U3)   
-
 
 #------------------------------
 kameleon.close()
@@ -197,11 +182,13 @@ print("Closed " + filename)
 
 mlong_array=[0., 10.*deg, -10.*deg, 20.*deg, -20.*deg]
 for i in range(Nb+1+Nlong):
+    out_fname='field_line'+str(i)+'.vtk'
     if(i > Nb):
         mlong=mlong_array[i-Nb-1]
         mlat=np.linspace(-np.pi/2,np.pi/2,100)
         sol=np.column_stack([np.cos(mlong)*np.cos(mlat), np.sin(mlong)*np.cos(mlat), np.sin(mlat)])
-        f = open('field_line'+str(i)+'.vtk','w')
+        print('writing ' + out_fname)
+        f = open(out_fname,'w')
         f.write('# vtk DataFile Version 3.0\n')
         f.write('A dataset with one polyline and no attributes\n')
         f.write('ASCII\n')
@@ -210,17 +197,16 @@ for i in range(Nb+1+Nlong):
         f.write('POINTS '+str(sol.shape[0])+' float\n')
         for k in range(sol.shape[0]):
             f.write('%e %e %e\n'%(sol[k,0],sol[k,1],sol[k,2]))
-
         f.write('LINES '+'1'+' '+str(sol.shape[0]+1)+'\n' )
         f.write(str(sol.shape[0])+'\n')
         for k in range(sol.shape[0]):
             f.write(str(k)+'\n')
-
         f.close()
-
+        print('closed ' + out_fname)
     else:
         from_list=solns_restr[i]
         sol=np.array(from_list)
+        print('writing ' + out_fname)
         f = open('field_line'+str(i)+'.vtk','w')
         f.write('# vtk DataFile Version 3.0\n')
         f.write('A dataset with one polyline and no attributes\n')
@@ -230,10 +216,9 @@ for i in range(Nb+1+Nlong):
         f.write('POINTS '+str(sol.shape[0])+' float\n')
         for k in range(sol.shape[0]):
             f.write('%e %e %e\n'%(sol[k,0],sol[k,1],sol[k,2]))
-
         f.write('LINES '+'1'+' '+str(sol.shape[0]+1)+'\n' )
         f.write(str(sol.shape[0])+'\n')
         for k in range(sol.shape[0]):
             f.write(str(k)+'\n')
-
+        print('closed ' + out_fname)
         f.close()

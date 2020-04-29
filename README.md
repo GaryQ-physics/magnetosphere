@@ -54,3 +54,11 @@ conda activate python2.7
 conda install scipy=0.16
 spyder
 ```
+
+------------------
+/events/pos_sun.py
+/events/cut_plane.py
+/vtk/field_line_vtk_script.py
+/vtk/kameleon_structured_grid_write.py
+/vtk/paraview_shell_script.py
+

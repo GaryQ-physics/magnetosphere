@@ -25,9 +25,7 @@ import mpl_toolkits.mplot3d.art3d as art3d
 import _CCMC as ccmc
 import pos_sun as ps
 
-# parameter to plot
-parameter =  'p'
-parameter_unit = 'nPa'
+#parameter_unit = 'nPa'
 # Inputs for file and magnetic field model
 year = 2003
 day = 20
@@ -49,14 +47,10 @@ s = minn/60.
 
 # run parameters
 debug = False
-usePatch = True
 Nb = 10
 sign=-1  # changes sign of magnetic field used to trace the field lines
-n=50 # number of pts on cutplane grid 
-m=50
 
 UT=hours*hr + minutes*minn + seconds*s
-
 # Start point of main field line
 MLON = 68.50*deg
 MLAT = 50.00*deg
@@ -106,33 +100,18 @@ def dXds(X, s):
     else:
         return [0., 0., 0.] #or nan
 
-# Background field lines start points (in MAG)
-phi_st = np.linspace(0, 2*np.pi, Nb)
-theta = np.pi/2.
-R = 3.
-u_st = R*np.sin(theta)*np.sin(phi_st)
-v_st = R*np.sin(theta)*np.cos(phi_st)
-w_st = R*np.cos(theta)*np.ones(phi_st.size)
-
-# insert main field line start point (in MAG) as first entry 
+# main field line start point (in MAG)
 phiMAG = MLON
 thetaMAG = np.pi/2. - MLAT
 R = 1.
 
-u_st = np.insert(u_st, 0, R*np.sin(thetaMAG)*np.sin(phiMAG))
-v_st = np.insert(v_st, 0, R*np.sin(thetaMAG)*np.cos(phiMAG))
-w_st = np.insert(w_st, 0, R*np.cos(thetaMAG))
-
-# Convert field line start points points from MAG to GSM
-x_st = (np.nan)*np.empty((Nb+1,))
-y_st = (np.nan)*np.empty((Nb+1,))
-z_st = (np.nan)*np.empty((Nb+1,))
-for i in range(Nb+1):
-    v = ps.MAGtoGSM([u_st[i], v_st[i], w_st[i]], month, day, year, UT)
-    x_st[i] = v[0]
-    y_st[i] = v[1]
-    z_st[i] = v[2]
-
+u_st = R*np.sin(thetaMAG)*np.sin(phiMAG)
+v_st = R*np.sin(thetaMAG)*np.cos(phiMAG)
+w_st = R*np.cos(thetaMAG)
+v = ps.MAGtoGSM([u_st, v_st, w_st], month, day, year, UT)
+x_st = v[0]
+y_st = v[1]
+z_st = v[2]
 
 if debug:
     print("---------")
@@ -147,10 +126,8 @@ if debug:
 # Trace field lines
 s_grid = np.linspace(0, 10., 100.)
 solns = (np.nan)*np.empty((s_grid.size, 3, x_st.size))
-for i in range(Nb+1):
-    X0 = [x_st[i], y_st[i], z_st[i]] # Initial condition
-    sol = odeint(dXds, X0, s_grid)
-    solns[:,:,i] = sol
+X0 = [x_st, y_st, z_st] # Initial condition
+soln = odeint(dXds, X0, s_grid)
 
 # initialize vectors for defining field line cut plane
 v1=(np.nan)*np.empty((3,))
@@ -161,44 +138,30 @@ U2=(np.nan)*np.empty((3,))
 U3=(np.nan)*np.empty((3,))
 Mdipole=(np.nan)*np.empty((3,))
 
-# restrict the field lines to stop when reaching 1*R_E from the origin
-solns_restr=[] # initialize list of np_arrays, one for each restricted field line
-for i in range(Nb+1):  # loop over field lines
-    # define condition on the field line points
-    tr = np.logical_and(solns[:,0,i]**2+solns[:,1,i]**2+solns[:,2,i]**2 >=1.,solns[:,0,i]**2+solns[:,1,i]**2+solns[:,2,i]**2 < 20.)
-    # create the arrays of the restricted field line componentwise
-    solx=solns[:,0,i]
-    solx=solx[tr]
-    soly=solns[:,1,i]
-    soly=soly[tr]
-    solz=solns[:,2,i]
-    solz=solz[tr]
-    # reasemble and add to the list
-    sol=np.column_stack([solx,soly,solz])
-    solns_restr.append(sol)
-    if (i == 0): 
-        # do for main field line
-        v1 = sol[0,:]
-        v2 = sol[-1,:]
-        v3 = sol[10,:]
-        # define cut plane coordinates based on main field line 
-        # (U3 normal to the plane)
-        U2 = (v1-v2)/np.linalg.norm(v1-v2)
-        Mdipole = ps.MAGtoGSM([0.,0.,1.], month, day, year, UT)
-        U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
-        U1 = np.cross(U2, U3)   
+# define condition on the field line points
+tr = np.logical_and(soln[:,0]**2+soln[:,1]**2+soln[:,2]**2 >=1., soln[:,0]**2+soln[:,1]**2+soln[:,2]**2 < 20.)
+# create the arrays of the restricted field line componentwise
+solx=soln[:,0]
+solx=solx[tr]
+soly=soln[:,1]
+soly=soly[tr]
+solz=soln[:,2]
+solz=solz[tr]
+# reasemble
+sol=np.column_stack([solx,soly,solz])
 
-
-#    return [U1, U2, U3]
-
-x_1d = np.linspace(0, 4, n)
-y_1d = np.linspace(-3, 3, m)
-X, Y = np.meshgrid(x_1d, y_1d) # grid of points on the cutplane
-Z = np.zeros((n, m))
-for i in range(n):
-    for j in range(m):
-        # grid of the corresponding values of variable. To be color plotted
-        Z[i,j]=data_in_U(parameter,X[i,j],Y[i,j],U1,U2)
+# define vects for plain of main field line
+v1 = sol[0,:]
+v2 = sol[-1,:]
+half = int(sol.shape[0]/2)
+v3 = sol[half,:]
+# define cut plane coordinates based on main field line 
+# (U3 normal to the plane)
+U2 = (v1-v2)/np.linalg.norm(v1-v2)
+Mdipole = ps.MAGtoGSM([0.,0.,1.], month, day, year, UT)
+U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
+U1 = np.cross(U2, U3)   
+#return U1,U2,U3,Mdipole
 
 #------------------------------
 kameleon.close()

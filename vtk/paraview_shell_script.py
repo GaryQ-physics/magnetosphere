@@ -9,231 +9,123 @@ import sys
 import numpy as np
 sys.path.append(k_path + 'events/')
 import pos_sun as ps
-from cut_plane import U1,Mdipole,U2,U3
-
-
-#### import the simple module from the paraview
+from cut_plane import U1,Mdipole,U2,U3 #note this has to be run seperately once first
 #from paraview.simple import *              already in shell automatically
-
-#### disable automatic camera reset on 'Show'
-paraview.simple._DisableFirstRenderCameraReset()
+Nlong=5
+Nb = 6
+N=Nb+1+Nlong
 
 # create a new 'Legacy VTK Reader'
-kameleon_field_paraviewvtk = LegacyVTKReader(FileNames=[fieldFile_path])
+kameleon_structured_gridvtk = LegacyVTKReader(FileNames=['/home/gary/magnetosphere/vtk/kameleon_structured_grid.vtk'])
 
 # get active view
 renderView1 = GetActiveViewOrCreate('RenderView')
 # uncomment following to set a specific view size
-# renderView1.ViewSize = [790, 802]
+# renderView1.ViewSize = [932, 802]
 
 # show data in view
-kameleon_field_paraviewvtkDisplay = Show(kameleon_field_paraviewvtk, renderView1)
+kameleon_structured_gridvtkDisplay = Show(kameleon_structured_gridvtk, renderView1)
 # trace defaults for the display properties.
-kameleon_field_paraviewvtkDisplay.Representation = 'Surface'
-kameleon_field_paraviewvtkDisplay.ColorArrayName = [None, '']
-kameleon_field_paraviewvtkDisplay.OSPRayScaleArray = 'point_vectors'
-kameleon_field_paraviewvtkDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
-kameleon_field_paraviewvtkDisplay.SelectOrientationVectors = 'point_vectors'
-kameleon_field_paraviewvtkDisplay.SelectScaleArray = 'None'
-kameleon_field_paraviewvtkDisplay.GlyphType = 'Arrow'
-kameleon_field_paraviewvtkDisplay.GlyphTableIndexArray = 'None'
-kameleon_field_paraviewvtkDisplay.DataAxesGrid = 'GridAxesRepresentation'
-kameleon_field_paraviewvtkDisplay.PolarAxes = 'PolarAxesRepresentation'
+kameleon_structured_gridvtkDisplay.Representation = 'Outline'
+kameleon_structured_gridvtkDisplay.ColorArrayName = ['POINTS', '']
+kameleon_structured_gridvtkDisplay.OSPRayScaleArray = 'point_scalars'
+kameleon_structured_gridvtkDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
+kameleon_structured_gridvtkDisplay.SelectOrientationVectors = 'None'
+kameleon_structured_gridvtkDisplay.ScaleFactor = 21.0
+kameleon_structured_gridvtkDisplay.SelectScaleArray = 'point_scalars'
+kameleon_structured_gridvtkDisplay.GlyphType = 'Arrow'
+kameleon_structured_gridvtkDisplay.GlyphTableIndexArray = 'point_scalars'
+kameleon_structured_gridvtkDisplay.DataAxesGrid = 'GridAxesRepresentation'
+kameleon_structured_gridvtkDisplay.PolarAxes = 'PolarAxesRepresentation'
+kameleon_structured_gridvtkDisplay.ScalarOpacityUnitDistance = 5.766431907004487
 
 # reset view to fit data
 renderView1.ResetCamera()
 
-# update the view to ensure updated data information
-renderView1.Update()
-
 # change representation type
-kameleon_field_paraviewvtkDisplay.SetRepresentationType('Points')
+kameleon_structured_gridvtkDisplay.SetRepresentationType('Points')
 
-# create a new 'Glyph'
-glyph1 = Glyph(Input=kameleon_field_paraviewvtk,
-    GlyphType='Arrow')
-glyph1.Scalars = ['POINTS', 'None']
-glyph1.Vectors = ['POINTS', 'point_vectors']
-glyph1.GlyphTransform = 'Transform2'
+# create a new 'Slice'
+slice1 = Slice(Input=kameleon_structured_gridvtk)
+slice1.SliceType = 'Plane'
+slice1.SliceOffsetValues = [0.0]
+
+# init the 'Plane' selected for 'SliceType'
+slice1.SliceType.Origin = [-95.0, 0.0, 0.0]
+slice1.SliceType.Normal = [0.0, 1.0, 0.0]
+
+# get color transfer function/color map for 'point_scalars'
+point_scalarsLUT = GetColorTransferFunction('point_scalars')
 
 # show data in view
-glyph1Display = Show(glyph1, renderView1)
+slice1Display = Show(slice1, renderView1)
 # trace defaults for the display properties.
-glyph1Display.Representation = 'Surface'
-glyph1Display.ColorArrayName = [None, '']
-glyph1Display.OSPRayScaleArray = 'GlyphVector'
-glyph1Display.OSPRayScaleFunction = 'PiecewiseFunction'
-glyph1Display.SelectOrientationVectors = 'GlyphVector'
-glyph1Display.ScaleFactor = 1.1981441497802734
-glyph1Display.SelectScaleArray = 'GlyphVector'
-glyph1Display.GlyphType = 'Arrow'
-glyph1Display.GlyphTableIndexArray = 'GlyphVector'
-glyph1Display.DataAxesGrid = 'GridAxesRepresentation'
-glyph1Display.PolarAxes = 'PolarAxesRepresentation'
+slice1Display.Representation = 'Surface'
+slice1Display.ColorArrayName = ['POINTS', 'point_scalars']
+slice1Display.LookupTable = point_scalarsLUT
+slice1Display.OSPRayScaleArray = 'point_scalars'
+slice1Display.OSPRayScaleFunction = 'PiecewiseFunction'
+slice1Display.SelectOrientationVectors = 'None'
+slice1Display.ScaleFactor = 2.0
+slice1Display.SelectScaleArray = 'point_scalars'
+slice1Display.GlyphType = 'Arrow'
+slice1Display.GlyphTableIndexArray = 'point_scalars'
+slice1Display.DataAxesGrid = 'GridAxesRepresentation'
+slice1Display.PolarAxes = 'PolarAxesRepresentation'
+
+# show color bar/color legend
+slice1Display.SetScalarBarVisibility(renderView1, True)
+
+
+# create a new 'Slice'
+slice2 = Slice(Input=kameleon_structured_gridvtk)
+slice2.SliceType = 'Plane'
+slice2.SliceOffsetValues = [0.0]
+
+# init the 'Plane' selected for 'SliceType'
+slice2.SliceType.Origin = [0.0, 0.0, 0.0]
+slice2.SliceType.Normal = U3
+
+# get color transfer function/color map for 'point_scalars'
+point_scalarsLUT = GetColorTransferFunction('point_scalars')
+
+# show data in view
+slice2Display = Show(slice2, renderView1)
+# trace defaults for the display properties.
+slice2Display.Representation = 'Surface'
+slice2Display.ColorArrayName = ['POINTS', 'point_scalars']
+slice2Display.LookupTable = point_scalarsLUT
+slice2Display.OSPRayScaleArray = 'point_scalars'
+slice2Display.OSPRayScaleFunction = 'PiecewiseFunction'
+slice2Display.SelectOrientationVectors = 'None'
+slice2Display.ScaleFactor = 2.0
+slice2Display.SelectScaleArray = 'point_scalars'
+slice2Display.GlyphType = 'Arrow'
+slice2Display.GlyphTableIndexArray = 'point_scalars'
+slice2Display.DataAxesGrid = 'GridAxesRepresentation'
+slice2Display.PolarAxes = 'PolarAxesRepresentation'
+
+# show color bar/color legend
+slice2Display.SetScalarBarVisibility(renderView1, True)
+
+
+# hide data in view
+Hide(kameleon_structured_gridvtk, renderView1)
 
 # update the view to ensure updated data information
 renderView1.Update()
-
-# PLANE 1
-plane1 = Plane()
-w0=-4*U1-4*U2
-w1=-4*U1+4*U2
-w2=50*U1-4*U2
-# Properties modified on plane1
-plane1.Origin = w0
-plane1.Point1 = w1
-plane1.Point2 = w2
-#plane1.Origin = [-2.0, -1.0, 0.0]
-#plane1.Point1 = [1.0, 2.0, 3.0]
-#plane1.Point2 = [4.0, -3.5, 1.0]
-# show data in view
-plane1Display = Show(plane1, renderView1)
-# trace defaults for the display properties.
-plane1Display.Representation = 'Surface'
-plane1Display.ColorArrayName = [None, '']
-plane1Display.OSPRayScaleArray = 'Normals'
-plane1Display.OSPRayScaleFunction = 'PiecewiseFunction'
-plane1Display.SelectOrientationVectors = 'None'
-plane1Display.ScaleFactor = 0.9500000000000001
-plane1Display.SelectScaleArray = 'None'
-plane1Display.GlyphType = 'Arrow'
-plane1Display.GlyphTableIndexArray = 'None'
-plane1Display.DataAxesGrid = 'GridAxesRepresentation'
-plane1Display.PolarAxes = 'PolarAxesRepresentation'
-# change solid color
-plane1Display.DiffuseColor = [0.6666666666666666, 0.0, 0.4980392156862745]
-# Properties modified on plane1Display
-plane1Display.Opacity = 0.5
-
-# PLANE 2
-plane2 = Plane()
-w0=[4., 0., 4.]
-w1=[4., 0., -4.]
-w2=[-200., 0., 4.]
-# Properties modified on plane1
-plane2.Origin = w0
-plane2.Point1 = w1
-plane2.Point2 = w2
-# show data in view
-plane2Display = Show(plane2, renderView1)
-# trace defaults for the display properties.
-plane2Display.Representation = 'Surface'
-plane2Display.ColorArrayName = [None, '']
-plane2Display.OSPRayScaleArray = 'Normals'
-plane2Display.OSPRayScaleFunction = 'PiecewiseFunction'
-plane2Display.SelectOrientationVectors = 'None'
-plane2Display.ScaleFactor = 0.9500000000000001
-plane2Display.SelectScaleArray = 'None'
-plane2Display.GlyphType = 'Arrow'
-plane2Display.GlyphTableIndexArray = 'None'
-plane2Display.DataAxesGrid = 'GridAxesRepresentation'
-plane2Display.PolarAxes = 'PolarAxesRepresentation'
-# change solid color
-plane2Display.DiffuseColor = [1.0, 0.6666666666666666, 0.0]
-# Properties modified on plane1Display
-plane2Display.Opacity = 0.5
-
-# PLANE 3
-plane3 = Plane()
-w0=[4., 4., 0.]
-w1=[4., -4., 0.]
-w2=[-200., 4., 0.]
-# Properties modified on plane1
-plane3.Origin = w0
-plane3.Point1 = w1
-plane3.Point2 = w2
-# show data in view
-plane3Display = Show(plane3, renderView1)
-# trace defaults for the display properties.
-plane3Display.Representation = 'Surface'
-plane3Display.ColorArrayName = [None, '']
-plane3Display.OSPRayScaleArray = 'Normals'
-plane3Display.OSPRayScaleFunction = 'PiecewiseFunction'
-plane3Display.SelectOrientationVectors = 'None'
-plane3Display.ScaleFactor = 0.9500000000000001
-plane3Display.SelectScaleArray = 'None'
-plane3Display.GlyphType = 'Arrow'
-plane3Display.GlyphTableIndexArray = 'None'
-plane3Display.DataAxesGrid = 'GridAxesRepresentation'
-plane3Display.PolarAxes = 'PolarAxesRepresentation'
-# change solid color
-plane3Display.DiffuseColor = [1.0, 0.6666666666666666, 0.0]
-# Properties modified on plane1Display
-plane3Display.Opacity = 0.5
-
-# PLANE 4
-plane2 = Plane()
-w0=[0., 4., 4.]
-w1=[0., 4., -4.]
-w2=[0., -4., 4.]
-# Properties modified on plane1
-plane2.Origin = w0
-plane2.Point1 = w1
-plane2.Point2 = w2
-# show data in view
-plane2Display = Show(plane2, renderView1)
-# trace defaults for the display properties.
-plane2Display.Representation = 'Surface'
-plane2Display.ColorArrayName = [None, '']
-plane2Display.OSPRayScaleArray = 'Normals'
-plane2Display.OSPRayScaleFunction = 'PiecewiseFunction'
-plane2Display.SelectOrientationVectors = 'None'
-plane2Display.ScaleFactor = 0.9500000000000001
-plane2Display.SelectScaleArray = 'None'
-plane2Display.GlyphType = 'Arrow'
-plane2Display.GlyphTableIndexArray = 'None'
-plane2Display.DataAxesGrid = 'GridAxesRepresentation'
-plane2Display.PolarAxes = 'PolarAxesRepresentation'
-# change solid color
-plane2Display.DiffuseColor = [1.0, 0.6666666666666666, 0.0]
-# Properties modified on plane1Display
-plane2Display.Opacity = 0.5
-
-
-# update the view to ensure updated data information
-renderView1.Update()
-
-# get active view
-#renderView1 = GetActiveViewOrCreate('RenderView')
-# uncomment following to set a specific view size
-# renderView1.ViewSize = [964, 802]
 
 # Properties modified on renderView1.AxesGrid
 renderView1.AxesGrid.Visibility = 1
 
-# find source
-legacyVTKReader1 = FindSource('LegacyVTKReader1')
-
-# find source
-glyph1 = FindSource('Glyph1')
-
-# change color vector field arrows
-glyph1Display.DiffuseColor = [0.0, 0.0, 0.8705882352941177]
-
 # create a new 'Sphere'
 sphere1 = Sphere()
-
-# find source
-plane1 = FindSource('Plane1')
-
-# Properties modified on plane1
-plane1.Origin = [4.32941593011924, -2.80002404457948, -2.32723506629789]
-plane1.Point1 = [0.713399586162049, -2.89333858275426, 4.80829001579661]
-plane1.Point2 = [-29.7095888047794, 35.6301736899233, -19.0743559754143]
-
-# find source
-legacyVTKReader1 = FindSource('LegacyVTKReader1')
 
 # Properties modified on sphere1
 sphere1.Center = [0.01, 0.0, 0.0]
 sphere1.Radius = 1.0
 sphere1.ThetaResolution = 20
 sphere1.PhiResolution = 20
-
-# get active view
-renderView1 = GetActiveViewOrCreate('RenderView')
-# uncomment following to set a specific view size
-# renderView1.ViewSize = [964, 802]
 
 # show data in view
 sphere1Display = Show(sphere1, renderView1)
@@ -251,10 +143,7 @@ sphere1Display.DataAxesGrid = 'GridAxesRepresentation'
 sphere1Display.PolarAxes = 'PolarAxesRepresentation'
 
 # find source
-plane2 = FindSource('Plane2')
-
-# find source
-glyph1 = FindSource('Glyph1')
+#glyph1 = FindSource('Glyph1')
 
 # update the view to ensure updated data information
 renderView1.Update()
@@ -435,6 +324,59 @@ coneMDisplay.PolarAxes = 'PolarAxesRepresentation'
 # change solid color
 coneMDisplay.DiffuseColor = [0.0, 0., 1.]
 
+for i in range(N):
+    # create a new 'Legacy VTK Reader'
+    field_linevtk = LegacyVTKReader(FileNames=['field_line'+str(i)+'.vtk'])
 
-# update the view to ensure updated data information
+    # show data in view
+    field_linevtkDisplay = Show(field_linevtk, renderView1)
+    # trace defaults for the display properties.
+    field_linevtkDisplay.Representation = 'Surface'
+    field_linevtkDisplay.ColorArrayName = [None, '']
+    field_linevtkDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
+    field_linevtkDisplay.SelectOrientationVectors = 'None'
+    field_linevtkDisplay.ScaleFactor = 0.20896326303482057
+    field_linevtkDisplay.SelectScaleArray = 'None'
+    field_linevtkDisplay.GlyphType = 'Arrow'
+    field_linevtkDisplay.GlyphTableIndexArray = 'None'
+    field_linevtkDisplay.DataAxesGrid = 'GridAxesRepresentation'
+    field_linevtkDisplay.PolarAxes = 'PolarAxesRepresentation'
+
+
+    # create a new 'Tube'
+    tube1 = Tube(Input=field_linevtk)
+    tube1.Scalars = [None, '']
+    tube1.Vectors = [None, '1']
+    tube1.Radius = 0.05
+
+    # Properties modified on tube1
+    tube1.Vectors = [None, '']
+
+    # show data in view
+    tube1Display = Show(tube1, renderView1)
+    # trace defaults for the display properties.
+    tube1Display.Representation = 'Surface'
+    tube1Display.ColorArrayName = [None, '']
+    tube1Display.OSPRayScaleArray = 'TubeNormals'
+    tube1Display.OSPRayScaleFunction = 'PiecewiseFunction'
+    tube1Display.SelectOrientationVectors = 'None'
+    tube1Display.ScaleFactor = 0.2129082262516022
+    tube1Display.SelectScaleArray = 'None'
+    tube1Display.GlyphType = 'Arrow'
+    tube1Display.GlyphTableIndexArray = 'None'
+    tube1Display.DataAxesGrid = 'GridAxesRepresentation'
+    tube1Display.PolarAxes = 'PolarAxesRepresentation'
+
+    # hide data in view
+    Hide(field_linevtk, renderView1)
+
+    # change solid color
+    if(i==0):
+        tube1Display.DiffuseColor = [0.8862745098039215, 0.0, 0.0]
+    elif(i > Nb):
+        tube1Display.DiffuseColor = [0., 0.0, 1.]
+    else:
+        tube1Display.DiffuseColor = [0.0, 0.88, 0.0]
+
 renderView1.Update()
+
