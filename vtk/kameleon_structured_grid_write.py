@@ -1,15 +1,13 @@
-# Directory with kameleon subdirectory
-#k_path = '/Users/robertweigel/'
-k_path = '/home/gary/magnetosphere/'
-
-# Directory of .cdf file
-f_path = k_path + 'events/'
+# kameleon_structured_grid_write
 
 import sys
+import os
 import numpy as np
-# !!!path append needs to be ahead of import odeint for my computor!!!
-sys.path.append(k_path + 'kameleon/lib/python2.7/site-packages/')
-sys.path.append(k_path + 'kameleon/lib/python2.7/site-packages/ccmc/')
+sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../' )
+from config_paths import config
+conf = config()
+sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/')
+sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/ccmc/')
 from scipy.integrate import odeint
 import _CCMC as ccmc
 
@@ -28,7 +26,7 @@ hours = 7.
 minutes = 0.
 seconds = 0.
 
-filename = f_path + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
+filename = conf["f_path"] + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
 
 # open kameleon
 kameleon = ccmc.Kameleon()
@@ -54,7 +52,7 @@ Nx=Nx_tail + Nx_main
 #print('testdat=', ex_data(var,.1,.1,.1))
 print('defining arrays')
 X=np.concatenate((np.linspace(-200,-12.05,Nx_tail), np.linspace(-12.,15.,Nx_main) ))
-print(X)
+#print(X)
 Y=np.linspace(-10.,10.,Ny)
 Z=np.linspace(-10.,10.,Nz)
 print("Writing " + fname)

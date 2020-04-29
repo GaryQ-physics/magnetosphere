@@ -1,17 +1,14 @@
 # field_line_vtk_script
 
-# Directory with kameleon subdirectory
-#k_path = '/Users/robertweigel/'
-k_path = '/home/gary/magnetosphere/'
-
-# Directory of .cdf file
-f_path = k_path + 'events/'
-
 import sys
+import os
 import numpy as np
-sys.path.append(k_path + 'kameleon/lib/python2.7/site-packages/')
-sys.path.append(k_path + 'kameleon/lib/python2.7/site-packages/ccmc/')
-sys.path.append(k_path + 'events/')
+sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../' )
+from config_paths import config
+conf = config()
+sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/')
+sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/ccmc/')
+sys.path.append(conf["m_path"] + 'magnetosphere/events/')
 from scipy.integrate import odeint
 import _CCMC as ccmc
 import pos_sun as ps
@@ -32,7 +29,7 @@ sign=-1  # changes sign of magnetic field used to trace the field lines
 
 # Plot title
 title = 'SCARR5 ' + str(year) + '-' + str(month) + '-' + str(day) + 'T07:00'
-filename = f_path + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
+filename = conf["f_path"] + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
 
 # units
 deg = (np.pi/180.)

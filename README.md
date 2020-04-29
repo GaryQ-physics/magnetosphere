@@ -55,10 +55,16 @@ conda install scipy=0.16
 spyder
 ```
 
-------------------
-/events/pos_sun.py
-/events/cut_plane.py
-/vtk/field_line_vtk_script.py
-/vtk/kameleon_structured_grid_write.py
-/vtk/paraview_shell_script.py
+to run, need the following files organized as, where m_path is your path to the magnetosphere folder:
+
+'''
+m_path + magnetosphere/config_paths.py
+m_path + magnetosphere/events/pos_sun.py
+m_path + magnetosphere/events/cut_plane.py
+m_path + magnetosphere/vtk/field_line_vtk_script.py
+m_path + magnetosphere/vtk/kameleon_structured_grid_write.py
+m_path + magnetosphere/vtk/paraview_shell_script.py
+'''
+
+put in m_path, k_path (your path to kameleon folder), f_path (your path to datafile), into confi_paths.py  . Then run cut_plane.py, field_line_vtk_script.py, kameleon_structured_grid_write.py (in that order). Then open paraview from command line in m_path + magnetosphere/vtk/  . Then copy the commented command in paraview_shell_script.py into the paraview shell script and run.
 

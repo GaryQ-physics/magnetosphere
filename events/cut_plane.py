@@ -1,19 +1,13 @@
 # cut_plane
 
-# Directory with kameleon subdirectory
-#k_path = '/Users/robertweigel/'
-k_path = '/home/gary/magnetosphere/'
-
-# Directory of .cdf file
-f_path = k_path + 'events/'
-
 import sys
+import os
 import numpy as np
-
-# !!!path append needs to be ahead of import odeint for my computor!!!
-sys.path.append(k_path + 'kameleon/lib/python2.7/site-packages/')
-sys.path.append(k_path + 'kameleon/lib/python2.7/site-packages/ccmc/')
-
+sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../' )
+from config_paths import config
+conf = config()
+sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/')
+sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/ccmc/')
 from scipy.integrate import odeint
 from matplotlib.patches import Circle, PathPatch, Rectangle
 from matplotlib.text import TextPath
@@ -21,7 +15,6 @@ from matplotlib.transforms import Affine2D
 # This import registers the 3D projection, but is otherwise unused.
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
 import mpl_toolkits.mplot3d.art3d as art3d
-
 import _CCMC as ccmc
 import pos_sun as ps
 
@@ -36,7 +29,7 @@ seconds = 0.
 
 # Plot title
 title = 'SCARR5 ' + str(year) + '-' + str(month) + '-' + str(day) + 'T07:00'
-filename = f_path + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
+filename = conf["f_path"] + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
 
 # units
 deg = (np.pi/180.)
