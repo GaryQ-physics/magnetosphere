@@ -26,6 +26,7 @@ minutes = 0.
 seconds = 0.
 
 filename = conf["f_path"] + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
+fname = '../data/kameleon_structured_grid.vtk';
 
 # open kameleon
 kameleon = ccmc.Kameleon()
@@ -45,7 +46,6 @@ Ny=3*30
 Nz=3*30
 Nx_main=3*27
 Nx_tail=30
-fname = 'kameleon_structured_grid.vtk';
 
 Nx=Nx_tail + Nx_main
 #print('testdat=', ex_data(var,.1,.1,.1))
