@@ -8,7 +8,6 @@ from config_paths import config
 conf = config()
 sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/')
 sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/ccmc/')
-from scipy.integrate import odeint
 import _CCMC as ccmc
 
 # units
