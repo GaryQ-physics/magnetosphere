@@ -25,6 +25,12 @@ hours = 7.
 minutes = 0.
 seconds = 0.
 
+var = 'jy'
+Ny = 3*30
+Nz = 3*30
+Nx_main = 3*27
+Nx_tail = 30
+
 filename = conf["f_path"] + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
 fname = '../data/kameleon_structured_grid.vtk';
 
@@ -41,19 +47,10 @@ def ex_data(variable, x,y,z):
     data = interpolator.interpolate(variable, x, y, z)
     return data
 
-var='jy'
-Ny=3*30
-Nz=3*30
-Nx_main=3*27
-Nx_tail=30
-
-Nx=Nx_tail + Nx_main
-#print('testdat=', ex_data(var,.1,.1,.1))
-print('defining arrays')
-X=np.concatenate((np.linspace(-200,-12.05,Nx_tail), np.linspace(-12.,15.,Nx_main) ))
-#print(X)
-Y=np.linspace(-10.,10.,Ny)
-Z=np.linspace(-10.,10.,Nz)
+X = np.concatenate((np.linspace(-200,-20.05,Nx_tail), np.linspace(-20.,15.,Nx_main) ))
+Nx = X.size
+Y = np.linspace(-10.,10.,Ny)
+Z = np.linspace(-10.,10.,Nz)
 print("Writing " + fname)
 f = open(fname,'w')
 f.write('# vtk DataFile Version 3.0\n')
@@ -70,15 +67,13 @@ f.write('\n')
 f.write('POINT_DATA ' + str(Nx*Ny*Nz) + '\n')
 f.write('SCALARS point_scalars float 1\n')
 f.write('LOOKUP_TABLE default\n')
-c=0
+
 for k in range(Nz):
-    c=c+1
     for j in range(Ny):
         for i in range(Nx):
             f.write('%.2e\n'%(ex_data(var, X[i], Y[j], Z[k])))
-#            f.write('%.2e\n'%(c))
 f.close()
-print('vtk closed')
+print("Wrote " + fname)
 
 #------------------------------
 kameleon.close()
