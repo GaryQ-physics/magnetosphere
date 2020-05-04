@@ -14,15 +14,37 @@ sys.path.append( './../' )  # for some reason the other way wont work in paravie
 from config_paths import config
 conf = config()
 sys.path.append(conf["m_path"] + 'magnetosphere/events/')
-import pos_sun as ps
-from cut_plane import U1,Mdipole,U2,U3 #note cut plane has to be run seperately once first
+#import pos_sun as ps
+#from cut_plane import U1,Mdipole,U2,U3 #note cut plane has to be run seperately once first
 #from paraview.simple import *              already in shell automatically
+
+f = open(conf["m_path"] + 'magnetosphere/data/cut_plane_info.txt','r')
+
+# get string of the 1st line of data (Mdipole components)
+Mdipole_string = f.readline()
+# get list of components from string  
+Mdipole = [float(i) for i in Mdipole_string.split()]
+#make array
+Mdipole=np.array(Mdipole)
+
+#next line is U1, ect
+U1_string = f.readline()
+U1 = [float(i) for i in U1_string.split()]
+U1=np.array(U1)
+U2_string = f.readline()
+U2 = [float(i) for i in U2_string.split()]
+U2=np.array(U2)
+U3_string = f.readline()
+U3 = [float(i) for i in U3_string.split()]
+U3=np.array(U3)
+
+
 Nlong=5
 Nb = 6
 N=Nb+1+Nlong
 
 # create a new 'Legacy VTK Reader'
-kameleon_structured_gridvtk = LegacyVTKReader(FileNames=[conf["m_path"] + 'magnetosphere/vtk/kameleon_structured_grid.vtk'])
+kameleon_structured_gridvtk = LegacyVTKReader(FileNames=[conf["m_path"] + 'magnetosphere/data/kameleon_structured_grid.vtk'])
 
 # get active view
 renderView1 = GetActiveViewOrCreate('RenderView')
@@ -332,7 +354,7 @@ coneMDisplay.DiffuseColor = [0.0, 0., 1.]
 
 for i in range(N):
     # create a new 'Legacy VTK Reader'
-    field_linevtk = LegacyVTKReader(FileNames=[conf["m_path"] + 'magnetosphere/vtk/' + 'field_line'+str(i)+'.vtk'])
+    field_linevtk = LegacyVTKReader(FileNames=[conf["m_path"] + 'magnetosphere/data/' + 'field_line'+str(i)+'.vtk'])
 
     # show data in view
     field_linevtkDisplay = Show(field_linevtk, renderView1)

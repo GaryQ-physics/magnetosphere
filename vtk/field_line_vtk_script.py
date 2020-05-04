@@ -179,7 +179,7 @@ print("Closed " + filename)
 
 mlong_array=[0., 10.*deg, -10.*deg, 20.*deg, -20.*deg]
 for i in range(Nb+1+Nlong):
-    out_fname='field_line'+str(i)+'.vtk'
+    out_fname=conf["m_path"] + 'magnetosphere/data/' + 'field_line'+str(i)+'.vtk'
     if(i > Nb):
         mlong=mlong_array[i-Nb-1]
         mlat=np.linspace(-np.pi/2,np.pi/2,100)
@@ -204,7 +204,7 @@ for i in range(Nb+1+Nlong):
         from_list=solns_restr[i]
         sol=np.array(from_list)
         print('writing ' + out_fname)
-        f = open('field_line'+str(i)+'.vtk','w')
+        f = open(out_fname,'w')
         f.write('# vtk DataFile Version 3.0\n')
         f.write('A dataset with one polyline and no attributes\n')
         f.write('ASCII\n')

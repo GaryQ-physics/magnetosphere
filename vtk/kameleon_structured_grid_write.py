@@ -32,7 +32,7 @@ Nx_main = 3*27
 Nx_tail = 30
 
 filename = conf["f_path"] + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
-fname = '../data/kameleon_structured_grid.vtk';
+fname = conf["m_path"] + 'magnetosphere/data/kameleon_structured_grid.vtk'
 
 # open kameleon
 kameleon = ccmc.Kameleon()

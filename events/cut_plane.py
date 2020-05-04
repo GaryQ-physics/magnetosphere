@@ -161,7 +161,13 @@ kameleon.close()
 print("Closed " + filename)
 #-------------------------------
 
+f = open(conf["m_path"] + 'magnetosphere/data/cut_plane_info.txt','w')
+f.write('%.7e %.7e %.7e\n'%(Mdipole[0], Mdipole[1], Mdipole[2]))
+f.write('%.7e %.7e %.7e\n'%(U1[0], U1[1], U1[2]))
+f.write('%.7e %.7e %.7e\n'%(U2[0], U2[1], U2[2]))
+f.write('%.7e %.7e %.7e\n'%(U3[0], U3[1], U3[2]))
+
 print 'U1 = ', U1
 print 'U2 = ', U2
-print 'M = ', Mdipole
+print 'Mdipole = ', Mdipole
 print 'U3 = ', U3

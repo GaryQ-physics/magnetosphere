@@ -8,5 +8,5 @@ def config():
                 'm_path': base}
     else:
         return {'k_path': '/home/gary/magnetosphere/',
-                'f_path': '/home/gary/magnetosphere/events/',
+                'f_path': '/home/gary/magnetosphere/data/',
                 'm_path': '/home/gary/'}
