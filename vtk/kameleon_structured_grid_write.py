@@ -31,6 +31,7 @@ Nz = 3*30
 Nx_main = 3*27
 Nx_tail = 30
 
+
 filename = conf["f_path"] + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
 fname = conf["m_path"] + 'magnetosphere/data/kameleon_structured_grid.vtk'
 
@@ -49,8 +50,21 @@ def ex_data(variable, x,y,z):
 
 X = np.concatenate((np.linspace(-200,-20.05,Nx_tail), np.linspace(-20.,15.,Nx_main) ))
 Nx = X.size
+print('Nx= ',Nx)
 Y = np.linspace(-10.,10.,Ny)
 Z = np.linspace(-10.,10.,Nz)
+
+B2, B3, B1 =np.meshgrid(Y,Z,X)
+#B1, B2, B3 =np.meshgrid(X,Y,Z)
+
+B1= B1.flatten(order='C')
+B2= B2.flatten(order='C')
+B3= B3.flatten(order='C')
+B=np.column_stack((B1,B2,B3))
+A=(np.nan)*np.empty((B1.size,))
+for l in range(A.size):
+    A[l]=ex_data(var, B[l,0], B[l,1], B[l,2])
+
 print("Writing " + fname)
 f = open(fname,'w')
 f.write('# vtk DataFile Version 3.0\n')
@@ -59,19 +73,12 @@ f.write('ASCII\n')
 f.write('DATASET STRUCTURED_GRID\n')
 f.write('DIMENSIONS ' + str(Nx) + ' ' + str(Ny) + ' ' + str(Nz) + '\n' )
 f.write('POINTS '+str(Nx*Ny*Nz)+' float\n')
-for k in range(Nz):
-    for j in range(Ny):
-        for i in range(Nx):
-            f.write('%.2e %.2e %.2e\n'%(X[i], Y[j], Z[k]))
+np.savetxt(f, B)
 f.write('\n')
 f.write('POINT_DATA ' + str(Nx*Ny*Nz) + '\n')
 f.write('SCALARS point_scalars float 1\n')
 f.write('LOOKUP_TABLE default\n')
-
-for k in range(Nz):
-    for j in range(Ny):
-        for i in range(Nx):
-            f.write('%.2e\n'%(ex_data(var, X[i], Y[j], Z[k])))
+np.savetxt(f, A)
 f.close()
 print("Wrote " + fname)
 
