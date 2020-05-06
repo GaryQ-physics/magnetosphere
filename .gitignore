@@ -1,3 +1,6 @@
 *~
 *.pyc
+kameleon/*
+Round2/*
+Round2.zip
 data/*

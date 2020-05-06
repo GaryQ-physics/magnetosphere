@@ -408,3 +408,20 @@ for i in range(N):
 
 renderView1.Update()
 
+# get active source.
+slice1 = FindSource('Slice1')
+
+# rename source object
+RenameSource('xzplane', slice1)
+
+# find source
+slice2 = FindSource('Slice2')
+
+# set active source
+SetActiveSource(slice2)
+
+# rename source object
+RenameSource('cutplane', slice2)
+
+# Properties modified on renderView1.AxesGrid
+renderView1.AxesGrid.Visibility = 0
