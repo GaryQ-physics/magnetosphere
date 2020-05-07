@@ -153,7 +153,7 @@ v3 = sol[half,:]
 U2 = (v1-v2)/np.linalg.norm(v1-v2)
 Mdipole = ps.MAGtoGSM([0.,0.,1.], month, day, year, UT)
 U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
-U1 = np.cross(U2, U3)   
+U1 = np.cross(U2, U3)
 #return U1,U2,U3,Mdipole
 
 #------------------------------
@@ -167,7 +167,7 @@ f.write('%.7e %.7e %.7e\n'%(U1[0], U1[1], U1[2]))
 f.write('%.7e %.7e %.7e\n'%(U2[0], U2[1], U2[2]))
 f.write('%.7e %.7e %.7e\n'%(U3[0], U3[1], U3[2]))
 
+print 'Mdipole = ', Mdipole
 print 'U1 = ', U1
 print 'U2 = ', U2
-print 'Mdipole = ', Mdipole
 print 'U3 = ', U3

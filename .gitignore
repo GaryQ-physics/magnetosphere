@@ -1,3 +1,5 @@
 *~
 *.pyc
+kameleon/*
+Round2/*
 data/*

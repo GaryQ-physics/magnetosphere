@@ -65,6 +65,11 @@ A=(np.nan)*np.empty((B1.size,))
 for l in range(A.size):
     A[l]=ex_data(var, B[l,0], B[l,1], B[l,2])
 
+#------------------------------
+kameleon.close()
+print("Closed " + filename)
+#-------------------------------
+
 print("Writing " + fname)
 f = open(fname,'w')
 f.write('# vtk DataFile Version 3.0\n')
@@ -81,8 +86,3 @@ f.write('LOOKUP_TABLE default\n')
 np.savetxt(f, A)
 f.close()
 print("Wrote " + fname)
-
-#------------------------------
-kameleon.close()
-print("Closed " + filename)
-#-------------------------------
