@@ -111,8 +111,8 @@ slice2.SliceType = 'Plane'
 slice2.SliceOffsetValues = [0.0]
 
 # init the 'Plane' selected for 'SliceType'
-slice2.SliceType.Origin = [0.0, 0.0, 0.0]
-slice2.SliceType.Normal = U3
+slice2.SliceType.Origin = [-95.0, 0.0, 0.0]
+slice2.SliceType.Normal = [0.,0.,1.]
 
 # get color transfer function/color map for 'point_scalars'
 point_scalarsLUT = GetColorTransferFunction('point_scalars')
@@ -135,6 +135,72 @@ slice2Display.PolarAxes = 'PolarAxesRepresentation'
 
 # show color bar/color legend
 slice2Display.SetScalarBarVisibility(renderView1, True)
+
+
+
+# create a new 'Slice'
+slice3 = Slice(Input=kameleon_structured_gridvtk)
+slice3.SliceType = 'Plane'
+slice3.SliceOffsetValues = [0.0]
+
+# init the 'Plane' selected for 'SliceType'
+slice3.SliceType.Origin = [0.0, 0.0, 0.0]
+slice3.SliceType.Normal = [1.,0.,0.]
+
+# get color transfer function/color map for 'point_scalars'
+point_scalarsLUT = GetColorTransferFunction('point_scalars')
+
+# show data in view
+slice3Display = Show(slice3, renderView1)
+# trace defaults for the display properties.
+slice3Display.Representation = 'Surface'
+slice3Display.ColorArrayName = ['POINTS', 'point_scalars']
+slice3Display.LookupTable = point_scalarsLUT
+slice3Display.OSPRayScaleArray = 'point_scalars'
+slice3Display.OSPRayScaleFunction = 'PiecewiseFunction'
+slice3Display.SelectOrientationVectors = 'None'
+slice3Display.ScaleFactor = 2.0
+slice3Display.SelectScaleArray = 'point_scalars'
+slice3Display.GlyphType = 'Arrow'
+slice3Display.GlyphTableIndexArray = 'point_scalars'
+slice3Display.DataAxesGrid = 'GridAxesRepresentation'
+slice3Display.PolarAxes = 'PolarAxesRepresentation'
+
+# show color bar/color legend
+slice3Display.SetScalarBarVisibility(renderView1, True)
+
+
+
+# create a new 'Slice'
+slice4 = Slice(Input=kameleon_structured_gridvtk)
+slice4.SliceType = 'Plane'
+slice4.SliceOffsetValues = [0.0]
+
+# init the 'Plane' selected for 'SliceType'
+slice4.SliceType.Origin = [0.0, 0.0, 0.0]
+slice4.SliceType.Normal = U3
+
+# get color transfer function/color map for 'point_scalars'
+point_scalarsLUT = GetColorTransferFunction('point_scalars')
+
+# show data in view
+slice4Display = Show(slice4, renderView1)
+# trace defaults for the display properties.
+slice4Display.Representation = 'Surface'
+slice4Display.ColorArrayName = ['POINTS', 'point_scalars']
+slice4Display.LookupTable = point_scalarsLUT
+slice4Display.OSPRayScaleArray = 'point_scalars'
+slice4Display.OSPRayScaleFunction = 'PiecewiseFunction'
+slice4Display.SelectOrientationVectors = 'None'
+slice4Display.ScaleFactor = 2.0
+slice4Display.SelectScaleArray = 'point_scalars'
+slice4Display.GlyphType = 'Arrow'
+slice4Display.GlyphTableIndexArray = 'point_scalars'
+slice4Display.DataAxesGrid = 'GridAxesRepresentation'
+slice4Display.PolarAxes = 'PolarAxesRepresentation'
+
+# show color bar/color legend
+slice4Display.SetScalarBarVisibility(renderView1, True)
 
 
 # hide data in view
@@ -408,20 +474,29 @@ for i in range(N):
 
 renderView1.Update()
 
-# get active source.
+# find source
 slice1 = FindSource('Slice1')
 
 # rename source object
-RenameSource('xzplane', slice1)
+RenameSource('xz_plane', slice1)
 
 # find source
 slice2 = FindSource('Slice2')
 
-# set active source
-SetActiveSource(slice2)
+# rename source object
+RenameSource('xy_plane', slice2)
+
+# find source
+slice3 = FindSource('Slice3')
 
 # rename source object
-RenameSource('cutplane', slice2)
+RenameSource('yz_plane', slice3)
+
+# find source
+slice4 = FindSource('Slice4')
+
+# rename source object
+RenameSource('cut_plane', slice4)
 
 # Properties modified on renderView1.AxesGrid
 renderView1.AxesGrid.Visibility = 0
