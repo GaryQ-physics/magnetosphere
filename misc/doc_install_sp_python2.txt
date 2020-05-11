@@ -1,0 +1,52 @@
+document install spacepy to use for python 2.7
+
+
+First need to install pip for python2:
+go to https://pip.pypa.io/en/stable/installing/ and click link to download get-pip.py
+
+note:
+'''
+which python2
+prints:  /usr/bin/python2
+'''
+
+so then run:
+'''
+sudo mv Downloads/get-pip.py /usr/bin/
+cd /usr/bin
+python2 get-pip.py
+
+prints: WARNING: The scripts pip, pip2, pip2.7, (ect) are installed in '/home/gary/.local/bin' 
+        which is not on PATH. Consider adding this directory to PATH or, if you prefer to suppress
+        this warning, use --no-warn-script-location.
+'''
+
+for me, running:
+'''
+which pip
+prints: /home/gary/anaconda3/bin/pip
+'''
+which is the python3 one. So need to use 'python2 -m pip' instead of just 'pip'
+
+Next we need to install the dependencies for spacepy:
+run:
+'''
+cd /home/gary/.local/lib/python2.7/site-packages
+sudo apt-get install python-h5py
+python2 -m pip install sphinx numpydoc
+'''
+
+Finally, need to install spacepy: 
+Download zip folder from https://github.com/spacepy/spacepy
+then run:
+'''
+cd /home/gary/.local/lib/python2.7/site-packages
+unzip /home/gary/Downloads/spacepy-master.zip -d .
+cd spacepy-master/
+sudo python2 setup.py install
+
+prints: setup produced the following warnings. Some functionality may be missing.
+        Numpydoc and sphinx required to build documentation.
+        Help will not be available.
+'''
+

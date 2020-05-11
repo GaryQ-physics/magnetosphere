@@ -84,7 +84,7 @@ def MAGtoGSM(v_MAG,month,day,year,UT):
         minutes = int((UT-hours)/minn)
         seconds = int((UT-hours-minutes)/s)
         cvals = sc.Coords(v_MAG, 'MAG', 'car')
-        t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)  # ?? month-day  or  day-month  ??
+        t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)
         cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
         newcoord = cvals.convert('GSM', 'car')
         v_GSM = np.array([newcoord.x[0],newcoord.y[0],newcoord.z[0]])
