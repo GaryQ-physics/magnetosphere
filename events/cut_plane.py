@@ -167,6 +167,7 @@ f.write('%.7e %.7e %.7e\n'%(U1[0], U1[1], U1[2]))
 f.write('%.7e %.7e %.7e\n'%(U2[0], U2[1], U2[2]))
 f.write('%.7e %.7e %.7e\n'%(U3[0], U3[1], U3[2]))
 
+print (month,day,year,UT)
 print 'Mdipole = ', Mdipole
 print 'U1 = ', U1
 print 'U2 = ', U2

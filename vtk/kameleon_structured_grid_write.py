@@ -25,7 +25,13 @@ hours = 7.
 minutes = 0.
 seconds = 0.
 
-var = 'jy'
+#event 
+UT=hours*hr + minutes*minn + seconds*s
+MLON = 68.50*deg
+MLAT = 50.00*deg
+x0,y0,z0 = 
+
+var = 'dB/dV'
 Ny = 3*30
 Nz = 3*30
 Nx_main = 3*27
@@ -42,8 +48,14 @@ print(filename, "Opened " + filename)
 interpolator = kameleon.createNewInterpolator()
 
 def ex_data(variable, x,y,z):
+
     if np.sqrt(x**2+y**2+z**2)<1e-4: return 0.
     # Get data from file, interpolate to point
+    if variable=='dB/dV':
+        J=np.array([ex_data('jx',x,y,z),ex_data('jy',x,y,z),ex_data('jz',x,y,z)])
+        X=np.array([x-x0,y-y0,z-z0])
+        B=np.cross(J,X)/(np.linalg.norm(X)**3)
+        return B
     kameleon.loadVariable(variable)
     data = interpolator.interpolate(variable, x, y, z)
     return data

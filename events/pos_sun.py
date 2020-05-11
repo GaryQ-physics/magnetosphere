@@ -1,6 +1,15 @@
 # pos_sun
 
+import sys
+import os
 import numpy as np
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
+from config_paths import config
+conf = config()
+import spacepy.coordinates as sc
+from spacepy.time import Ticktock
+
+useSP = True
 
 # units
 deg=np.pi/180
@@ -10,6 +19,10 @@ minn=hr/60.
 s=minn/60.
 
 def GSMtoMAG_matrix(month,day,year,UT):
+    month=int(month)
+    day=int(day)
+    year=int(year)
+
     a = int((14-month)/12)
     y = year+4800-a
     m = month + 12*a - 3
@@ -66,18 +79,34 @@ def GSMtoMAG_matrix(month,day,year,UT):
 #function to convert coordinate vector in MAG coordinates to one in GSM coordinates
 def MAGtoGSM(v_MAG,month,day,year,UT):
     v_MAG = np.array(v_MAG)
-
-    T = GSMtoMAG_matrix(month,day,year,UT)
-    T_inv = np.linalg.inv(T)
-
-    v_GSM = np.matmul(T_inv,v_MAG)
+    if(useSP):
+        hours = int(UT/hr)
+        minutes = int((UT-hours)/minn)
+        seconds = int((UT-hours-minutes)/s)
+        cvals = sc.Coords(v_MAG, 'MAG', 'car')
+        t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)  # ?? month-day  or  day-month  ??
+        cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
+        newcoord = cvals.convert('GSM', 'car')
+        v_GSM = np.array([newcoord.x[0],newcoord.y[0],newcoord.z[0]])
+    else:
+        T = GSMtoMAG_matrix(month,day,year,UT)
+        T_inv = np.linalg.inv(T)
+        v_GSM = np.matmul(T_inv,v_MAG)
     return(v_GSM)
 
 #function to convert coordinate vector in MAG coordinates to one in GSM coordinates
 def GSMtoMAG(v_GSM,month,day,year,UT):
     v_GSM = np.array(v_GSM)
-
-    T = GSMtoMAG_matrix(month,day,year,UT)
-
-    v_MAG = np.matmul(T,v_GSM)
-    return(v_MAG)
+    if(useSP):
+        hours = int(UT/hr)
+        minutes = int((UT-hours)/minn)
+        seconds = int((UT-hours-minutes)/s)
+        cvals = sc.Coords(v_GSM, 'GSM', 'car')
+        t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)  # ?? month-day  or  day-month  ??
+        cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
+        newcoord = cvals.convert('MAG', 'car')
+        v_MAG = np.array([newcoord.x[0],newcoord.y[0],newcoord.z[0]])
+    else:
+        T = GSMtoMAG_matrix(month,day,year,UT)
+        v_MAG = np.matmul(T,v_GSM)
+    return(v_GSM)
