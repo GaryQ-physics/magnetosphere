@@ -10,6 +10,7 @@ import spacepy.coordinates as sc
 from spacepy.time import Ticktock
 
 useSP = True
+runTester = True
 
 # units
 deg=np.pi/180
@@ -80,14 +81,29 @@ def GSMtoMAG_matrix(month,day,year,UT):
 def MAGtoGSM(v_MAG,month,day,year,UT):
     v_MAG = np.array(v_MAG)
     if(useSP):
+        #print 'times'
+        #print UT
         hours = int(UT/hr)
-        minutes = int((UT-hours)/minn)
-        seconds = int((UT-hours-minutes)/s)
+        #print hours
+        minutes = int((UT-hours*hr)/minn)
+        #print minutes
+        seconds = int(round((UT-hours*hr-minutes*minn)/s))
+        if(seconds==60):
+            seconds=0
+            minutes=minutes+1
+        if(minutes==60):
+            minutes=0
+            hours=hours+1
+        if(hours==24):
+            print 'WARNING: MIGHT BE NEXT DAY'
+        #print seconds
         cvals = sc.Coords(v_MAG, 'MAG', 'car')
         t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)
+        #print t_str
         cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
         newcoord = cvals.convert('GSM', 'car')
         v_GSM = np.array([newcoord.x[0],newcoord.y[0],newcoord.z[0]])
+        if(runTester): v_GSM = np.array([newcoord.x[0],newcoord.y[0],newcoord.z[0],hours,minutes,seconds])
     else:
         T = GSMtoMAG_matrix(month,day,year,UT)
         T_inv = np.linalg.inv(T)
@@ -110,3 +126,10 @@ def GSMtoMAG(v_GSM,month,day,year,UT):
         T = GSMtoMAG_matrix(month,day,year,UT)
         v_MAG = np.matmul(T,v_GSM)
     return(v_GSM)
+
+#convert spherical to cartesian
+def StoC(r,theta,phi):
+    x = r*np.cos(phi)*np.sin(theta)
+    y = r*np.sin(phi)*np.sin(theta)
+    z = r*np.cos(theta)
+    return x,y,z
