@@ -21,11 +21,12 @@ print newcoord
 print newcoord.x
 
 '''
-cvals = sc.Coords(np.array([1,20,40]), 'MAG', 'sph')
+
+cvals = sc.Coords(np.array([1.,50.00,68.50]), 'MAG', 'sph')
 print(cvals)
 #print cvals.x
 cvals.ticks = Ticktock('2002-02-02T12:00:00', 'ISO') # add ticks
-newcoord = cvals.convert('GSM', 'car')
+newcoord = cvals.convert('MAG', 'car')
 print newcoord
 print newcoord.x[0]
 '''

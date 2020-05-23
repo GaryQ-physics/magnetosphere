@@ -1,7 +1,10 @@
 # paraview_shell_script
 
-#    execfile('paraview_shell_script.py')   #copy to shell
-
+###copy to shell
+'''
+execfile('paraview_shell_script.py')
+'''
+###
 
 #fieldFile_path = m_path + 'magnetosphere/vtk/kameleon_field_paraview.vtk'
 

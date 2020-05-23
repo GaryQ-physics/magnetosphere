@@ -8,7 +8,9 @@ from config_paths import config
 conf = config()
 sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/')
 sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/ccmc/')
+sys.path.append(conf["m_path"] + 'magnetosphere/events/')
 import _CCMC as ccmc
+import pos_sun as ps
 
 # units
 deg = (np.pi/180.)
@@ -21,25 +23,27 @@ s = minn/60.
 year = 2003
 day = 20
 month = 11
-hours = 7.
-minutes = 0.
-seconds = 0.
+hours = 7
+minutes = 0
+seconds = 0
+
+filename = conf["f_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % (year,month,day,hours,minutes,seconds) + '.out.cdf'
+fname = conf["m_path"] + 'magnetosphere/data/kameleon_structured_grid.vtk'
+Time = [year,month,day,hours,minutes,seconds]
 
 #event 
-UT=hours*hr + minutes*minn + seconds*s
-MLON = 68.50*deg
-MLAT = 50.00*deg
-x0,y0,z0 = 
+#UT=hours*hr + minutes*minn + seconds*s
+MLONdeg = 68.50
+MLATdeg = 50.00
+MLON = MLONdeg*deg
+MLAT = MLATdeg*deg
+X0 = ps.MAGtoGSM([1.,MLATdeg,MLONdeg],Time,'sph','car')
 
 var = 'dB/dV'
 Ny = 3*30
 Nz = 3*30
 Nx_main = 3*27
 Nx_tail = 30
-
-
-filename = conf["f_path"] + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
-fname = conf["m_path"] + 'magnetosphere/data/kameleon_structured_grid.vtk'
 
 # open kameleon
 kameleon = ccmc.Kameleon()
@@ -48,14 +52,13 @@ print(filename, "Opened " + filename)
 interpolator = kameleon.createNewInterpolator()
 
 def ex_data(variable, x,y,z):
-
     if np.sqrt(x**2+y**2+z**2)<1e-4: return 0.
     # Get data from file, interpolate to point
     if variable=='dB/dV':
         J=np.array([ex_data('jx',x,y,z),ex_data('jy',x,y,z),ex_data('jz',x,y,z)])
-        X=np.array([x-x0,y-y0,z-z0])
-        B=np.cross(J,X)/(np.linalg.norm(X)**3)
-        return B
+        R=np.array([x,y,z])-X0
+        B=np.cross(J,R)/(np.linalg.norm(R)**3)
+        return np.linalg.norm(B)
     kameleon.loadVariable(variable)
     data = interpolator.interpolate(variable, x, y, z)
     return data

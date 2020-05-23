@@ -9,8 +9,7 @@ conf = config()
 import spacepy.coordinates as sc
 from spacepy.time import Ticktock
 
-useSP = True
-runTester = True
+runTester = False
 
 # units
 deg=np.pi/180
@@ -19,113 +18,48 @@ hr=1.
 minn=hr/60.
 s=minn/60.
 
-def GSMtoMAG_matrix(month,day,year,UT):
-    month=int(month)
-    day=int(day)
-    year=int(year)
-
-    a = int((14-month)/12)
-    y = year+4800-a
-    m = month + 12*a - 3
-    t = (UT-12.*hr)/(24.*hr)
-    JD = day + int((153*m+2)/5) + y*365 + int(y/4) - int(y/100) + int(y/400) - 32045 + t
-    MJD = JD - 2400000.5 #modified julian day
-    
-    # https://www.spenvis.oma.be/help/background/coortran/coortran.html#Transformations
-    T0 = (MJD-51544.5)/36525.0       
-    thetaGST = 100.461 + 36000.770*T0+15.04107*UT
-
-    n = JD-2451545.0   #wikipedia
-    L = 280.460*deg+0.9856474*deg*n
-    g = 357.528*deg+0.9856003*deg*n
-    lamb = L+1.915*deg*np.sin(g) + 0.020*deg*np.sin(2*g)
-    epsilon = 23.439*deg-0.0000004*deg*n
-
-    X = np.cos(lamb) #pos of sun in GEI
-    Y = np.sin(lamb)*np.cos(epsilon)
-    Z = np.sin(lamb)*np.sin(epsilon)
-
-    # fgh is pos sun in GEO    [a_dot_x](t)
-    f = np.cos(thetaGST)*X + np.sin(thetaGST)*Y    
-    g = -np.sin(thetaGST)*X + np.cos(thetaGST)*Y
-    h = Z
-    # coordinates of magnetic dipole in GEO coordinates (in 2009; assume constant)
-    AA = 83*deg+6*amin   # North 
-    BB = 117*deg+48*amin   # West 
-    m1 = np.cos(BB)*np.cos(AA)   
-    m2 = -np.sin(BB)*np.cos(AA)
-    m3 = np.sin(AA)
-
-    # a,b,c  x,y,z  u,v,w   are coordinate vector in GEO for the
-    # unit vectors for GEO , GSM , MAG respectively
-    a = np.array([1,0,0])
-    b = np.array([0,1,0])
-    c = np.array([0,0,1])
-    m = np.array([m1,m2,m3])
-    x = np.array([f,g,h]) #to be normalized
-    x = (1./np.linalg.norm(x))*x
-    w = (1./np.linalg.norm(m))*m
-    v = (1./np.linalg.norm(np.cross(c,m)))*np.cross(c,m)
-    u = np.cross(v,w)
-    y = (1./np.linalg.norm(np.cross(m,x)))*np.cross(m,x)
-    z = np.cross(x,y)
-    
-    # Coordinate transformaton matrix
-    A = np.row_stack([u,v,w])
-    B = np.row_stack([x,y,z])
-
-    T = np.matmul(A, np.linalg.inv(B))
-    return(T)
-
 #function to convert coordinate vector in MAG coordinates to one in GSM coordinates
-def MAGtoGSM(v_MAG,month,day,year,UT):
+def MAGtoGSM(v_MAG,Time,ctype_in,ctype_out): # Time = [year,month,day,hours,minutes,seconds]
+    if( (ctype_in != 'sph' and ctype_in != 'car') or (ctype_out != 'sph' and ctype_out != 'car') ):
+        print 'ctype ERROR'
+        return (np.nan)*np.empty((3,))
     v_MAG = np.array(v_MAG)
-    if(useSP):
-        #print 'times'
-        #print UT
-        hours = int(UT/hr)
-        #print hours
-        minutes = int((UT-hours*hr)/minn)
-        #print minutes
-        seconds = int(round((UT-hours*hr-minutes*minn)/s))
-        if(seconds==60):
-            seconds=0
-            minutes=minutes+1
-        if(minutes==60):
-            minutes=0
-            hours=hours+1
-        if(hours==24):
-            print 'WARNING: MIGHT BE NEXT DAY'
-        #print seconds
-        cvals = sc.Coords(v_MAG, 'MAG', 'car')
-        t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)
-        #print t_str
-        cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
-        newcoord = cvals.convert('GSM', 'car')
-        v_GSM = np.array([newcoord.x[0],newcoord.y[0],newcoord.z[0]])
-        if(runTester): v_GSM = np.array([newcoord.x[0],newcoord.y[0],newcoord.z[0],hours,minutes,seconds])
-    else:
-        T = GSMtoMAG_matrix(month,day,year,UT)
-        T_inv = np.linalg.inv(T)
-        v_GSM = np.matmul(T_inv,v_MAG)
+    cvals = sc.Coords(v_MAG, 'MAG', ctype_in)
+    T=tuple(Time)
+    t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T # (year,month,day,hours,minutes,seconds)
+    cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
+    newcoord = cvals.convert('GSM', ctype_out)
+    v_GSM = np.array([newcoord.x[0],newcoord.y[0],newcoord.z[0]])
+    if(runTester): v_GSM = np.array([newcoord.x[0],newcoord.y[0],newcoord.z[0],hours,minutes,seconds])
     return(v_GSM)
 
 #function to convert coordinate vector in MAG coordinates to one in GSM coordinates
-def GSMtoMAG(v_GSM,month,day,year,UT):
+def GSMtoMAG(v_GSM,Time,ctype_in,ctype_out):
+    if( (ctype_in != 'sph' and ctype_in != 'car') or (ctype_out != 'sph' and ctype_out != 'car') ):
+        print 'ctype ERROR'
+        return (np.nan)*np.empty((3,))
     v_GSM = np.array(v_GSM)
-    if(useSP):
-        hours = int(UT/hr)
-        minutes = int((UT-hours)/minn)
-        seconds = int((UT-hours-minutes)/s)
-        cvals = sc.Coords(v_GSM, 'GSM', 'car')
-        t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)  # ?? month-day  or  day-month  ??
-        cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
-        newcoord = cvals.convert('MAG', 'car')
-        v_MAG = np.array([newcoord.x[0],newcoord.y[0],newcoord.z[0]])
-    else:
-        T = GSMtoMAG_matrix(month,day,year,UT)
-        v_MAG = np.matmul(T,v_GSM)
+    cvals = sc.Coords(v_GSM, 'GSM', ctype_in)
+    T=tuple(Time)
+    t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T # (year,month,day,hours,minutes,seconds)
+    cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
+    newcoord = cvals.convert('MAG', ctype_out)
+    v_MAG = np.array([newcoord.x[0],newcoord.y[0],newcoord.z[0]])
+    if(runTester): v_MAG = np.array([newcoord.x[0],newcoord.y[0],newcoord.z[0],hours,minutes,seconds])
+    return(v_MAG)
+
+def GEOtoGSM(v_GEO,Time,ctype_in,ctype_out):
+    if( (ctype_in != 'sph' and ctype_in != 'car') or (ctype_out != 'sph' and ctype_out != 'car') ):
+        print 'ctype ERROR'
+        return (np.nan)*np.empty((3,))
+    cvals = sc.Coords(v_GEO, 'GEO', ctype_in)
+    T=tuple(Time)
+    t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T # (year,month,day,hours,minutes,seconds)
+    cvals.ticks = Ticktock([t_str]*len(v_GEO), 'ISO') # add ticks
+    newcoord = cvals.convert('GSM', ctype_out)
+    v_GSM = np.column_stack([newcoord.x,newcoord.y,newcoord.z])
     return(v_GSM)
+
 
 #convert spherical to cartesian
 def StoC(r,theta,phi):
@@ -133,3 +67,17 @@ def StoC(r,theta,phi):
     y = r*np.sin(phi)*np.sin(theta)
     z = r*np.cos(theta)
     return x,y,z
+
+def UTtoHMS(UT):
+    hours = int(UT/hr)
+    minutes = int((UT-hours*hr)/minn)
+    seconds = int(round((UT-hours*hr-minutes*minn)/s))
+    if(seconds==60):
+        seconds=0
+        minutes=minutes+1
+    if(minutes==60):
+        minutes=0
+        hours=hours+1
+    if(hours>=24):
+        print 'WARNING: MIGHT BE NEXT DAY'
+    return [hours,minutes,seconds]

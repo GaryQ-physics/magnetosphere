@@ -17,9 +17,9 @@ import pos_sun as ps
 year = 2003
 day = 20
 month = 11
-hours = 7.
-minutes = 0.
-seconds = 0.
+hours = 7
+minutes = 0
+seconds = 0
 debug = False
 
 # run parameters
@@ -28,8 +28,9 @@ Nb = 6
 sign=-1  # changes sign of magnetic field used to trace the field lines
 
 # Plot title
-title = 'SCARR5 ' + str(year) + '-' + str(month) + '-' + str(day) + 'T07:00'
-filename = conf["f_path"] + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
+title = 'SCARR5 %04d-%02d-%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)
+filename = conf["f_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % (year,month,day,hours,minutes,seconds) + '.out.cdf'
+Time = [year,month,day,hours,minutes,seconds]
 
 # units
 deg = (np.pi/180.)
@@ -38,10 +39,11 @@ hr = 1.
 minn = hr/60.
 s = minn/60.
 
-UT=hours*hr + minutes*minn + seconds*s
 # Start point of main field line
-MLON = 68.50*deg
-MLAT = 50.00*deg
+MLONdeg = 68.50
+MLATdeg = 50.00
+MLON = MLONdeg*deg
+MLAT = MLATdeg*deg
 
 # open kameleon
 kameleon = ccmc.Kameleon()
@@ -93,13 +95,9 @@ def dXds(X, s):
             if(Bm <= 1e-7): print('FIELD TOO LOW')
         return [0., 0., 0.] #or nan
 
-
-u_st = (np.nan)*np.empty((Nb+1,))
-v_st = (np.nan)*np.empty((Nb+1,))
-w_st = (np.nan)*np.empty((Nb+1,))
-
 R = 1.01
-eps=3.*deg
+eps=3.
+IC=[]
 for i in range(Nb+1):
     if(i==0):
         delta=0.
@@ -109,32 +107,20 @@ for i in range(Nb+1):
     else:
         #delta=(i-Nb/2)*eps
         delta=(-i)*eps
-    phi = MLON
-    theta = np.pi/2. - MLAT + delta
-    u_st[i] = R*np.sin(theta)*np.sin(phi)
-    v_st[i] = R*np.sin(theta)*np.cos(phi)
-    w_st[i] = R*np.cos(theta)
-    
-
-# Convert field line start points points from MAG to GSM
-x_st = (np.nan)*np.empty((Nb+1,))
-y_st = (np.nan)*np.empty((Nb+1,))
-z_st = (np.nan)*np.empty((Nb+1,))
-for i in range(Nb+1):
-    v = ps.MAGtoGSM([u_st[i], v_st[i], w_st[i]], month, day, year, UT)
-    x_st[i] = v[0]
-    y_st[i] = v[1]
-    z_st[i] = v[2]
+    #phi = MLON
+    #theta = np.pi/2. - MLAT + delta
+    IC.append(ps.MAGtoGSM([R,MLATdeg-delta,MLONdeg],Time,'sph','car'))
+if(debug): print(IC)
 
 # Trace field lines
 s_grid = np.linspace(0, 200., 2000.)
 if(debug): print(s_grid)
 if(debug): print(s_grid.size)
-solns = (np.nan)*np.empty((s_grid.size, 3, x_st.size))
-for i in range(Nb+1):
-    X0 = [x_st[i], y_st[i], z_st[i]] # Initial condition
-    sol = odeint(dXds, X0, s_grid)
+solns = (np.nan)*np.empty((s_grid.size, 3, len(IC)))
+for i in range(len(IC)):
+    sol = odeint(dXds, IC[i], s_grid)
     solns[:,:,i] = sol
+if(debug): print('IC',IC)
 
 # initialize vectors for defining field line cut plane
 v1=(np.nan)*np.empty((3,))
@@ -177,13 +163,15 @@ kameleon.close()
 print("Closed " + filename)
 #-------------------------------
 
-mlong_array=[0., 10.*deg, -10.*deg, 20.*deg, -20.*deg]
+mlong_array=[0., 10., -10., 20., -20.] # per deg
 for i in range(Nb+1+Nlong):
     out_fname=conf["m_path"] + 'magnetosphere/data/' + 'field_line'+str(i)+'.vtk'
     if(i > Nb):
         mlong=mlong_array[i-Nb-1]
-        mlat=np.linspace(-np.pi/2,np.pi/2,100)
-        sol=np.column_stack([np.cos(mlong)*np.cos(mlat), np.sin(mlong)*np.cos(mlat), np.sin(mlat)])
+        mlat=np.linspace(-90,90,100)
+        #sol=np.column_stack([np.cos(mlong)*np.cos(mlat), np.sin(mlong)*np.cos(mlat), np.sin(mlat)])
+        a=np.column_stack([np.ones(100,),mlat,mlong*np.ones(100,)])
+        sol = ps.GEOtoGSM(a,Time,'sph','car')
         print('writing ' + out_fname)
         f = open(out_fname,'w')
         f.write('# vtk DataFile Version 3.0\n')

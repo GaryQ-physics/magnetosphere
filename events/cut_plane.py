@@ -23,13 +23,14 @@ import pos_sun as ps
 year = 2003
 day = 20
 month = 11
-hours = 7.
-minutes = 0.
-seconds = 0.
+hours = 7
+minutes = 0
+seconds = 0
 
 # Plot title
-title = 'SCARR5 ' + str(year) + '-' + str(month) + '-' + str(day) + 'T07:00'
-filename = conf["f_path"] + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
+title = 'SCARR5 %04d-%02d-%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)
+filename = conf["f_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % (year,month,day,hours,minutes,seconds) + '.out.cdf'
+Time = [year,month,day,hours,minutes,seconds]
 
 # units
 deg = (np.pi/180.)
@@ -40,14 +41,14 @@ s = minn/60.
 
 # run parameters
 debug = False
-Nb = 10
-sign=-1  # changes sign of magnetic field used to trace the field lines
+sign = -1  # changes sign of magnetic field used to trace the field lines
 
-UT=hours*hr + minutes*minn + seconds*s
 # Start point of main field line
-MLON = 68.50*deg
-MLAT = 50.00*deg
-
+#UT=hours*hr + minutes*minn + seconds*s
+MLONdeg = 68.50
+MLATdeg = 50.00
+MLON = MLONdeg*deg
+MLAT = MLATdeg*deg
 
 # open kameleon
 kameleon = ccmc.Kameleon()
@@ -93,34 +94,19 @@ def dXds(X, s):
     else:
         return [0., 0., 0.] #or nan
 
-# main field line start point (in MAG)
-phiMAG = MLON
-thetaMAG = np.pi/2. - MLAT
+# field line start point (in MAG)
+
+#phiMAG = MLON
+#thetaMAG = np.pi/2. - MLAT
 R = 1.
 
-u_st = R*np.sin(thetaMAG)*np.sin(phiMAG)
-v_st = R*np.sin(thetaMAG)*np.cos(phiMAG)
-w_st = R*np.cos(thetaMAG)
-v = ps.MAGtoGSM([u_st, v_st, w_st], month, day, year, UT)
-x_st = v[0]
-y_st = v[1]
-z_st = v[2]
+# Trace field line
+X0 = ps.MAGtoGSM([R,MLATdeg,MLONdeg],Time,'sph','car')
+s_grid = np.linspace(0, 10., 100.)
+soln = odeint(dXds, X0, s_grid)
 
 if debug:
-    print("---------")
-    print(u_st)
-    print(v_st)
-    print(w_st)
-    print("--------")
-    print(x_st)
-    print(y_st)
-    print(z_st)
-
-# Trace field lines
-s_grid = np.linspace(0, 10., 100.)
-solns = (np.nan)*np.empty((s_grid.size, 3, x_st.size))
-X0 = [x_st, y_st, z_st] # Initial condition
-soln = odeint(dXds, X0, s_grid)
+    print(X0)
 
 # initialize vectors for defining field line cut plane
 v1=(np.nan)*np.empty((3,))
@@ -151,7 +137,7 @@ v3 = sol[half,:]
 # define cut plane coordinates based on main field line 
 # (U3 normal to the plane)
 U2 = (v1-v2)/np.linalg.norm(v1-v2)
-Mdipole = ps.MAGtoGSM([0.,0.,1.], month, day, year, UT)
+Mdipole = ps.MAGtoGSM([0.,0.,1.],Time,'car','car')
 U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
 U1 = np.cross(U2, U3)
 #return U1,U2,U3,Mdipole
@@ -167,7 +153,7 @@ f.write('%.7e %.7e %.7e\n'%(U1[0], U1[1], U1[2]))
 f.write('%.7e %.7e %.7e\n'%(U2[0], U2[1], U2[2]))
 f.write('%.7e %.7e %.7e\n'%(U3[0], U3[1], U3[2]))
 
-print (month,day,year,UT)
+print Time
 print 'Mdipole = ', Mdipole
 print 'U1 = ', U1
 print 'U2 = ', U2

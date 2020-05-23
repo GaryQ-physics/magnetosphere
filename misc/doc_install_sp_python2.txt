@@ -1,5 +1,7 @@
 document install spacepy to use for python 2.7
 
+pip install with python2 gave the error:
+https://stackoverflow.com/questions/29046326/spacepy-importerror-cannot-import-name-irbempylib
 
 First need to install pip for python2:
 go to https://pip.pypa.io/en/stable/installing/ and click link to download get-pip.py
