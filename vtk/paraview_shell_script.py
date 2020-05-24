@@ -45,9 +45,10 @@ U3=np.array(U3)
 Nlong=5
 Nb = 6
 N=Nb+1+Nlong
+var='dBlon_dV'
 
 # create a new 'Legacy VTK Reader'
-kameleon_structured_gridvtk = LegacyVTKReader(FileNames=[conf["m_path"] + 'magnetosphere/data/kameleon_structured_grid.vtk'])
+kameleon_structured_gridvtk = LegacyVTKReader(FileNames=[conf["m_path"] + 'magnetosphere/data/kameleon_structured_grid_' + var + '.vtk'])
 
 # get active view
 renderView1 = GetActiveViewOrCreate('RenderView')

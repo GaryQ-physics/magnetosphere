@@ -52,6 +52,19 @@ def GEOtoGSM(v_GEO,Time,ctype_in,ctype_out):
     if( (ctype_in != 'sph' and ctype_in != 'car') or (ctype_out != 'sph' and ctype_out != 'car') ):
         print 'ctype ERROR'
         return (np.nan)*np.empty((3,))
+    v_GEO = np.array(v_GEO)
+    cvals = sc.Coords(v_GEO, 'GEO', ctype_in)
+    T=tuple(Time)
+    t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T # (year,month,day,hours,minutes,seconds)
+    cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
+    newcoord = cvals.convert('GSM', ctype_out)
+    v_GSM = np.array([newcoord.x[0],newcoord.y[0],newcoord.z[0]])
+    return(v_GSM)
+
+def GEOtoGSM_list(v_GEO,Time,ctype_in,ctype_out):
+    if( (ctype_in != 'sph' and ctype_in != 'car') or (ctype_out != 'sph' and ctype_out != 'car') ):
+        print 'ctype ERROR'
+        return (np.nan)*np.empty((3,))
     cvals = sc.Coords(v_GEO, 'GEO', ctype_in)
     T=tuple(Time)
     t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T # (year,month,day,hours,minutes,seconds)
@@ -59,7 +72,6 @@ def GEOtoGSM(v_GEO,Time,ctype_in,ctype_out):
     newcoord = cvals.convert('GSM', ctype_out)
     v_GSM = np.column_stack([newcoord.x,newcoord.y,newcoord.z])
     return(v_GSM)
-
 
 #convert spherical to cartesian
 def StoC(r,theta,phi):
