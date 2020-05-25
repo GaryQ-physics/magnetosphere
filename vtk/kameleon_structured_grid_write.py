@@ -29,6 +29,7 @@ def ex_data(kam,interp, variable, x,y,z, X0,Npole):
     if np.sqrt(x**2+y**2+z**2)<1e-4: return 0.
     # Get data from file, interpolate to point
     if('dB' in variable):
+        if np.sqrt(x**2+y**2+z**2)<1.5: return 0.
         J=np.array([ex_data(kam,interp, 'jx',x,y,z, X0,Npole),ex_data(kam,interp, 'jy',x,y,z, X0,Npole),ex_data(kam,interp, 'jz',x,y,z, X0,Npole)])
         R=np.array([x,y,z])-X0
         B=np.cross(J,R)/(np.linalg.norm(R)**3)
@@ -84,7 +85,9 @@ def Compute(Event, var):
 
 def writevtk(Event, var):
     A,B = Compute(Event,var)
-    fname = conf["m_path"] + 'magnetosphere/data/kameleon_structured_grid_' + var + '.vtk'
+    year,month,day,hours,minutes,seconds,MLONdeg,MLATdeg = Event
+    tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)
+    fname = conf["m_path"] + 'magnetosphere/data/kameleon_structured_grid_' + var + tag + '.vtk'
 
     Nx=Nx_main+Nx_tail
     print('also Nx= ',Nx)

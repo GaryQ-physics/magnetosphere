@@ -160,11 +160,12 @@ def Compute(Event):
 def writevtk(Event):
     year,month,day,hours,minutes,seconds,MLONdeg,MLATdeg = Event
     Time = [year,month,day,hours,minutes,seconds]
+    tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)
 
     solns_restr = Compute(Event)
     mlong_array=[0., 10., -10., 20., -20.] # per deg
     for i in range(Nb+1+Nlong):
-        out_fname=conf["m_path"] + 'magnetosphere/data/' + 'field_line'+str(i)+'.vtk'
+        out_fname=conf["m_path"] + 'magnetosphere/data/' + 'field_line'+str(i)+ tag +'.vtk'
         if(i > Nb):
             mlong=mlong_array[i-Nb-1]
             mlat=np.linspace(-90,90,100)

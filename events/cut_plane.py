@@ -143,8 +143,9 @@ def writevtk(Event):
     year,month,day,hours,minutes,seconds,MLONdeg,MLATdeg = Event
     Time = [year,month,day,hours,minutes,seconds]
     Mdipole,U1,U2,U3 = Compute(Event)
+    tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)
 
-    out_fname=conf["m_path"] + 'magnetosphere/data/cut_plane_info.txt'
+    out_fname=conf["m_path"] + 'magnetosphere/data/cut_plane_info' + tag + '.txt'
     f = open(out_fname,'w')
     print('writing ' + out_fname)
     f.write('%.7e %.7e %.7e\n'%(Mdipole[0], Mdipole[1], Mdipole[2]))

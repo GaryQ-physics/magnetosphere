@@ -12,7 +12,9 @@ import cut_plane
 
 #MLONdeg = 68.50
 #MLATdeg = 50.00
-Event = [2003, 11, 20, 7, 0, 0, 68.50, 50.00] # [year,month,day,hours,minutes,seconds,MLONdeg,MLATdeg]
+#Event = [2003, 11, 20, 7, 0, 0, 68.50, 50.00]
+
+Event = [2003, 11, 20, 7, 0, 0, 241.00, 55.00] # [year,month,day,hours,minutes,seconds,MLONdeg,MLATdeg]
 
 cut_plane.writevtk(Event)
 field_line_vtk_script.writevtk(Event)
