@@ -37,25 +37,11 @@ for n in range(N):
     line_list = [float(i) for i in line_string.split()] # line_list "=" [year,month,day,hours,minutes,mlon,mlat]
 
     # get data
-    Time = [line_list[0], line_list[1], line_list[2], line_list[3], line_list[4], 0.]
+    time = [line_list[0], line_list[1], line_list[2], line_list[3], line_list[4], 0.]
     MLONdeg = line_list[5]
-    MLATdeg=line_list[6]
-    phi=MLONdeg*deg
-    #theta=np.pi/2. - MLAT*deg
+    MLATdeg = line_list[6]
 
-    subsol_pt = ps.GSMtoMAG([1,0,0],Time,'car','car')
-    phi0 = np.arctan2(subsol_pt[1], subsol_pt[0])
-    
-    delta = phi-phi0
-    if(delta > np.pi):
-        delta=delta-2.*np.pi
-    elif(delta <= -np.pi):
-        delta=delta+2.*np.pi
-    MLT = 12.*hr + delta*24.*hr/(360*deg)
-
-    #x=np.cos(phi)*np.sin(theta)
-    #y=np.sin(phi)*np.sin(theta)
-    #z=np.cos(theta)
+    MLT = ps.MLTfromMAG(MLONdeg, time)
 
     print "line ", line
     print(line_list)
@@ -63,7 +49,7 @@ for n in range(N):
     #print(subsol_pt)
     #print "GSM: ", ps.MAGtoGSM([x,y,z],month,day,year,UT)
     #print(delta)
-    print Time
+    print time
     print "Mdip", ps.MAGtoGSM([0.,0.,1.],Time,'car','car')
     # write to out file
     f.write(str(MLT/hr) + '\n')

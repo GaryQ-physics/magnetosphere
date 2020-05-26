@@ -171,7 +171,7 @@ def writevtk(Event):
             mlat=np.linspace(-90,90,100)
             #sol=np.column_stack([np.cos(mlong)*np.cos(mlat), np.sin(mlong)*np.cos(mlat), np.sin(mlat)])
             a=np.column_stack([np.ones(100,),mlat,mlong*np.ones(100,)])
-            sol = ps.GEOtoGSM_list(a,Time,'sph','car')
+            sol = ps.GEOtoGSM(a,Time,'sph','car')
             print('writing ' + out_fname)
             f = open(out_fname,'w')
             f.write('# vtk DataFile Version 3.0\n')
