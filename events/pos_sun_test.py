@@ -41,22 +41,13 @@ for d in data:
     if syst == 'car':
         pos = d[6:9]
         v = ps.MAGtoGSM(pos, time, 'car', 'car')
-        MLT = -1
+        MLT = ps.MLTfromMAG(pos, time, 'car')
     elif syst == 'sph':
         r, MLON, MLAT = d[6:9]
         v = ps.MAGtoGSM([r, MLAT, MLON], time, 'sph', 'car')
         # Compute MLT given GSM using equation 93 in
         # https://arxiv.org/abs/1611.10321
-        phi = MLON*np.pi/180.
-        subsol_pt = ps.GSMtoMAG([1, 0, 0], time, 'car', 'car')
-
-        phi_cds = np.arctan2(subsol_pt[1], subsol_pt[0])
-        delta = phi - phi_cds
-        if delta > np.pi:
-            delta = delta - 2.*np.pi
-        elif delta <= -np.pi:
-            delta = delta + 2.*np.pi
-        MLT = 12. + delta*24./(2.*np.pi)
+        MLT = ps.MLTfromMAG([r, MLAT, MLON], time, 'sph')
     else:
         print('INVALID COORDINATE TYPE. Use "car" or "sph"')
     UT = time[3] + time[4]/60.+ time[5]/3600.

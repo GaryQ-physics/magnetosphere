@@ -99,6 +99,23 @@ def UTtoHMS(UT):
         print 'WARNING: MIGHT BE NEXT DAY'
     return [hours,minutes,seconds]
 
+def MLTfromMAG(v_MAG,Time,ctype):
+    if( ctype != 'sph' and ctype != 'car' ):
+        print 'ctype ERROR'
+        return (np.nan)
+    if( ctype == 'sph'):
+        phi = v_MAG[2]*deg
+    if( ctype == 'car'):
+        phi = np.arctan2(v_MAG[1], v_MAG[0])
+    subsol_pt = GSMtoMAG([1,0,0],Time,'car','car')
+    phi_cds = np.arctan2(subsol_pt[1], subsol_pt[0])
+    delta = phi - phi_cds
+    if delta > np.pi:
+        delta = delta - 2.*np.pi
+    elif delta <= -np.pi:
+        delta = delta + 2.*np.pi
+    MLT = 12. + delta*24./(2.*np.pi)
+    return MLT
 
 if __name__ == "__main__":
     MAGtoGSM(v_MAG, Time, ctype_in, ctype_out)
