@@ -26,7 +26,7 @@ hr = 1.
 minn = hr/60.
 s = minn/60.
 
-def ex_data(kam,interp, variable, x,y,z):
+def ex_data(kam,interp, variable, x, y, z):
     # Get data from file, interpolate to point
     kam.loadVariable(variable)
     data = interp.interpolate(variable, x, y, z)

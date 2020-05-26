@@ -36,7 +36,7 @@ def MAGtoGSM(v_MAG, Time, ctype_in, ctype_out): # Time = [year,month,day,hours,m
     return(v_GSM)
 
 def GSMtoMAG(v_GSM, Time, ctype_in, ctype_out):
-    '''convert coordinate vector in MAG coordinates to one in GSM coordinates'''
+    '''convert coordinate vector in GSM coordinates to one in MAG coordinates'''
 
     if (ctype_in != 'sph' and ctype_in != 'car') or (ctype_out != 'sph' and ctype_out != 'car'):
         print('ctype ERROR')
@@ -51,6 +51,7 @@ def GSMtoMAG(v_GSM, Time, ctype_in, ctype_out):
     return(v_MAG)
 
 def GEOtoGSM(v_GEO,Time, ctype_in, ctype_out):
+    '''convert coordinate vector in GEO coordinates to one in GSM coordinates'''
     if (ctype_in != 'sph' and ctype_in != 'car') or (ctype_out != 'sph' and ctype_out != 'car'):
         print('ctype ERROR')
         return (np.nan)*np.empty((3, ))
@@ -98,6 +99,9 @@ def UTtoHMS(UT):
     return [hours, minutes, seconds]
 
 def MLTfromMAG(pos, time):
+    '''calculate the magnetic local time from a position in MAG and time'''
+    ''' if scalar inputed, it is the longitude in degrees, if vector inputed, it is the cartesian coordinates'''
+
     if isinstance(pos, double):
         phi = pos*deg
     else:
