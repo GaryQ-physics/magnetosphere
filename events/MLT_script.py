@@ -24,8 +24,9 @@ hr = 1.
 minn = hr/60.
 s = minn/60.
 
-f = open(path+fname,'w')
 g = open(path+'LOCALIZED.txt','r')
+f = open(path+fname,'w')
+print('writing ' + fname)
 print(g.readline()) # prints header line
 line=0
 for n in range(N):
@@ -69,3 +70,4 @@ for n in range(N):
 
 g.close()
 f.close()
+print('wrote ' + fname)

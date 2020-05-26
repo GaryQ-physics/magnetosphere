@@ -48,7 +48,7 @@ def data_in_U(kam,interp, variable, u, v, U1, U2):
     else:
         return ex_data(kam,interp, variable, x,y,z)
 
-def dXds(X, s, kam,interp,):
+def dXds(X, s, kam,interp):
     '''
     derivative function for field line ODE
     dx/ds = Bx(x,y,z)/Bm
