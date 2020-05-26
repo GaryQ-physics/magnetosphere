@@ -1,5 +1,3 @@
-# Run script with no arguments to see test results
-
 import sys
 import os
 import numpy as np
@@ -102,7 +100,7 @@ def MLTfromMAG(pos, time):
     '''calculate the magnetic local time from a position in MAG and time'''
     ''' if scalar inputed, it is the longitude in degrees, if vector inputed, it is the cartesian coordinates'''
 
-    if isinstance(pos, double):
+    if isinstance(pos, float):
         phi = pos*deg
     else:
         phi = np.arctan2(pos[1], pos[0])
@@ -115,7 +113,3 @@ def MLTfromMAG(pos, time):
         delta = delta + 2.*np.pi
     MLT = 12. + delta*24./(2.*np.pi)
     return MLT
-
-if __name__ == "__main__":
-    MAGtoGSM(v_MAG, Time, ctype_in, ctype_out)
-
