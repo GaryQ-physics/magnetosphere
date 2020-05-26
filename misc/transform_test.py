@@ -23,8 +23,12 @@ coordinate_interpolator = kameleon.createCoordinateInterpolator() # no arguments
 print 'epoch time:', coordinate_interpolator.getEphemTime(), 'seconds'
 coordinate_interpolator.setEphemTime(0)
 
+# Set date to 2000 001 00:00:00
+# Set lat, lon, Re to 1, 1, 1 at
+# https://sscweb.gsfc.nasa.gov/cgi-bin/CoordCalculator.cgi
+# Click "GM"
 coordinate_interpolator.setPreferredCoordinates("MAG")
-point = 0, 0, 1 # GSM cartesian [Re]
+point = 1.,0.,0. # MAG cartesian [Re]
 
 query_point = ccmc.Position()
 query_point.c0, query_point.c1, query_point.c2 = point

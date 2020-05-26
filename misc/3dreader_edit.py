@@ -7,9 +7,9 @@ Created on Sun Feb  2 09:58:51 2020
 import spacepy.pybats.bats as bt
 import numpy as np
 from matplotlib import pyplot as plt
-
+    
 # read in the 3d magnetosphere
-filename = "3d__var_4_e20191012-131400-018.out"
+filename = "/Users/robertweigel/git/students/gquaresi/magnetosphere/data/3d__var_3_e20031120-070000-000.out"
 data3d = bt.Bats2d(filename)
 
 # look at keys:

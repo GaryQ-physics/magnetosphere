@@ -2,9 +2,9 @@
 import os
 def config():
     if os.path.exists('/Users/robertweigel/'):
-        base = '/Users/robertweigel/git/students/gquaresi/magnetosphere/'
+        base = '/Users/robertweigel/git/students/gquaresi/'
         return {'k_path': '/Users/robertweigel/',
-                'f_path': base + '/data/',
+                'f_path': base + 'magnetosphere/data/',
                 'm_path': base}
     else:
         return {'k_path': '/home/gary/magnetosphere/',
