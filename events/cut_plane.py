@@ -11,17 +11,11 @@ sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/')
 sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/ccmc/')
 
 from scipy.integrate import odeint
-from matplotlib.patches import Circle, PathPatch, Rectangle
-from matplotlib.text import TextPath
-from matplotlib.transforms import Affine2D
-# This import registers the 3D projection, but is otherwise unused.
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
-import mpl_toolkits.mplot3d.art3d as art3d
 import _CCMC as ccmc
 import pos_sun as ps
 
 # run parameters
-debug = True
+debug = False
 sign = -1  # changes sign of magnetic field used to trace the field lines
 
 # units
@@ -39,22 +33,6 @@ def ex_data(kam, interp, variable, x,y,z):
         return data
     else:
         return 0.
-
-
-def data_in_U(kam, interp, variable, u, v, U1, U2):
-    # Get the data in the U coordinates (defined by the cut plane vectors U1 and U2)
-    x,y,z = u*U1+v*U2
-    B = np.array([ex_data(kam,interp,'bx', x,y,z), 
-                  ex_data(kam,interp,'by', x,y,z), 
-                  ex_data(kam,interp,'bz', x,y,z)])
-    if variable == 'bu1':
-        return np.dot(B,U1)
-    if variable == 'bu2':
-        return np.dot(B,U2)
-    if variable == 'bu3':
-        return np.dot(B,U3)
-    else:
-        return ex_data(kam,interp, variable, x,y,z)
 
 
 def dXds(X, s, kam,interp,):

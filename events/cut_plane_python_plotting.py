@@ -33,6 +33,21 @@ import mpl_toolkits.mplot3d.art3d as art3d
 import _CCMC as ccmc
 import pos_sun as ps
 
+def data_in_U(kam, interp, variable, u, v, U1, U2):
+    # Get the data in the U coordinates (defined by the cut plane vectors U1 and U2)
+    x,y,z = u*U1+v*U2
+    B = np.array([ex_data(kam,interp,'bx', x,y,z), 
+                  ex_data(kam,interp,'by', x,y,z), 
+                  ex_data(kam,interp,'bz', x,y,z)])
+    if variable == 'bu1':
+        return np.dot(B,U1)
+    if variable == 'bu2':
+        return np.dot(B,U2)
+    if variable == 'bu3':
+        return np.dot(B,U3)
+    else:
+        return ex_data(kam,interp, variable, x,y,z)
+
 # parameter to plot
 parameter =  'p'
 parameter_unit = 'nPa'
