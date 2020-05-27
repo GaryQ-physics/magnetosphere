@@ -23,6 +23,7 @@ data = [
         [2003.0, 11.0, 20.0, 18.0, 47.0, 0.0, 1., 166.0, 52.5, 'sph']
     ]
 
+# Results from
 # https://sscweb.gsfc.nasa.gov/cgi-bin/CoordCalculator.cgi
 # GSM [x, y, z, MLT]
 sscweb = [
@@ -45,8 +46,6 @@ for d in data:
     elif syst == 'sph':
         r, MLON, MLAT = d[6:9]
         v = ps.MAGtoGSM([r, MLAT, MLON], time, 'sph', 'car')
-        # Compute MLT given GSM using equation 93 in
-        # https://arxiv.org/abs/1611.10321
         MLT = ps.MLTfromMAG(MLON, time)
     else:
         print('INVALID COORDINATE TYPE. Use "car" or "sph"')
@@ -62,5 +61,3 @@ for d in data:
     print('   SpacePy:    {0:.2f}  {1:.2f} {2:.2f} {3:.2f}'.format(spacepy[0], spacepy[1], spacepy[2], spacepy[3]))
     print('   SSCWeb:     {0:.2f}  {1:.2f} {2:.2f} {3:.2f}'.format(sscweb[k][0], sscweb[k][1], sscweb[k][2], sscweb[k][3]))
     k = k + 1
-
-

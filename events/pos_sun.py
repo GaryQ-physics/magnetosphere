@@ -18,8 +18,21 @@ minn = hr/60.
 s = minn/60.
 
 
-def MAGtoGSM(v_MAG, Time, ctype_in, ctype_out): # Time = [year,month,day,hours,minutes,seconds]
-    '''Convert from MAG to GSM coordinates using SpacePy library'''
+def MAGtoGSM(v_MAG, Time, ctype_in, ctype_out):
+    """Convert from MAG to GSM coordinates using SpacePy library
+    
+    MAG: array-like
+    
+    Time: list or tuple of ints
+          [year,month,day,hours,minutes,seconds]
+    
+    ctype_in: str
+        'car' or 'sph'
+
+    ctype_out: str
+        'car' or 'sph'
+          
+    """
 
     if (ctype_in != 'sph' and ctype_in != 'car') or (ctype_out != 'sph' and ctype_out != 'car'):
         print('ctype ERROR')
@@ -27,29 +40,31 @@ def MAGtoGSM(v_MAG, Time, ctype_in, ctype_out): # Time = [year,month,day,hours,m
     v_MAG = np.array(v_MAG)
     cvals = sc.Coords(v_MAG, 'MAG', ctype_in)
     T = tuple(Time)
-    t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T # (year,month,day,hours,minutes,seconds)
-    cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
+    t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T 
+    cvals.ticks = Ticktock(t_str, 'ISO')
     newcoord = cvals.convert('GSM', ctype_out)
     v_GSM = np.array([newcoord.x[0], newcoord.y[0], newcoord.z[0]])
-    return(v_GSM)
+    return v_GSM
+
 
 def GSMtoMAG(v_GSM, Time, ctype_in, ctype_out):
-    '''convert coordinate vector in GSM coordinates to one in MAG coordinates'''
+    """Convert from GSM to MAG coordinates using SpacePy library"""
 
     if (ctype_in != 'sph' and ctype_in != 'car') or (ctype_out != 'sph' and ctype_out != 'car'):
         print('ctype ERROR')
         return (np.nan)*np.empty((3, ))
     v_GSM = np.array(v_GSM)
     cvals = sc.Coords(v_GSM, 'GSM', ctype_in)
-    T=tuple(Time)
-    t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T # (year,month,day,hours,minutes,seconds)
+    T = tuple(Time)
+    t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T
     cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
     newcoord = cvals.convert('MAG', ctype_out)
     v_MAG = np.array([newcoord.x[0], newcoord.y[0], newcoord.z[0]])
-    return(v_MAG)
+    return v_MAG
 
 def GEOtoGSM(v_GEO,Time, ctype_in, ctype_out):
-    '''convert coordinate vector in GEO coordinates to one in GSM coordinates'''
+    """Convert from GEO to GSM coordinates using SpacePy library"""
+
     if (ctype_in != 'sph' and ctype_in != 'car') or (ctype_out != 'sph' and ctype_out != 'car'):
         print('ctype ERROR')
         return (np.nan)*np.empty((3, ))
@@ -58,47 +73,68 @@ def GEOtoGSM(v_GEO,Time, ctype_in, ctype_out):
     if v_GEO.shape == (3, ):
         cvals = sc.Coords(v_GEO, 'GEO', ctype_in)
         T=tuple(Time)
-        t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T # (year,month,day,hours,minutes,seconds)
+        t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T
         cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
         newcoord = cvals.convert('GSM', ctype_out)
         v_GSM = np.array([newcoord.x[0], newcoord.y[0], newcoord.z[0]])
-        return(v_GSM)
+        return v_GSM
     else:
         cvals = sc.Coords(v_GEO, 'GEO', ctype_in)
         T=tuple(Time)
-        t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T # (year,month,day,hours,minutes,seconds)
+        t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T
         cvals.ticks = Ticktock([t_str]*v_GEO.shape[0], 'ISO') # add ticks
         newcoord = cvals.convert('GSM', ctype_out)
         v_GSM = np.column_stack([newcoord.x, newcoord.y, newcoord.z])
-        return(v_GSM)
+        return v_GSM
+
 
 def StoC(r, theta, phi):
-    '''convert spherical to cartesian'''
+    '''Convert from spherical to cartesian coordinates'''
 
     x = r*np.cos(phi)*np.sin(theta)
     y = r*np.sin(phi)*np.sin(theta)
     z = r*np.cos(theta)
     return x, y, z
 
+
 def UTtoHMS(UT):
-    '''convert universal time in hours (as float) into integer hour,minues,seconds'''
+    """Convert universal time in fractional hours into integer hour, minues, seconds"""
 
     hours = int(UT/hr)
     minutes = int((UT-hours*hr)/minn)
     seconds = int(round((UT-hours*hr-minutes*minn)/s))
-    if seconds==60:
+    if seconds == 60:
         seconds = 0
-        minutes = minutes+1
-    if minutes==60:
+        minutes = minutes + 1
+    if minutes == 60:
         minutes = 0
-        hours = hours+1
-    if hours>=24:
-        print 'WARNING: MIGHT BE NEXT DAY'
+        hours = hours + 1
+    if hours >= 24:
+        print('WARNING: MIGHT BE NEXT DAY')
     return [hours, minutes, seconds]
 
+
 def MLTfromMAG(pos, time):
-    '''calculate the magnetic local time from a position in MAG and time'''
-    ''' if scalar inputed, it is the longitude in degrees, if vector inputed, it is the cartesian coordinates'''
+    """Compute magnetic local time given a universial time given MAG position or longitude
+
+    Uses equation 93 in https://arxiv.org/abs/1611.10321
+
+    Usage: 
+    ------
+    import pos_sun as ps
+    mlt = ps.MLTfromMAG(MAGlong, time)
+    mlt = ps.MLTfromMAG([MAGx, MAGy, MAGz], time)
+
+    Returns:
+    --------
+    mlt: float
+
+    Example:
+    --------
+    mlt = MLTfromMAG(0., [2000, 1, 0, 0, 0, 0])
+    print(mlt)
+
+"""
 
     if isinstance(pos, float):
         phi = pos*deg
