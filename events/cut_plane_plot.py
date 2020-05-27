@@ -19,36 +19,6 @@ import pos_sun as ps
 
 from cut_plane import ex_data, dXds
 
-# units
-deg = (np.pi/180.)
-amin = deg/60.
-hr = 1.
-minn = hr/60.
-s = minn/60.
-
-# run parameters
-debug = False
-n=50 # number of pts on cutplane grid 
-m=50
-# parameter to plot
-#parameter =  'p'
-
-# Start point of main field line
-#mlon = 68.50
-#mlat = 50.00
-
-# Inputs for file and magnetic field model
-year = 2003
-day = 20
-month = 11
-hours = 7
-minutes = 0
-seconds = 0
-
-xlim = [0,4]
-ylim = [-3,3]
-
-
 def data_in_U(kam, interp, variable, u, v, U1, U2, U3):
     # Get the data in the U coordinates (defined by the cut plane vectors U1 and U2)
     x,y,z = u*U1 + v*U2
@@ -65,34 +35,39 @@ def data_in_U(kam, interp, variable, u, v, U1, U2, U3):
         return ex_data(kam, interp, variable, x, y, z)
 
 
-
-def plot(Event, parameter, xlim=xlim, ylim=ylim, nx=n, ny=m, png=True):
+def plot(Event, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, png=True):
     #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
+    
+    # run parameters
+    debug = False
+
     time = Event[0:6]
     mlon = Event[6]
     mlat = Event[7]
-
+    
     # Plot title
-    title = 'SCARR5 ' + str(year) + '-' + str(month) + '-' + str(day) + 'T07:00'
+    title = 'SCARR5 ' + '%04d%02d%02d-%02d%02d%02d-000' % tuple(time)
     title = title + "\n" + "[mlat,mlon]=[{0:.1f}, {1:.1f}]".format(mlat, mlon)
 
-    filename = conf["run_path"] + '3d__var_3_e' \
-                + '%04d%02d%02d-%02d%02d%02d-000' % tuple(time)
+    filename = '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % tuple(time)
 
-    filename_in = filename + '.out.cdf'
-    filename_out = filename + '.png'
+    filename_in = conf["run_path"] + filename + '.out.cdf'
+    filename_out = conf["run_path_derived"] + filename + '.png'
 
     r = 1.01
     X0 = ps.MAGtoGSM([r, mlat, mlon], time, 'sph', 'car')
 
     # open kameleon
     kameleon = ccmc.Kameleon()
-    print("Opening " + filename_in)
+    if debug:
+        print("Opening " + filename_in)
     kameleon.open(filename_in)
-    print("Opened " + filename_in)
+    if debug:
+        print("Opened " + filename_in)
     interpolator = kameleon.createNewInterpolator()
 
     parameter_unit = kameleon.getVisUnit(parameter)
+    parameter_unit = parameter_unit.replace('mu', '\\mu ')
 
     # Trace field line
     s_grid = np.linspace(0., 10., 100)
@@ -109,7 +84,6 @@ def plot(Event, parameter, xlim=xlim, ylim=ylim, nx=n, ny=m, png=True):
     U1 = (np.nan)*np.empty((3, ))
     U2 = (np.nan)*np.empty((3, ))
     U3 = (np.nan)*np.empty((3, ))
-    Mdipole = (np.nan)*np.empty((3, ))
 
     # define restriction condition on the field line points
     tr = np.logical_and(soln[:, 0]**2 + soln[:, 1]**2 + soln[:, 2]**2 >= 1.,
@@ -127,22 +101,21 @@ def plot(Event, parameter, xlim=xlim, ylim=ylim, nx=n, ny=m, png=True):
     # define cut plane coordinates based on main field line 
     # (U3 is normal to the plane)
     U2 = (v1-v2)/np.linalg.norm(v1-v2)
-    Mdipole = ps.MAGtoGSM([0., 0., 1.], time, 'car', 'car')
     U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
     U1 = np.cross(U2, U3)
 
-    x_1d = np.linspace(xlim[0], xlim[1], n)
-    y_1d = np.linspace(ylim[0], ylim[1], m)
+    x_1d = np.linspace(xlim[0], xlim[1], nx)
+    y_1d = np.linspace(ylim[0], ylim[1], ny)
     X, Y = np.meshgrid(x_1d, y_1d) # grid of points on the cutplane
-    Z = np.zeros((n, m))
-    for i in range(n):
-        for j in range(m):
+    Z = np.zeros((nx, ny))
+    for i in range(nx):
+        for j in range(ny):
             # grid of the corresponding values of variable. To be color plotted
             Z[i, j] = data_in_U(kameleon, interpolator, parameter, X[i, j], Y[i, j], U1, U2, U3)
 
     kameleon.close()
-    print("Closed " + filename_in + "\n")
-    print('Close plot to exit')
+    if debug:
+        print("Closed " + filename_in + "\n")
 
     # Plotting
     plt.clf()
@@ -159,7 +132,7 @@ def plot(Event, parameter, xlim=xlim, ylim=ylim, nx=n, ny=m, png=True):
     # Reason for choice of fraction and pad:
     # https://stackoverflow.com/a/39948312/1491619
     cb = fig.colorbar(pcm, ax = ax2, fraction = 0.04, pad = 0.08)
-    cb.ax.set_title(parameter + ' [' + parameter_unit + ']', ha='left')
+    cb.ax.set_title(parameter + ' [$' + parameter_unit + '$]', ha='left')
     plt.xlim(xlim[0], xlim[1])
     plt.ylim(ylim[0], ylim[1])
 
@@ -170,7 +143,11 @@ def plot(Event, parameter, xlim=xlim, ylim=ylim, nx=n, ny=m, png=True):
         solCut[k, 1] = np.dot(sol[k, :], U2)
     ax2.plot(solCut[:, 0], solCut[:, 1], 'red', lw = 1)
 
+    if png:
+        if debug:
+            print('Writing ' + filename_out)
+        plt.savefig(filename_out, dpi=300, bbox_inches='tight')
+        if debug:
+            print('Wrote ' + filename_out)
 
     plt.show()
-
-plot([2003, 11, 20, 7, 0, 0, 68.50, 50.00],'p')
