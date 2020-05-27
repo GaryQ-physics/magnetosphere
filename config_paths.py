@@ -13,4 +13,5 @@ def config():
         return {'k_path': base + 'magnetosphere/',
                 'f_path': base + 'magnetosphere/data/',
                 'm_path': base,
+                'run_path': base + 'magnetosphere/data/SCARR5_GM_IO2/',
                 'run_path_derived': base + 'magnetosphere/data/SCARR5_GM_IO2-derived/'}
