@@ -258,6 +258,20 @@ if plot3d: ax1 = fig.add_subplot(1, 2, 1, projection='3d')
 ax2 = fig.add_subplot(1,2,2)
 #ax = fig.add_subplot(111, projection='3d')
 
+# Plot cut plane data in right panel
+ax2.set(title=title)
+ax2.set(xlabel="Tailward distance [$R_E$]")
+ax2.set(ylabel="Northward distance [$R_E$]")
+ax2.axis('square')
+pcm = ax2.pcolormesh(X, Y, Z)
+
+# Reason for choice of fraction and pad:
+# https://stackoverflow.com/a/39948312/1491619
+cb = fig.colorbar(pcm, ax=ax2, fraction=0.046, pad=0.04)
+cb.ax.set_title(parameter + ' [' + parameter_unit + ']')
+#cb.ax.set_ylabel('nPa')
+plt.xlim(0, 4)
+plt.ylim(-3, 3)
 
 # Plot field lines
 if plot3d:
@@ -286,19 +300,6 @@ if plot3d:
     ax1.set_xlim(-4, 4)
     ax1.set_ylim(-4, 4)
     ax1.set_zlim(-4, 4)
-
-# Plot cut plane data in right panel
-ax2.set(title=title)
-ax2.set(xlabel="Tailward distance [$R_E$]")
-ax2.set(ylabel="Northward distance [$R_E$]")
-ax2.axis('square')
-pcm = ax2.pcolormesh(X, Y, Z)
-
-# Reason for choice of fraction and pad:
-# https://stackoverflow.com/a/39948312/1491619
-cb = fig.colorbar(pcm, ax=ax2, fraction=0.046, pad=0.04)
-cb.ax.set_title(parameter + ' [' + parameter_unit + ']')
-#cb.ax.set_ylabel('nPa')
 
 if plot3d:
     # Plot plane of field line and x-z plane asociated with y location of event.
@@ -349,6 +350,5 @@ if plot3d:
         pathpatch_2d_to_3d(q, 0., m)
         pathpatch_translate(p, v1)
         pathpatch_translate(q, v1)
-
 
 plt.show()
