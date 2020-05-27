@@ -131,6 +131,10 @@ def Compute(Event):
 
 
 def writevtk(Event):
+    """Write output of compute() to file
+    
+    Calliong compute() from ParaView does not work, so write output to file.
+    """
     year,month,day,hours,minutes,seconds,MLONdeg,MLATdeg = Event
     Time = [year,month,day,hours,minutes,seconds]
     Mdipole,U1,U2,U3 = Compute(Event)
