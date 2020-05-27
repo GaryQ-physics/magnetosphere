@@ -33,7 +33,7 @@ for line in lines:
     MLONdeg = line_list[5]
     MLATdeg = line_list[6]
 
-    MLT = ps.MLTfromMAG(MLONdeg, time)
+    MLT = ps.MAGtoMLT(MLONdeg, time)
 
     newlines.append(line.rstrip() + " {0:.2f}\n".format(MLT))
 

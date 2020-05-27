@@ -123,7 +123,7 @@ def UTtoHMS(UT, **kwargs):
     return [hours, minutes, seconds]
 
 
-def MLTfromMAG(pos, time):
+def MAGtoMLT(pos, time):
     """Compute magnetic local time given a universial time given MAG position or longitude
 
     Uses equation 93 in https://arxiv.org/abs/1611.10321
@@ -131,8 +131,8 @@ def MLTfromMAG(pos, time):
     Usage: 
     ------
     import pos_sun as ps
-    mlt = ps.MLTfromMAG(MAGlong, time)
-    mlt = ps.MLTfromMAG([MAGx, MAGy, MAGz], time)
+    mlt = ps.MAGtoMLT(MAGlong, time)
+    mlt = ps.MAGtoMLT([MAGx, MAGy, MAGz], time)
 
     Returns:
     --------
@@ -140,7 +140,7 @@ def MLTfromMAG(pos, time):
 
     Example:
     --------
-    mlt = MLTfromMAG(0., [2000, 1, 0, 0, 0, 0])
+    mlt = MAGtoMLT(0., [2000, 1, 0, 0, 0, 0])
     print(mlt)
 
 """
