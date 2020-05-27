@@ -71,7 +71,7 @@ def Compute(Event):
 
     # Plot title
     title = 'SCARR5 %04d-%02d-%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)
-    filename = conf["f_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % (year,month,day,hours,minutes,seconds) + '.out.cdf'
+    filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % (year,month,day,hours,minutes,seconds) + '.out.cdf'
 
     print(filename, "Opening " + filename)
     kameleon = ccmc.Kameleon()

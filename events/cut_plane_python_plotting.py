@@ -1,18 +1,14 @@
 # cut_plane_python_plotting
 
-# Directory with kameleon subdirectory
-#k_path = '/Users/robertweigel/'
-k_path = '/home/gary/magnetosphere/'
-
-# Directory of .cdf file
-f_path = './'
-
 import sys
+import os
 import numpy as np
 
-# !!!path append needs to be ahead of import odeint for my computor!!!
-sys.path.append(k_path + 'kameleon/lib/python2.7/site-packages/')
-sys.path.append(k_path + 'kameleon/lib/python2.7/site-packages/ccmc/')
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
+from config_paths import config
+conf = config()
+sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/')
+sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/ccmc/')
 
 # For OS-X
 import matplotlib as mpl
@@ -55,13 +51,13 @@ parameter_unit = 'nPa'
 year = 2003
 day = 20
 month = 11
-hours = 7.
-minutes = 0.
-seconds = 0.
+hours = 7
+minutes = 0
+seconds = 0
 
 # Plot title
 title = 'SCARR5 ' + str(year) + '-' + str(month) + '-' + str(day) + 'T07:00'
-filename = f_path + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
+filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % (year,month,day,hours,minutes,seconds) + '.out.cdf'
 
 # units
 deg = (np.pi/180.)

@@ -27,7 +27,7 @@ for n in range(N):
     time = line_list[0:5] + [0.]
     Event = time + line_list[5:7]
     T = tuple(time)
-    filename = conf["f_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % T + '.out.cdf'
+    filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % T + '.out.cdf'
     if os.path.exists(filename):
         cut_plane.writevtk(Event)
         field_line_vtk_script.writevtk(Event)

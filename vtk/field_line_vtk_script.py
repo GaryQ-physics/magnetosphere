@@ -77,7 +77,7 @@ def Compute(Event):
     MLAT = Event[7]
     T=tuple(time)
 
-    filename = conf["f_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % T + '.out.cdf'
+    filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % T + '.out.cdf'
 
     # open kameleon ---------------
     kameleon = ccmc.Kameleon()
