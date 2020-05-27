@@ -25,7 +25,7 @@ hr = 1.
 minn = hr/60.
 s = minn/60.
 
-def ex_data(kam, interp, variable, x,y,z):
+def ex_data(kam, interp, variable, x, y, z):
     # Get data from file, interpolate to point
     kam.loadVariable(variable)
     data = interp.interpolate(variable, x, y, z)
@@ -35,7 +35,7 @@ def ex_data(kam, interp, variable, x,y,z):
         return 0.
 
 
-def dXds(X, s, kam,interp,):
+def dXds(X, s, kam, interp):
     """
     derivative function for field line ODE
     dx/ds = Bx(x,y,z)/Bm
@@ -62,16 +62,16 @@ def dXds(X, s, kam,interp,):
 
 
 def Compute(Event):
-    year,month,day,hours,minutes,seconds,MLONdeg,MLATdeg = Event
-    Time = [year,month,day,hours,minutes,seconds]
-    MLON = MLONdeg*deg
-    MLAT = MLATdeg*deg
-    R = 1.01
-    X0 = ps.MAGtoGSM([R,MLATdeg,MLONdeg],Time,'sph','car')
+    #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
+    time = Event[0:6]
+    MLON = Event[6]
+    MLAT = Event[7]
+    T=tuple(time)
 
-    # Plot title
-    title = 'SCARR5 %04d-%02d-%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)
-    filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % (year,month,day,hours,minutes,seconds) + '.out.cdf'
+    filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % T + '.out.cdf'
+
+    R = 1.01
+    X0 = ps.MAGtoGSM([R,MLAT,MLON],time,'sph','car')
 
     print(filename, "Opening " + filename)
     kameleon = ccmc.Kameleon()
