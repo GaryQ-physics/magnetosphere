@@ -39,13 +39,13 @@ into `/tmp`. Follow the compilation instructions in the package. This process is
 Download the .out files
 
 ```
-wget -m -nH http://mag.gmu.edu/git-data/sblake/SCARR5_GM_IO2/
+wget -m -nH -R index*,*.gif --cut-dirs=2 http://mag.gmu.edu/git-data/sblake/SCARR5_GM_IO2/
 ```
 
 Convert the files
 
 ```
-cd git-data/sblake/SCARR5_GM_IO2/IO2
+cd SCARR5_GM_IO2/IO2
 ls -1 3d_*.out | xargs -i /tmp/kameleon-converter/kameleon-converter-v5.2.0/kameleon -v -f cdf -m batsrus -o . {}
 ```
 

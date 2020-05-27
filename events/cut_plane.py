@@ -4,7 +4,7 @@ import sys
 import os
 import numpy as np
 
-sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../' )
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config_paths import config
 conf = config()
 sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/')
@@ -31,7 +31,7 @@ hr = 1.
 minn = hr/60.
 s = minn/60.
 
-def ex_data(kam,interp, variable, x,y,z):
+def ex_data(kam, interp, variable, x,y,z):
     # Get data from file, interpolate to point
     kam.loadVariable(variable)
     data = interp.interpolate(variable, x, y, z)
