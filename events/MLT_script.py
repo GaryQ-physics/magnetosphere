@@ -3,7 +3,7 @@
 import sys
 import os
 
-sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../' )
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config_paths import config
 conf = config()
 
@@ -22,11 +22,9 @@ print('Computing MLT for {0:d} events'.format(len(lines)))
 newlines = []
 for line in lines:    
     
-    if line[0] == "#":
+    if line[0] == "#": # Header line
         newlines.append(line.rstrip() + "   MLT\n")
-        continue # Skip header line
         
-    # get list of numbers from string  
     line_list = [float(i) for i in line.split()]
 
     # get data
@@ -36,17 +34,7 @@ for line in lines:
 
     MLT = ps.MLTfromMAG(MLONdeg, time)
 
-    #print(line_list)
-    #print("MLT = {0:.2f}".format(MLT))
-
     newlines.append(line.rstrip() + " {0:,.2f}\n".format(MLT))
-    #print(subsol_pt)
-    #print "GSM: ", ps.MAGtoGSM([x,y,z],month,day,year,UT)
-    #print(delta)
-    #print "Mdip", ps.MAGtoGSM([0.,0.,1.],time,'car','car')
-    # write to out file
-
-#    f.write(str(MLT) + '\n')
 
 f = open(outfile, 'w')
 print('Writing ' + outfile)
