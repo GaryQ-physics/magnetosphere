@@ -15,8 +15,8 @@ import pos_sun as ps
 # run parameters
 Ny = 3*30
 Nz = 3*30
-Nx_main = 3*27
-Nx_tail = 30
+Nx_main = 2*3*27
+Nx_tail = 20
 
 # units
 hr = 1.
@@ -36,7 +36,7 @@ kg = Tesla*A*s**2
 
 mu0 = 1.2566370614e-6*kg*m/((s**2)*(A**2))
 
-def ex_data(kam,interp, variable, x,y,z, X0,Npole):
+def ex_data(kam,interp, variable, x,y,z, X0,Npole, V_char = 1.):
     if np.sqrt(x**2+y**2+z**2)<1e-4: return 0.
     # Get data from file, interpolate to point
     if('dB' in variable):
@@ -46,12 +46,12 @@ def ex_data(kam,interp, variable, x,y,z, X0,Npole):
         R = np.array([x, y, z])-X0
         R = R*m
         B = (mu0/(4*np.pi))*np.cross(J, R)/(np.linalg.norm(R)**3)
-        BnT = B/(nT/R_e**3)
-        if(variable=='dB_dV'): return np.linalg.norm(BnT)
+        dBnT = B*V_char/(nT)
+        if(variable=='dB_dV'): return np.linalg.norm(dBnT)
         a2 = np.cross(Npole, X0)
-        if(variable=='dBlon_dV'): return np.dot(BnT, a2)/np.linalg.norm(a2)
+        if(variable=='dBlon_dV'): return np.dot(dBnT, a2)/np.linalg.norm(a2)
         a1 = np.cross(X0, a2)
-        if(variable=='dBlat_dV'): return np.dot(BnT, a1)/np.linalg.norm(a1)
+        if(variable=='dBlat_dV'): return np.dot(dBnT, a1)/np.linalg.norm(a1)
     kam.loadVariable(variable)
     data = interp.interpolate(variable, x, y, z)
     return data
@@ -79,6 +79,7 @@ def Compute(Event, var):
     print('Nx= ',Nx)
     Y = np.linspace(-10.,10.,Ny)
     Z = np.linspace(-10.,10.,Nz)
+    dV_grid = (X[-1] - X[-2])*(Y[1] - Y[0])*(Z[1] - Z[0])*R_e**3
 
     B2, B3, B1 = np.meshgrid(Y,Z,X)
     #B1, B2, B3 = np.meshgrid(X,Y,Z)
@@ -89,7 +90,7 @@ def Compute(Event, var):
     B = np.column_stack((B1,B2,B3))
     Aa = (np.nan)*np.empty((B1.size,))
     for l in range(Aa.size):
-        Aa[l] = ex_data(kameleon,interpolator, var, B[l,0], B[l,1], B[l,2], X0,Npole)
+        Aa[l] = ex_data(kameleon,interpolator, var, B[l,0], B[l,1], B[l,2], X0,Npole, V_char = dV_grid)
 
     # close kameleon ---------------------
     kameleon.close()
