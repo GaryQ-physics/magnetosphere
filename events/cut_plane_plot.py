@@ -40,7 +40,13 @@ def plot(time, pos, plane_vs, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, 
     
     if type(pos) == str:
         if pos == 'xy':
-            plot(time, [0, 0, 0], [[1, 0, 0], [0, 1, 0]], parameter, )
+            plot(time, [0, 0, 0], [[1, 0, 0], [0, 1, 0]], parameter, xlim=xlim, ylim=ylim, zlim=zlim)
+            return
+        if pos == 'xz':
+            plot(time, [0, 0, 0], [[1, 0, 0], [0, 0, 1]], parameter, xlim=xlim, ylim=ylim, zlim=zlim)
+            return
+        if pos == 'yz':
+            plot(time, [0, 0, 0], [[0, 1, 0], [0, 0, 1]], parameter, xlim=xlim, ylim=ylim, zlim=zlim)
             return
             
     # run parameters
@@ -55,7 +61,6 @@ def plot(time, pos, plane_vs, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, 
     filename_in = conf["run_path"] + filename + '.out.cdf'
     filename_out = conf["run_path_derived"] + filename + '.png'
     
-    r = 1.01
     X0 = ps.MAGtoGSM(pos, time, 'sph', 'car')
 
     # open kameleon
@@ -71,21 +76,25 @@ def plot(time, pos, plane_vs, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, 
     parameter_unit = parameter_unit.replace('mu', '\\mu ')
 
     if plane_vs==None:
+        r = pos[0]
+        mlat = pos[1]
+        mlon = pos[2]
+        Event = time + [mlon, mlat]
+        if debug: print('Event=',Event)
+        ret = Compute(Event, ret_sol=True, r=r)
+        U1 = ret[1]
+        U2 = ret[2]
+        U3 = ret[3]
+        sol = ret[4]
+        
         '''
-        Event = time + pos[1:3]
-        vects = Compute(Event)
-        U1 = vects[1]
-        U2 = vects[2]
-        U3 = vects[3]
-        '''
-
         # Trace field line
         s_grid = np.linspace(0., 10., 100)
         soln = odeint(dXds, X0, s_grid, args=(kameleon, interpolator))
         if debug:
-            print(X0)
+            print('X0 = ', X0)
             print(np.dot(X0, X0))
-            print(soln)
+            print('soln = ', soln)
 
         # initialize vectors for defining field line cut plane
         v1 = (np.nan)*np.empty((3, ))
@@ -113,6 +122,9 @@ def plot(time, pos, plane_vs, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, 
         U2 = (v1-v2)/np.linalg.norm(v1-v2)
         U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
         U1 = np.cross(U2, U3)
+        '''
+        
+        if debug: print('sol = ', sol)
     else:
         U1 = np.array(plane_vs[0])
         U2 = np.array(plane_vs[1])

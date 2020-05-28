@@ -54,12 +54,12 @@ def dXds(X, s, kam, interp):
         return (sign/Bm)*B
     else:
         if debug:
-            if(Bm >= 1e+7): print('FIELD TOO HIGH')
-            if(Bm <= 1e-7): print('FIELD TOO LOW')
+            if(Bm >= 1e+7): aaa=1 #print('FIELD TOO HIGH')
+            if(Bm <= 1e-7): aaa=1 #print('FIELD TOO LOW')
         return [0., 0., 0.] # TODO: Return np.nan?
 
 
-def Compute(Event):
+def Compute(Event, ret_sol=False, r=1.01):
     #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
     time = Event[0:6]
     MLON = Event[6]
@@ -68,8 +68,8 @@ def Compute(Event):
 
     filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % T + '.out.cdf'
 
-    R = 1.01
-    X0 = ps.MAGtoGSM([R,MLAT,MLON],time,'sph','car')
+    
+    X0 = ps.MAGtoGSM([r, MLAT, MLON], time, 'sph', 'car')
 
     print(filename, "Opening " + filename)
     kameleon = ccmc.Kameleon()
@@ -79,53 +79,57 @@ def Compute(Event):
 
     # Trace field line
     s_grid = np.linspace(0., 10., 100.)
+    ds = s_grid[1] - s_grid[0]
+
     soln = odeint(dXds, X0, s_grid, args=(kameleon, interpolator))
     if debug:
-        print(X0)
+        print('X0 = ', X0)
         print(np.dot(X0,X0))
-        print(soln)
+        print('soln = ', soln)
 
     # initialize vectors for defining field line cut plane
-    v1=(np.nan)*np.empty((3,))
-    v2=(np.nan)*np.empty((3,))
-    v3=(np.nan)*np.empty((3,))
-    U1=(np.nan)*np.empty((3,))
-    U2=(np.nan)*np.empty((3,))
-    U3=(np.nan)*np.empty((3,))
-    Mdipole=(np.nan)*np.empty((3,))
+    v1 = (np.nan)*np.empty((3, ))
+    v2 = (np.nan)*np.empty((3, ))
+    v3 = (np.nan)*np.empty((3, ))
+    U1 = (np.nan)*np.empty((3, ))
+    U2 = (np.nan)*np.empty((3, ))
+    U3 = (np.nan)*np.empty((3, ))
+    Mdipole = (np.nan)*np.empty((3, ))
 
     # define condition on the field line points
     tr = np.logical_and(soln[:,0]**2+soln[:,1]**2+soln[:,2]**2 >=1., soln[:,0]**2+soln[:,1]**2+soln[:,2]**2 < 20.)
 
     # create the arrays of the restricted field line componentwise
-    solx=soln[:,0]
-    solx=solx[tr]
-    soly=soln[:,1]
-    soly=soly[tr]
-    solz=soln[:,2]
-    solz=solz[tr]
-
-    # reassemble
-    sol=np.column_stack([solx,soly,solz])
-    print(sol)
-
+    sol = soln[tr, :]
+    if debug: print('sol = ', sol)
     # define vects for plane of main field line
+    
+    '''
     v1 = sol[0,:]
     v2 = sol[-1,:]
     half = int(sol.shape[0]/2)
     v3 = sol[half,:]
+    '''
+
+    v1 = sol[0,:]
+    v2 = sol[int(1./ds),:]
+    v3 = sol[int(0.5/ds),:]
 
     # define cut plane coordinates based on main field line 
     # (U3 is normal to the plane)
     U2 = (v1-v2)/np.linalg.norm(v1-v2)
     Mdipole = ps.MAGtoGSM([0.,0.,1.],time,'car','car')
-    U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
+    U3 = np.cross(v3-v1, U2)
+    if np.linalg.norm(U3)<1e-3:
+        print("WARNING: close to straight line")
+    U3 = U3/np.linalg.norm(U3)
     U1 = np.cross(U2, U3)
 
     kameleon.close()
     print("Closed " + filename)
 
-    return [Mdipole,U1,U2,U3]
+    if ret_sol: return [Mdipole, U1, U2, U3, sol]
+    return [Mdipole, U1, U2, U3]
 
 
 def writevtk(Event):
