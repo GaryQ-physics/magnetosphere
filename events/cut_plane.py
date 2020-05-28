@@ -120,7 +120,7 @@ def Compute(Event):
     # define cut plane coordinates based on main field line 
     # (U3 is normal to the plane)
     U2 = (v1-v2)/np.linalg.norm(v1-v2)
-    Mdipole = ps.MAGtoGSM([0.,0.,1.],Time,'car','car')
+    Mdipole = ps.MAGtoGSM([0.,0.,1.],time,'car','car')
     U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
     U1 = np.cross(U2, U3)
 
@@ -136,11 +136,11 @@ def writevtk(Event):
     Calliong compute() from ParaView does not work, so write output to file.
     """
     year,month,day,hours,minutes,seconds,MLONdeg,MLATdeg = Event
-    Time = [year,month,day,hours,minutes,seconds]
+    time = [year,month,day,hours,minutes,seconds]
     Mdipole,U1,U2,U3 = Compute(Event)
     tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)
 
-    out_fname = conf["m_path"] + 'magnetosphere/data/cut_plane_info' + tag + '.txt'
+    out_fname = conf["run_path_derived"] + 'cut_plane_info' + tag + '.txt'
     f = open(out_fname, 'w')
     print('Writing ' + out_fname)
     f.write('%.7e %.7e %.7e\n' % (Mdipole[0], Mdipole[1], Mdipole[2]))
@@ -150,7 +150,7 @@ def writevtk(Event):
     f.close()
     print('Wrote ' + out_fname)
 
-    print(Time)
+    print(time)
     print('Mdipole = ', Mdipole)
     print('U1 = ', U1)
     print('U2 = ', U2)

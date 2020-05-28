@@ -128,15 +128,20 @@ def Compute(Event):
         went_out = 0
         came_back = 0
         end_val = solns.shape[0]-1
+        print end_val
         for k in range(solns.shape[0]):
             if solns[k, 0, i]**2 + solns[k, 1, i]**2 + solns[k, 2, i]**2 > 1.1**2: went_out = 1
-            if solns[k, 0, i]**2 + solns[k, 1, i]**2 + solns[k, 2, i]**2 and went_out==1:
+            if solns[k, 0, i]**2 + solns[k, 1, i]**2 + solns[k, 2, i]**2 < 1.1**2 and went_out==1:
                 came_back = 1
                 end_val = k
                 break
+        print end_val
         tr = np.arange(end_val+1)
         solx = solns[:, 0, i]
+        print solx
+        print tr
         solx = solx[tr]
+        print solx
         soly = solns[:, 1, i]
         soly = soly[tr]
         solz = solns[:, 2, i]
@@ -151,6 +156,7 @@ def Compute(Event):
     kameleon.close()
     print("Closed " + filename)
     #-------------------------------
+    print solns_restr
     return solns_restr
 
 
@@ -166,7 +172,7 @@ def writevtk(Event):
     solns_restr = Compute(Event)
     mlong_array = [0., 10., -10., 20., -20.] # per deg
     for i in range(Nb+1+Nlong):
-        out_fname = conf["m_path"] + 'magnetosphere/data/' + 'field_line' + str(i) + tag + '.vtk'
+        out_fname = conf["run_path_derived"] + 'field_line' + str(i) + tag + '.vtk'
         if i > Nb:
             mlong = mlong_array[i-Nb-1]
             mlat = np.linspace(-90,90,100)
@@ -207,3 +213,10 @@ def writevtk(Event):
                 f.write(str(k) + '\n')
             print('closed ' + out_fname)
             f.close()
+
+'''
+line_list = [2003, 11, 20, 7, 0, 176.00, 57.50]
+time = line_list[0:5] + [0.]
+Event = time + line_list[5:7]
+Compute(Event)
+'''

@@ -25,18 +25,18 @@ tag = '_2003:11:20T07:00:00'
 Nlong=5
 Nb = 6
 N=Nb+1+Nlong
-var='dBlon_dV'
+var='dBlat_dV'
 
 cut_plane_name = 'cut_plane_info'+tag+'.txt'
 grid_name = 'kameleon_structured_grid_' + var + tag + '.vtk'
 
-f = open(conf["m_path"] + 'magnetosphere/data/'+cut_plane_name,'r')
+f = open(conf["run_path_derived"] + cut_plane_name,'r')
 
 # get string of the 1st line of data (Mdipole components)
 Mdipole_string = f.readline()
 # get list of components from string  
 Mdipole = [float(i) for i in Mdipole_string.split()]
-#make array
+# make array
 Mdipole=np.array(Mdipole)
 
 #next line is U1, ect
@@ -51,7 +51,7 @@ U3 = [float(i) for i in U3_string.split()]
 U3=np.array(U3)
 
 # create a new 'Legacy VTK Reader'
-kameleon_structured_gridvtk = LegacyVTKReader(FileNames=[conf["m_path"] + 'magnetosphere/data/' + grid_name])
+kameleon_structured_gridvtk = LegacyVTKReader(FileNames=[conf["run_path_derived"] + grid_name])
 
 # get active view
 renderView1 = GetActiveViewOrCreate('RenderView')
@@ -63,13 +63,13 @@ kameleon_structured_gridvtkDisplay = Show(kameleon_structured_gridvtk, renderVie
 # trace defaults for the display properties.
 kameleon_structured_gridvtkDisplay.Representation = 'Outline'
 kameleon_structured_gridvtkDisplay.ColorArrayName = ['POINTS', '']
-kameleon_structured_gridvtkDisplay.OSPRayScaleArray = 'point_scalars'
+kameleon_structured_gridvtkDisplay.OSPRayScaleArray = var
 kameleon_structured_gridvtkDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
 kameleon_structured_gridvtkDisplay.SelectOrientationVectors = 'None'
 kameleon_structured_gridvtkDisplay.ScaleFactor = 21.0
-kameleon_structured_gridvtkDisplay.SelectScaleArray = 'point_scalars'
+kameleon_structured_gridvtkDisplay.SelectScaleArray = var
 kameleon_structured_gridvtkDisplay.GlyphType = 'Arrow'
-kameleon_structured_gridvtkDisplay.GlyphTableIndexArray = 'point_scalars'
+kameleon_structured_gridvtkDisplay.GlyphTableIndexArray = var
 kameleon_structured_gridvtkDisplay.DataAxesGrid = 'GridAxesRepresentation'
 kameleon_structured_gridvtkDisplay.PolarAxes = 'PolarAxesRepresentation'
 kameleon_structured_gridvtkDisplay.ScalarOpacityUnitDistance = 5.766431907004487
@@ -89,22 +89,22 @@ slice1.SliceOffsetValues = [0.0]
 slice1.SliceType.Origin = [-95.0, 0.0, 0.0]
 slice1.SliceType.Normal = [0.0, 1.0, 0.0]
 
-# get color transfer function/color map for 'point_scalars'
-point_scalarsLUT = GetColorTransferFunction('point_scalars')
+# get color transfer function/color map for var
+point_scalarsLUT = GetColorTransferFunction(var)
 
 # show data in view
 slice1Display = Show(slice1, renderView1)
 # trace defaults for the display properties.
 slice1Display.Representation = 'Surface'
-slice1Display.ColorArrayName = ['POINTS', 'point_scalars']
+slice1Display.ColorArrayName = ['POINTS', var]
 slice1Display.LookupTable = point_scalarsLUT
-slice1Display.OSPRayScaleArray = 'point_scalars'
+slice1Display.OSPRayScaleArray = var
 slice1Display.OSPRayScaleFunction = 'PiecewiseFunction'
 slice1Display.SelectOrientationVectors = 'None'
 slice1Display.ScaleFactor = 2.0
-slice1Display.SelectScaleArray = 'point_scalars'
+slice1Display.SelectScaleArray = var
 slice1Display.GlyphType = 'Arrow'
-slice1Display.GlyphTableIndexArray = 'point_scalars'
+slice1Display.GlyphTableIndexArray = var
 slice1Display.DataAxesGrid = 'GridAxesRepresentation'
 slice1Display.PolarAxes = 'PolarAxesRepresentation'
 
@@ -121,22 +121,22 @@ slice2.SliceOffsetValues = [0.0]
 slice2.SliceType.Origin = [-95.0, 0.0, 0.0]
 slice2.SliceType.Normal = [0.,0.,1.]
 
-# get color transfer function/color map for 'point_scalars'
-point_scalarsLUT = GetColorTransferFunction('point_scalars')
+# get color transfer function/color map for var
+point_scalarsLUT = GetColorTransferFunction(var)
 
 # show data in view
 slice2Display = Show(slice2, renderView1)
 # trace defaults for the display properties.
 slice2Display.Representation = 'Surface'
-slice2Display.ColorArrayName = ['POINTS', 'point_scalars']
+slice2Display.ColorArrayName = ['POINTS', var]
 slice2Display.LookupTable = point_scalarsLUT
-slice2Display.OSPRayScaleArray = 'point_scalars'
+slice2Display.OSPRayScaleArray = var
 slice2Display.OSPRayScaleFunction = 'PiecewiseFunction'
 slice2Display.SelectOrientationVectors = 'None'
 slice2Display.ScaleFactor = 2.0
-slice2Display.SelectScaleArray = 'point_scalars'
+slice2Display.SelectScaleArray = var
 slice2Display.GlyphType = 'Arrow'
-slice2Display.GlyphTableIndexArray = 'point_scalars'
+slice2Display.GlyphTableIndexArray = var
 slice2Display.DataAxesGrid = 'GridAxesRepresentation'
 slice2Display.PolarAxes = 'PolarAxesRepresentation'
 
@@ -154,22 +154,22 @@ slice3.SliceOffsetValues = [0.0]
 slice3.SliceType.Origin = [0.0, 0.0, 0.0]
 slice3.SliceType.Normal = [1.,0.,0.]
 
-# get color transfer function/color map for 'point_scalars'
-point_scalarsLUT = GetColorTransferFunction('point_scalars')
+# get color transfer function/color map for var
+point_scalarsLUT = GetColorTransferFunction(var)
 
 # show data in view
 slice3Display = Show(slice3, renderView1)
 # trace defaults for the display properties.
 slice3Display.Representation = 'Surface'
-slice3Display.ColorArrayName = ['POINTS', 'point_scalars']
+slice3Display.ColorArrayName = ['POINTS', var]
 slice3Display.LookupTable = point_scalarsLUT
-slice3Display.OSPRayScaleArray = 'point_scalars'
+slice3Display.OSPRayScaleArray = var
 slice3Display.OSPRayScaleFunction = 'PiecewiseFunction'
 slice3Display.SelectOrientationVectors = 'None'
 slice3Display.ScaleFactor = 2.0
-slice3Display.SelectScaleArray = 'point_scalars'
+slice3Display.SelectScaleArray = var
 slice3Display.GlyphType = 'Arrow'
-slice3Display.GlyphTableIndexArray = 'point_scalars'
+slice3Display.GlyphTableIndexArray = var
 slice3Display.DataAxesGrid = 'GridAxesRepresentation'
 slice3Display.PolarAxes = 'PolarAxesRepresentation'
 
@@ -187,22 +187,22 @@ slice4.SliceOffsetValues = [0.0]
 slice4.SliceType.Origin = [0.0, 0.0, 0.0]
 slice4.SliceType.Normal = U3
 
-# get color transfer function/color map for 'point_scalars'
-point_scalarsLUT = GetColorTransferFunction('point_scalars')
+# get color transfer function/color map for var
+point_scalarsLUT = GetColorTransferFunction(var)
 
 # show data in view
 slice4Display = Show(slice4, renderView1)
 # trace defaults for the display properties.
 slice4Display.Representation = 'Surface'
-slice4Display.ColorArrayName = ['POINTS', 'point_scalars']
+slice4Display.ColorArrayName = ['POINTS', var]
 slice4Display.LookupTable = point_scalarsLUT
-slice4Display.OSPRayScaleArray = 'point_scalars'
+slice4Display.OSPRayScaleArray = var
 slice4Display.OSPRayScaleFunction = 'PiecewiseFunction'
 slice4Display.SelectOrientationVectors = 'None'
 slice4Display.ScaleFactor = 2.0
-slice4Display.SelectScaleArray = 'point_scalars'
+slice4Display.SelectScaleArray = var
 slice4Display.GlyphType = 'Arrow'
-slice4Display.GlyphTableIndexArray = 'point_scalars'
+slice4Display.GlyphTableIndexArray = var
 slice4Display.DataAxesGrid = 'GridAxesRepresentation'
 slice4Display.PolarAxes = 'PolarAxesRepresentation'
 
@@ -427,7 +427,7 @@ coneMDisplay.DiffuseColor = [0.0, 0., 1.]
 
 for i in range(N):
     # create a new 'Legacy VTK Reader'
-    field_linevtk = LegacyVTKReader(FileNames=[conf["m_path"] + 'magnetosphere/data/' + 'field_line'+str(i)+tag+'.vtk'])
+    field_linevtk = LegacyVTKReader(FileNames=[conf["run_path_derived"] + 'field_line'+str(i)+tag+'.vtk'])
 
     # show data in view
     field_linevtkDisplay = Show(field_linevtk, renderView1)
@@ -507,3 +507,56 @@ RenameSource('cut_plane', slice4)
 
 # Properties modified on renderView1.AxesGrid
 renderView1.AxesGrid.Visibility = 0
+
+point_scalarsLUT = GetColorTransferFunction(var)
+point_scalarsLUT.RescaleTransferFunction(-0.000586338632274, 0.00023917722865)
+
+renderView1.CameraPosition = [7.1183569, 56.134761, 6.60090036]
+renderView1.CameraFocalPoint = [-0.445446427, 0.115471756, -0.440184]
+renderView1.CameraViewUp = [-0.05222445, -0.117594, 0.9916875635]
+renderView1.CenterOfRotation = [0., 0., 0.]
+renderView1.RotationFactor = 1
+renderView1.CameraViewAngle = 30
+renderView1.CameraParallelScale = 108.426242211007
+renderView1.CameraParallelProjection = 0
+
+'''
+<?xml version="1.0"?>
+<PVCameraConfiguration description="ParaView camera configuration" version="1.0">
+  <Proxy group="views" type="RenderView" id="2076" servers="21">
+    <Property name="CameraPosition" id="2076.CameraPosition" number_of_elements="3">
+      <Element index="0" value="7.11835691704117"/>
+      <Element index="1" value="56.1347613281343"/>
+      <Element index="2" value="6.60090036368214"/>
+    </Property>
+    <Property name="CameraFocalPoint" id="2076.CameraFocalPoint" number_of_elements="3">
+      <Element index="0" value="-0.445446427868706"/>
+      <Element index="1" value="0.115471756220899"/>
+      <Element index="2" value="-0.440184037664585"/>
+    </Property>
+    <Property name="CameraViewUp" id="2076.CameraViewUp" number_of_elements="3">
+      <Element index="0" value="-0.0522244587063913"/>
+      <Element index="1" value="-0.117594142115094"/>
+      <Element index="2" value="0.991687563526457"/>
+    </Property>
+    <Property name="CenterOfRotation" id="2076.CenterOfRotation" number_of_elements="3">
+      <Element index="0" value="-0.445446427868706"/>
+      <Element index="1" value="0.115471756220899"/>
+      <Element index="2" value="-0.440184037664585"/>
+    </Property>
+    <Property name="RotationFactor" id="2076.RotationFactor" number_of_elements="1">
+      <Element index="0" value="1"/>
+    </Property>
+    <Property name="CameraViewAngle" id="2076.CameraViewAngle" number_of_elements="1">
+      <Element index="0" value="30"/>
+    </Property>
+    <Property name="CameraParallelScale" id="2076.CameraParallelScale" number_of_elements="1">
+      <Element index="0" value="108.426242211007"/>
+    </Property>
+    <Property name="CameraParallelProjection" id="2076.CameraParallelProjection" number_of_elements="1">
+      <Element index="0" value="0"/>
+      <Domain name="bool" id="2076.CameraParallelProjection.bool"/>
+    </Property>
+  </Proxy>
+</PVCameraConfiguration>
+'''
