@@ -12,8 +12,8 @@ from spacepy.time import Ticktock
 
 
 def MAGtoGSM(v_MAG, time, ctype_in, ctype_out):
-    """Convert from MAG to GSM coordinates using SpacePy library
-    
+    """Convert from MAG to GSM coordinates using SpacePy library.
+
     MAG: array-like
     
     time: list or tuple of ints

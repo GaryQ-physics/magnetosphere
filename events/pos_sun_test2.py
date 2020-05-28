@@ -39,9 +39,8 @@ interpolator = kameleon.createNewInterpolator()
 
 # no arguments assumes native coordinate system
 coordinate_interpolator = kameleon.createCoordinateInterpolator() 
-print('File epoch time: ' + str(coordinate_interpolator.getEphemTime()) + ' seconds since 2000-01-01T12:00:00')
+print('File epoch time: ' + str(coordinate_interpolator.getEphemTime()) + ' seconds')
 coordinate_interpolator.setEphemTime(EphemTime)
-#coordinate_interpolator.setEphemTime(0)
 print('Computed epoch time: ' + str(coordinate_interpolator.getEphemTime()) + ' seconds since 2000-01-01T12:00:00')
 
 n = 4 # Number of tests
