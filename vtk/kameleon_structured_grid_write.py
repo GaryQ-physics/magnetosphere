@@ -3,12 +3,11 @@
 import sys
 import os
 import numpy as np
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config_paths import config
 conf = config()
-sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/')
-sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/ccmc/')
-sys.path.append(conf["m_path"] + 'magnetosphere/events/')
+
 import _CCMC as ccmc
 import pos_sun as ps
 
