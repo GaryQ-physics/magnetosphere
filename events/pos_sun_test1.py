@@ -8,7 +8,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config_paths import config
 conf = config()
 
-sys.path.append(conf["m_path"] + 'magnetosphere/events/')
 import pos_sun as ps
 
 # [year, month, day, hours, minutes, seconds, x, y, z, 'car']

@@ -12,8 +12,6 @@ import matplotlib.pyplot as plt
 # Following needed for projection='3d', but PyFlakes will warn that not used
 from scipy.integrate import odeint
 
-sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/')
-sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/ccmc/')
 import _CCMC as ccmc
 import pos_sun as ps
 
@@ -40,6 +38,11 @@ def plot(time, pos, plane_vs, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, 
     # plot(time, [GSMx,GSMy,GSMz], [v1, v2], 'p')
     #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
     
+    if type(pos) == str:
+        if pos == 'xy':
+            plot(time, [0, 0, 0], [[1, 0, 0], [0, 1, 0]], parameter, )
+            return
+            
     # run parameters
     debug = False
 
