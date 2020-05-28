@@ -11,12 +11,12 @@ import spacepy.coordinates as sc
 from spacepy.time import Ticktock
 
 
-def MAGtoGSM(v_MAG, Time, ctype_in, ctype_out):
+def MAGtoGSM(v_MAG, time, ctype_in, ctype_out):
     """Convert from MAG to GSM coordinates using SpacePy library
     
     MAG: array-like
     
-    Time: list or tuple of ints
+    time: list or tuple of ints
           [year,month,day,hours,minutes,seconds]
     
     ctype_in: str
@@ -29,7 +29,7 @@ def MAGtoGSM(v_MAG, Time, ctype_in, ctype_out):
     
     v_MAG = np.array(v_MAG)
     cvals = sc.Coords(v_MAG, 'MAG', ctype_in)
-    T = tuple(Time)
+    T = tuple(time)
     t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T 
     cvals.ticks = Ticktock(t_str, 'ISO')
     newcoord = cvals.convert('GSM', ctype_out)
@@ -37,19 +37,19 @@ def MAGtoGSM(v_MAG, Time, ctype_in, ctype_out):
     return v_GSM
 
 
-def GSMtoMAG(v_GSM, Time, ctype_in, ctype_out):
+def GSMtoMAG(v_GSM, time, ctype_in, ctype_out):
     """Convert from GSM to MAG coordinates using SpacePy library"""
 
     v_GSM = np.array(v_GSM)
     cvals = sc.Coords(v_GSM, 'GSM', ctype_in)
-    T = tuple(Time)
+    T = tuple(time)
     t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T
     cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
     newcoord = cvals.convert('MAG', ctype_out)
     v_MAG = np.array([newcoord.x[0], newcoord.y[0], newcoord.z[0]])
     return v_MAG
 
-def GEOtoGSM(v_GEO, Time, ctype_in, ctype_out):
+def GEOtoGSM(v_GEO, time, ctype_in, ctype_out):
     """Convert from GEO to GSM coordinates using SpacePy library
     
     Example:
@@ -61,7 +61,7 @@ def GEOtoGSM(v_GEO, Time, ctype_in, ctype_out):
     
     """
 
-    T = tuple(Time)
+    T = tuple(time)
     t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T
 
     v_GEO = np.array(v_GEO)
