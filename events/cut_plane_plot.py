@@ -17,7 +17,7 @@ sys.path.append(conf["k_path"] + 'kameleon/lib/python2.7/site-packages/ccmc/')
 import _CCMC as ccmc
 import pos_sun as ps
 
-from cut_plane import ex_data, dXds
+from cut_plane import ex_data, dXds, Compute
 
 def data_in_U(kam, interp, variable, u, v, U1, U2, U3):
     # Get the data in the U coordinates (defined by the cut plane vectors U1 and U2)
@@ -35,27 +35,25 @@ def data_in_U(kam, interp, variable, u, v, U1, U2, U3):
         return ex_data(kam, interp, variable, x, y, z)
 
 
-def plot(Event, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, png=True):
+def plot(time, pos, plane_vs, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, png=True):
+    # plot(time, [r, mlat, mlong], None, 'p')
+    # plot(time, [GSMx,GSMy,GSMz], [v1, v2], 'p')
     #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
     
     # run parameters
     debug = False
 
-    time = Event[0:6]
-    mlon = Event[6]
-    mlat = Event[7]
-    
     # Plot title
     title = 'SCARR5 ' + '%04d%02d%02dT%02d%02d%02d' % tuple(time)
-    title = title + "\n" + "[mlat,mlon]=[{0:.1f}, {1:.1f}]".format(mlat, mlon)
+    title = title + "\n" + "[mlat,mlon]=[{0:.1f}, {1:.1f}]".format(pos[1], pos[2])
 
     filename = '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % tuple(time)
 
     filename_in = conf["run_path"] + filename + '.out.cdf'
     filename_out = conf["run_path_derived"] + filename + '.png'
-
+    
     r = 1.01
-    X0 = ps.MAGtoGSM([r, mlat, mlon], time, 'sph', 'car')
+    X0 = ps.MAGtoGSM(pos, time, 'sph', 'car')
 
     # open kameleon
     kameleon = ccmc.Kameleon()
@@ -69,40 +67,53 @@ def plot(Event, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, png=True):
     parameter_unit = kameleon.getVisUnit(parameter)
     parameter_unit = parameter_unit.replace('mu', '\\mu ')
 
-    # Trace field line
-    s_grid = np.linspace(0., 10., 100)
-    soln = odeint(dXds, X0, s_grid, args=(kameleon, interpolator))
-    if debug:
-        print(X0)
-        print(np.dot(X0, X0))
-        print(soln)
+    if plane_vs==None:
+        '''
+        Event = time + pos[1:3]
+        vects = Compute(Event)
+        U1 = vects[1]
+        U2 = vects[2]
+        U3 = vects[3]
+        '''
 
-    # initialize vectors for defining field line cut plane
-    v1 = (np.nan)*np.empty((3, ))
-    v2 = (np.nan)*np.empty((3, ))
-    v3 = (np.nan)*np.empty((3, ))
-    U1 = (np.nan)*np.empty((3, ))
-    U2 = (np.nan)*np.empty((3, ))
-    U3 = (np.nan)*np.empty((3, ))
+        # Trace field line
+        s_grid = np.linspace(0., 10., 100)
+        soln = odeint(dXds, X0, s_grid, args=(kameleon, interpolator))
+        if debug:
+            print(X0)
+            print(np.dot(X0, X0))
+            print(soln)
 
-    # define restriction condition on the field line points
-    tr = np.logical_and(soln[:, 0]**2 + soln[:, 1]**2 + soln[:, 2]**2 >= 1.,
-                        soln[:, 0]**2 + soln[:, 1]**2 + soln[:, 2]**2 < 20.)
+        # initialize vectors for defining field line cut plane
+        v1 = (np.nan)*np.empty((3, ))
+        v2 = (np.nan)*np.empty((3, ))
+        v3 = (np.nan)*np.empty((3, ))
+        U1 = (np.nan)*np.empty((3, ))
+        U2 = (np.nan)*np.empty((3, ))
+        U3 = (np.nan)*np.empty((3, ))
 
-    # restricted field lines
-    sol = soln[tr, :]
+        # define restriction condition on the field line points
+        tr = np.logical_and(soln[:, 0]**2 + soln[:, 1]**2 + soln[:, 2]**2 >= 1.,
+                            soln[:, 0]**2 + soln[:, 1]**2 + soln[:, 2]**2 < 20.)
 
-    # define vects for plane of main field line
-    v1 = sol[0, :]  # First point on field line
-    v2 = sol[-1, :] # Last point on field line
-    half = int(sol.shape[0]/2) 
-    v3 = sol[half, :] # Approximate mid-point on field line
+        # restricted field lines
+        sol = soln[tr, :]
 
-    # define cut plane coordinates based on main field line 
-    # (U3 is normal to the plane)
-    U2 = (v1-v2)/np.linalg.norm(v1-v2)
-    U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
-    U1 = np.cross(U2, U3)
+        # define vects for plane of main field line
+        v1 = sol[0, :]  # First point on field line
+        v2 = sol[-1, :] # Last point on field line
+        half = int(sol.shape[0]/2) 
+        v3 = sol[half, :] # Approximate mid-point on field line
+
+        # define cut plane coordinates based on main field line 
+        # (U3 is normal to the plane)
+        U2 = (v1-v2)/np.linalg.norm(v1-v2)
+        U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
+        U1 = np.cross(U2, U3)
+    else:
+        U1 = np.array(plane_vs[0])
+        U2 = np.array(plane_vs[1])
+        U3 = np.cross(U1, U2)
 
     x_1d = np.linspace(xlim[0], xlim[1], nx)
     y_1d = np.linspace(ylim[0], ylim[1], ny)
@@ -136,12 +147,13 @@ def plot(Event, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, png=True):
     plt.xlim(xlim[0], xlim[1])
     plt.ylim(ylim[0], ylim[1])
 
-    # Add field line to 2D plot        
-    solCut=np.zeros((sol.shape[0], 2))
-    for k in range(sol.shape[0]):
-        solCut[k, 0] = np.dot(sol[k, :], U1)
-        solCut[k, 1] = np.dot(sol[k, :], U2)
-    ax2.plot(solCut[:, 0], solCut[:, 1], 'red', lw = 1)
+    # Add field line to 2D plot
+    if plane_vs==None:
+        solCut=np.zeros((sol.shape[0], 2))
+        for k in range(sol.shape[0]):
+            solCut[k, 0] = np.dot(sol[k, :], U1)
+            solCut[k, 1] = np.dot(sol[k, :], U2)
+        ax2.plot(solCut[:, 0], solCut[:, 1], 'red', lw = 1)
 
     if png:
         if debug:
