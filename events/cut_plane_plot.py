@@ -46,7 +46,7 @@ def plot(Event, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, png=True):
     mlat = Event[7]
     
     # Plot title
-    title = 'SCARR5 ' + '%04d%02d%02d-%02d%02d%02d-000' % tuple(time)
+    title = 'SCARR5 ' + '%04d%02d%02dT%02d%02d%02d' % tuple(time)
     title = title + "\n" + "[mlat,mlon]=[{0:.1f}, {1:.1f}]".format(mlat, mlon)
 
     filename = '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % tuple(time)
@@ -123,7 +123,7 @@ def plot(Event, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, png=True):
     ax2 = fig.add_subplot(1, 2, 2)
 
     # Plot cut plane data
-    ax2.set(title = title)
+    ax2.set_title(title, fontsize=10)
     ax2.set(xlabel = "Tailward distance [$R_E$]")
     ax2.set(ylabel = "Northward distance [$R_E$]")
     ax2.axis('square')
