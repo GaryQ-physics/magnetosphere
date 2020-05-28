@@ -9,13 +9,11 @@ from config_paths import config
 conf = config()
 
 import matplotlib.pyplot as plt
-# Following needed for projection='3d', but PyFlakes will warn that not used
-from scipy.integrate import odeint
 
 import _CCMC as ccmc
 import pos_sun as ps
 
-from cut_plane import ex_data, dXds, Compute
+from cut_plane import ex_data, Compute
 
 def data_in_U(kam, interp, variable, u, v, U1, U2, U3):
     # Get the data in the U coordinates (defined by the cut plane vectors U1 and U2)
@@ -33,25 +31,26 @@ def data_in_U(kam, interp, variable, u, v, U1, U2, U3):
         return ex_data(kam, interp, variable, x, y, z)
 
 
-def plot(time, pos, plane_vs, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, png=True):
+def plot(time, pos, plane_vs, parameter,
+         xlim=[0,4], ylim=[-3,3], nx=50, ny=50, png=True, debug=False):
     # plot(time, [r, mlat, mlong], None, 'p')
     # plot(time, [GSMx,GSMy,GSMz], [v1, v2], 'p')
     #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
     
     if type(pos) == str:
         if pos == 'xy':
-            plot(time, [0, 0, 0], [[1, 0, 0], [0, 1, 0]], parameter, xlim=xlim, ylim=ylim, zlim=zlim)
+            plot(time, [0, 0, 0], [[1, 0, 0], [0, 1, 0]],
+                 parameter, xlim=xlim, ylim=ylim)
             return
         if pos == 'xz':
-            plot(time, [0, 0, 0], [[1, 0, 0], [0, 0, 1]], parameter, xlim=xlim, ylim=ylim, zlim=zlim)
+            plot(time, [0, 0, 0], [[1, 0, 0], [0, 0, 1]],
+                 parameter, xlim=xlim, ylim=ylim)
             return
         if pos == 'yz':
-            plot(time, [0, 0, 0], [[0, 1, 0], [0, 0, 1]], parameter, xlim=xlim, ylim=ylim, zlim=zlim)
+            plot(time, [0, 0, 0], [[0, 1, 0], [0, 0, 1]],
+                 parameter, xlim=xlim, ylim=ylim)
             return
             
-    # run parameters
-    debug = False
-
     # Plot title
     title = 'SCARR5 ' + '%04d%02d%02dT%02d%02d%02d' % tuple(time)
     title = title + "\n" + "[mlat,mlon]=[{0:.1f}, {1:.1f}]".format(pos[1], pos[2])
@@ -61,8 +60,6 @@ def plot(time, pos, plane_vs, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, 
     filename_in = conf["run_path"] + filename + '.out.cdf'
     filename_out = conf["run_path_derived"] + filename + '.png'
     
-    X0 = ps.MAGtoGSM(pos, time, 'sph', 'car')
-
     # open kameleon
     kameleon = ccmc.Kameleon()
     if debug:
@@ -75,7 +72,7 @@ def plot(time, pos, plane_vs, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, 
     parameter_unit = kameleon.getVisUnit(parameter)
     parameter_unit = parameter_unit.replace('mu', '\\mu ')
 
-    if plane_vs==None:
+    if plane_vs == None:
         r = pos[0]
         mlat = pos[1]
         mlon = pos[2]
@@ -86,43 +83,6 @@ def plot(time, pos, plane_vs, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, 
         U2 = ret[2]
         U3 = ret[3]
         sol = ret[4]
-        
-        '''
-        # Trace field line
-        s_grid = np.linspace(0., 10., 100)
-        soln = odeint(dXds, X0, s_grid, args=(kameleon, interpolator))
-        if debug:
-            print('X0 = ', X0)
-            print(np.dot(X0, X0))
-            print('soln = ', soln)
-
-        # initialize vectors for defining field line cut plane
-        v1 = (np.nan)*np.empty((3, ))
-        v2 = (np.nan)*np.empty((3, ))
-        v3 = (np.nan)*np.empty((3, ))
-        U1 = (np.nan)*np.empty((3, ))
-        U2 = (np.nan)*np.empty((3, ))
-        U3 = (np.nan)*np.empty((3, ))
-
-        # define restriction condition on the field line points
-        tr = np.logical_and(soln[:, 0]**2 + soln[:, 1]**2 + soln[:, 2]**2 >= 1.,
-                            soln[:, 0]**2 + soln[:, 1]**2 + soln[:, 2]**2 < 20.)
-
-        # restricted field lines
-        sol = soln[tr, :]
-
-        # define vects for plane of main field line
-        v1 = sol[0, :]  # First point on field line
-        v2 = sol[-1, :] # Last point on field line
-        half = int(sol.shape[0]/2) 
-        v3 = sol[half, :] # Approximate mid-point on field line
-
-        # define cut plane coordinates based on main field line 
-        # (U3 is normal to the plane)
-        U2 = (v1-v2)/np.linalg.norm(v1-v2)
-        U3 = np.cross(v3-v1, U2)/np.linalg.norm(np.cross(v3-v1, U2))
-        U1 = np.cross(U2, U3)
-        '''
         
         if debug: print('sol = ', sol)
     else:
@@ -163,7 +123,7 @@ def plot(time, pos, plane_vs, parameter, xlim=[0,4], ylim=[-3,3], nx=50, ny=50, 
     plt.ylim(ylim[0], ylim[1])
 
     # Add field line to 2D plot
-    if plane_vs==None:
+    if plane_vs == None:
         solCut=np.zeros((sol.shape[0], 2))
         for k in range(sol.shape[0]):
             solCut[k, 0] = np.dot(sol[k, :], U1)

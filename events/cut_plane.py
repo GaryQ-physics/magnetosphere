@@ -13,7 +13,6 @@ import _CCMC as ccmc
 import pos_sun as ps
 
 # run parameters
-debug = False
 sign = -1  # changes sign of magnetic field used to trace the field lines
 
 # units
@@ -53,13 +52,10 @@ def dXds(X, s, kam, interp):
     if 1e-9 < Bm <1e+7:
         return (sign/Bm)*B
     else:
-        if debug:
-            if(Bm >= 1e+7): aaa=1 #print('FIELD TOO HIGH')
-            if(Bm <= 1e-7): aaa=1 #print('FIELD TOO LOW')
         return [0., 0., 0.] # TODO: Return np.nan?
 
 
-def Compute(Event, ret_sol=False, r=1.01):
+def Compute(Event, ret_sol=False, r=1.01, debug=False):
     #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
     time = Event[0:6]
     MLON = Event[6]
@@ -71,10 +67,12 @@ def Compute(Event, ret_sol=False, r=1.01):
     
     X0 = ps.MAGtoGSM([r, MLAT, MLON], time, 'sph', 'car')
 
-    print(filename, "Opening " + filename)
+    if debug:
+        print(filename, "Opening " + filename)
     kameleon = ccmc.Kameleon()
     kameleon.open(filename)
-    print(filename, "Opened " + filename)
+    if debug:
+        print(filename, "Opened " + filename)
     interpolator = kameleon.createNewInterpolator()
 
     # Trace field line
@@ -101,9 +99,10 @@ def Compute(Event, ret_sol=False, r=1.01):
 
     # create the arrays of the restricted field line componentwise
     sol = soln[tr, :]
-    if debug: print('sol = ', sol)
+    if debug:
+        print('sol = ', sol)
+        
     # define vects for plane of main field line
-    
     '''
     v1 = sol[0,:]
     v2 = sol[-1,:]
@@ -126,16 +125,17 @@ def Compute(Event, ret_sol=False, r=1.01):
     U1 = np.cross(U2, U3)
 
     kameleon.close()
-    print("Closed " + filename)
+    if debug:
+        print("Closed " + filename)
 
     if ret_sol: return [Mdipole, U1, U2, U3, sol]
     return [Mdipole, U1, U2, U3]
 
 
-def writevtk(Event):
+def writevtk(Event, debug=False):
     """Write output of compute() to file
     
-    Calliong compute() from ParaView does not work, so write output to file.
+    Calling compute() from ParaView does not work, so write output to file.
     """
     year,month,day,hours,minutes,seconds,MLONdeg,MLATdeg = Event
     time = [year,month,day,hours,minutes,seconds]
@@ -144,16 +144,18 @@ def writevtk(Event):
 
     out_fname = conf["run_path_derived"] + 'cut_plane_info' + tag + '.txt'
     f = open(out_fname, 'w')
+    
     print('Writing ' + out_fname)
     f.write('%.7e %.7e %.7e\n' % (Mdipole[0], Mdipole[1], Mdipole[2]))
     f.write('%.7e %.7e %.7e\n' % (U1[0], U1[1], U1[2]))
     f.write('%.7e %.7e %.7e\n' % (U2[0], U2[1], U2[2]))
     f.write('%.7e %.7e %.7e\n' % (U3[0], U3[1], U3[2]))
     f.close()
-    print('Wrote ' + out_fname)
 
-    print(time)
-    print('Mdipole = ', Mdipole)
-    print('U1 = ', U1)
-    print('U2 = ', U2)
-    print('U3 = ', U3)
+    if debug:
+        print('Wrote ' + out_fname)
+        print(time)
+        print('Mdipole = ', Mdipole)
+        print('U1 = ', U1)
+        print('U2 = ', U2)
+        print('U3 = ', U3)
