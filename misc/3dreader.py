@@ -1,20 +1,23 @@
 import spacepy.pybats.bats as bats
-import spacepy.pybats.bats as bt
-import numpy as np
-from matplotlib import pyplot as plt
 ############################################################################
 # read in the 3d magnetosphere
-filename = "3d__var_4_e20191012-131400-018.out"
+filename = "/Users/robertweigel/git/students/gquaresi/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out"
 data3d = bats.Bats2d(filename)
 
 # look at keys:
 print(data3d.keys())
 
+import numpy as np
 # get the cell coordinates
 x = data3d['x']
 y = data3d['y']
 z = data3d['z']
 bz = data3d['bz']
+x = np.array(x)
+y = np.array(y)
+z = np.array(z)
+
+print(np.min(x**2 + y**2 + z**2))
 
 
 
