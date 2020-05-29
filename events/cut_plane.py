@@ -45,10 +45,10 @@ def dXds(X, s, kam, interp):
     s=arclength    
     """
     
-    B = np.array([ex_data(kam,interp, 'bx', X[0],X[1],X[2]), 
-                  ex_data(kam,interp, 'by', X[0],X[1],X[2]), 
-                  ex_data(kam,interp, 'bz', X[0],X[1],X[2])])
-    Bm = np.sqrt(np.dot(B,B))
+    B = np.array([ex_data(kam, interp, 'bx', X[0], X[1], X[2]), 
+                  ex_data(kam, interp, 'by', X[0], X[1], X[2]), 
+                  ex_data(kam, interp, 'bz', X[0], X[1], X[2])])
+    Bm = np.sqrt(np.dot(B, B))
     if 1e-9 < Bm <1e+7:
         return (sign/Bm)*B
     else:
@@ -60,11 +60,9 @@ def Compute(Event, ret_sol=False, r=1.01, debug=False):
     time = Event[0:6]
     MLON = Event[6]
     MLAT = Event[7]
-    T=tuple(time)
 
-    filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % T + '.out.cdf'
+    filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % tuple(time) + '.out.cdf'
 
-    
     X0 = ps.MAGtoGSM([r, MLAT, MLON], time, 'sph', 'car')
 
     if debug:
@@ -82,7 +80,7 @@ def Compute(Event, ret_sol=False, r=1.01, debug=False):
     soln = odeint(dXds, X0, s_grid, args=(kameleon, interpolator))
     if debug:
         print('X0 = ', X0)
-        print(np.dot(X0,X0))
+        print(np.dot(X0, X0))
         print('soln = ', soln)
 
     # initialize vectors for defining field line cut plane
@@ -95,7 +93,7 @@ def Compute(Event, ret_sol=False, r=1.01, debug=False):
     Mdipole = (np.nan)*np.empty((3, ))
 
     # define condition on the field line points
-    tr = np.logical_and(soln[:,0]**2+soln[:,1]**2+soln[:,2]**2 >=1., soln[:,0]**2+soln[:,1]**2+soln[:,2]**2 < 20.)
+    tr = np.logical_and(soln[:, 0]**2+soln[:, 1]**2+soln[:, 2]**2 >=1., soln[:, 0]**2+soln[:, 1]**2+soln[:,2]**2 < 20.)
 
     # create the arrays of the restricted field line componentwise
     sol = soln[tr, :]
@@ -110,15 +108,15 @@ def Compute(Event, ret_sol=False, r=1.01, debug=False):
     v3 = sol[half,:]
     '''
 
-    v1 = sol[0,:]
-    v2 = sol[int(1./ds),:]
-    v3 = sol[int(0.5/ds),:]
+    v1 = sol[0, :]
+    v2 = sol[int(1./ds), :]
+    v3 = sol[int(0.5/ds), :]
 
     # define cut plane coordinates based on main field line 
     # (U3 is normal to the plane)
-    U2 = (v1-v2)/np.linalg.norm(v1-v2)
-    Mdipole = ps.MAGtoGSM([0.,0.,1.],time,'car','car')
-    U3 = np.cross(v3-v1, U2)
+    U2 = (v1 - v2)/np.linalg.norm(v1-v2)
+    Mdipole = ps.MAGtoGSM([0., 0., 1.], time, 'car', 'car')
+    U3 = np.cross(v3 - v1, U2)
     if np.linalg.norm(U3)<1e-3:
         print("WARNING: close to straight line")
     U3 = U3/np.linalg.norm(U3)
@@ -137,10 +135,10 @@ def writevtk(Event, debug=False):
     
     Calling compute() from ParaView does not work, so write output to file.
     """
-    year,month,day,hours,minutes,seconds,MLONdeg,MLATdeg = Event
-    time = [year,month,day,hours,minutes,seconds]
+    #year,month,day,hours,minutes,seconds,MLONdeg,MLATdeg = Event
+    time = Event[0:6]
     Mdipole,U1,U2,U3 = Compute(Event)
-    tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % (year,month,day,hours,minutes,seconds)
+    tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
 
     out_fname = conf["run_path_derived"] + 'cut_plane_info' + tag + '.txt'
     f = open(out_fname, 'w')

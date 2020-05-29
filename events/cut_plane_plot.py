@@ -32,7 +32,7 @@ def data_in_U(kam, interp, variable, u, v, U1, U2, U3):
 
 
 def plot(time, pos, plane_vs, parameter,
-         xlim=[0,4], ylim=[-3,3], nx=50, ny=50, png=True, debug=False):
+         xlim=[0,4], ylim=[-3,3], dx=0.1, dy=0.1, png=True, debug=False):
     # plot(time, [r, mlat, mlong], None, 'p')
     # plot(time, [GSMx,GSMy,GSMz], [v1, v2], 'p')
     #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
@@ -52,8 +52,12 @@ def plot(time, pos, plane_vs, parameter,
             return
             
     # Plot title
-    title = 'SCARR5 ' + '%04d%02d%02dT%02d%02d%02d' % tuple(time)
-    title = title + "\n" + "[mlat,mlon]=[{0:.1f}, {1:.1f}]".format(pos[1], pos[2])
+    if plane_vs == None:
+        title = 'SCARR5 ' + '%04d%02d%02dT%02d%02d%02d' % tuple(time)
+        title = title + "\n" + "[mlat,mlon]=[{0:.1f}, {1:.1f}]".format(pos[1], pos[2])
+    else:
+        title = 'SCARR5 ' + '%04d%02d%02dT%02d%02d%02d' % tuple(time)
+        title = title + "\n" + "GSM coords"
 
     filename = '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % tuple(time)
 
@@ -90,12 +94,19 @@ def plot(time, pos, plane_vs, parameter,
         U2 = np.array(plane_vs[1])
         U3 = np.cross(U1, U2)
 
-    x_1d = np.linspace(xlim[0], xlim[1], nx)
-    y_1d = np.linspace(ylim[0], ylim[1], ny)
+    x_1d = np.arange(xlim[0], xlim[1], dx)
+    y_1d = np.arange(ylim[0], ylim[1], dy)
     X, Y = np.meshgrid(x_1d, y_1d) # grid of points on the cutplane
-    Z = np.zeros((nx, ny))
-    for i in range(nx):
-        for j in range(ny):
+    Z = np.zeros(X.shape)
+    if debug:
+        print x_1d.shape,y_1d.shape
+        print X.shape,Y.shape,Z.shape
+        print x_1d.size, y_1d.size
+        print x_1d
+        print y_1d
+        print X
+    for i in range(X.shape[0]): # note this is y_1d.size (NOT x)
+        for j in range(X.shape[1]): 
             # grid of the corresponding values of variable. To be color plotted
             Z[i, j] = data_in_U(kameleon, interpolator, parameter, X[i, j], Y[i, j], U1, U2, U3)
 
@@ -110,8 +121,20 @@ def plot(time, pos, plane_vs, parameter,
 
     # Plot cut plane data
     ax2.set_title(title, fontsize=10)
-    ax2.set(xlabel = "Tailward distance [$R_E$]")
-    ax2.set(ylabel = "Northward distance [$R_E$]")
+    #xlabel = 'xlable'
+    #ylabel = 'ylable'
+    #if plane_vs == None and type(pos) == str:
+    #    xlabel = pos[0] + '_GSM ' + "[$R_E$]"
+    #    ylabel = pos[1] + '_GSM ' + "[$R_E$]"
+    if plane_vs == None:
+        xlabel = "Tailward distance [$R_E$]"
+        ylabel = "Northward distance [$R_E$]"
+    else:
+        xlabel = '[%.2f, %.2f, %.2f]' %tuple(U1) + ' in GSM' + "[$R_E$]"
+        ylabel = '[%.2f, %.2f, %.2f]' %tuple(U2) + ' in GSM' + "[$R_E$]"
+
+    ax2.set(xlabel = xlabel)
+    ax2.set(ylabel = ylabel)
     ax2.axis('square')
     pcm = ax2.pcolormesh(X, Y, Z)
 

@@ -15,13 +15,13 @@ r = 1.01
 mlat = 57.50
 mlong = 176.
 cp.plot(time, [r, mlat, mlong], None, 'p',
-        nx=100, ny=100, xlim=[-30, 30], ylim=[-20, 20], png=False)
+        dx=0.08, dy=0.08, xlim=[-30, 30], ylim=[-20, 20], png=False)
 
 #cp.plot(time, [0 ,0 ,0 ], [[0, 1, 0], [0, 0, 1]], 'p',
 #        nx=100, ny=100, xlim=[-30, 30], ylim=[-20, 20], png=False)
 
 cp.plot(time, 'xy', None, 'p')
-cp.plot(time, 'xz', None, 'p')
-cp.plot(time, 'yz', None, 'p')
+#cp.plot(time, 'xz', None, 'p')
+#cp.plot(time, 'yz', None, 'p')
 
 
