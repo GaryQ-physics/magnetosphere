@@ -16,7 +16,6 @@ import numpy as np
 sys.path.append( './../' )  # for some reason the other way wont work in paraview
 from config_paths import config
 conf = config()
-sys.path.append(conf["m_path"] + 'magnetosphere/events/')
 #import pos_sun as ps
 #from cut_plane import U1,Mdipole,U2,U3 #note cut plane has to be run seperately once first
 #from paraview.simple import *              already in shell automatically
@@ -25,7 +24,7 @@ tag = '_2003:11:20T07:00:00'
 Nlong=5
 Nb = 6
 N=Nb+1+Nlong
-var='dBlat_dV'
+var='dBy'
 
 cut_plane_name = 'cut_plane_info'+tag+'.txt'
 grid_name = 'kameleon_structured_grid_' + var + tag + '.vtk'

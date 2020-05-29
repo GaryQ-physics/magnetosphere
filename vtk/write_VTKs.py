@@ -21,12 +21,12 @@ filename = conf["run_path"] + '3d__var_3_e' \
 cut_plane.writevtk(Event)
 field_line_vtk_script.writevtk(Event)
 
-if False:
+if True:
     kameleon_structured_grid_write.writevtk(Event, 'p')
     kameleon_structured_grid_write.writevtk(Event, 'jy')
-    kameleon_structured_grid_write.writevtk(Event, 'dB_dV')
-    kameleon_structured_grid_write.writevtk(Event, 'dBlon_dV')
-    kameleon_structured_grid_write.writevtk(Event, 'dBlat_dV')
+    kameleon_structured_grid_write.writevtk(Event, 'dB')
+    kameleon_structured_grid_write.writevtk(Event, 'dBx')
+    kameleon_structured_grid_write.writevtk(Event, 'dBy')
 
 if False:
     N = 10
