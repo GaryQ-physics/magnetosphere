@@ -1,6 +1,12 @@
 import paraview.simple as pvs
 
+# Based on
 # https://trac.version.fz-juelich.de/vis/wiki/Examples/Ear5Animating
+
+from config_paths import config
+conf = config()
+
+file = conf["data_path"] + "topography/world.topo.200401.3x5400x2700.png-ParaView.png"
 
 # get active view
 renderView1 = GetActiveViewOrCreate('RenderView')
@@ -21,7 +27,7 @@ textureMaptoSphere.PreventSeam = 0
 textureMaptoSphereDisplay = Show(textureMaptoSphere, renderView1)
 textureMaptoSphereDisplay.Representation = 'Surface'
 texProxy = servermanager.CreateProxy("textures", "ImageTexture")
-texProxy.GetProperty("FileName").SetElement(0, "/Users/robertweigel/git/students/gquaresi/magnetosphere/data/topography/world.topo.200401.3x5400x2700.png-ParaView.png")
+texProxy.GetProperty("FileName").SetElement(0, file)
 texProxy.UpdateVTKObjects()
 textureMaptoSphereDisplay.Texture = texProxy
 
