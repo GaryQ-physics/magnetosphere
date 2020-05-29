@@ -508,7 +508,7 @@ RenameSource('cut_plane', slice4)
 renderView1.AxesGrid.Visibility = 0
 
 point_scalarsLUT = GetColorTransferFunction(var)
-point_scalarsLUT.RescaleTransferFunction(-0.000586338632274, 0.00023917722865)
+point_scalarsLUT.RescaleTransferFunction(-0.0005, 0.0005)
 
 renderView1.CameraPosition = [7.1183569, 56.134761, 6.60090036]
 renderView1.CameraFocalPoint = [-0.445446427, 0.115471756, -0.440184]

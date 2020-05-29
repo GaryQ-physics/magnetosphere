@@ -12,10 +12,16 @@ import _CCMC as ccmc
 import pos_sun as ps
 
 # run parameters
+'''
 Ny = 3*30
 Nz = 3*30
 Nx_main = 2*3*27
 Nx_tail = 20
+'''
+dx = 0.2
+dy = 0.2
+dz = 0.2
+dx_tail = 10.
 
 # units
 hr = 1.
@@ -78,12 +84,13 @@ def Compute(Event, var):
     interpolator = kameleon.createNewInterpolator()
     #-----------------------------
 
-    X = np.concatenate((np.linspace(-200,-20.05,Nx_tail), np.linspace(-20.,15.,Nx_main) ))
+    X = np.concatenate((np.arange(-200,-20.05,dx_tail), np.arange(-20.,15.,dx) ))
     Nx = X.size
     print('Nx= ',Nx)
-    Y = np.linspace(-10.,10.,Ny)
-    Z = np.linspace(-10.,10.,Nz)
-    dV_grid = (X[-1] - X[-2])*(Y[1] - Y[0])*(Z[1] - Z[0])*R_e**3
+    Y = np.arange(-10.,10.,dy)
+    Ny = Y.size
+    Z = np.arange(-10.,10.,dz)
+    Nz = Z.size
 
     B2, B3, B1 = np.meshgrid(Y,Z,X)
     #B1, B2, B3 = np.meshgrid(X,Y,Z)
@@ -94,21 +101,20 @@ def Compute(Event, var):
     B = np.column_stack((B1,B2,B3))
     Aa = (np.nan)*np.empty((B1.size,))
     for l in range(Aa.size):
-        Aa[l] = ex_data(kameleon,interpolator, var, B[l,0], B[l,1], B[l,2], X0,Npole, V_char = dV_grid)
+        Aa[l] = ex_data(kameleon,interpolator, var, B[l,0], B[l,1], B[l,2], X0,Npole, V_char = dx*dy*dz) # dx*dy*dz*R_e**3
 
     # close kameleon ---------------------
     kameleon.close()
     print("Closed " + filename)
     #-------------------------------
-    return [Aa,B]
+    return [Aa, B, Nx, Ny, Nz]
 
 def writevtk(Event, var):
-    A,B = Compute(Event,var)
+    A, B, Nx, Ny, Nz = Compute(Event, var)
     time = Event[0:6]
     tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
     fname = conf["run_path_derived"] + 'kameleon_structured_grid_' + var + tag + '.vtk'
 
-    Nx=Nx_main+Nx_tail
     print('also Nx= ',Nx)
 
     f = open(fname,'w')
