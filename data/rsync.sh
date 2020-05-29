@@ -18,8 +18,8 @@ fi
 
 # Push files from current directory to master directory
 if [ "$1" == "push" ]; then
-    rsync -avz $dry . --filter "exclude *~ SCARR5_GM_IO2" \
-	$2@mag.gmu.edu:/media/disk/git-data/GaryQ-Physics/magnetosphere
+    rsync -avz $dry --filter "exclude *~ SCARR5_GM_IO2" \
+	. $2@mag.gmu.edu:/media/disk/git-data/GaryQ-Physics/magnetosphere
 fi
 
 # Pull files from master directory to current directory
@@ -27,6 +27,6 @@ fi
 # that do not exist on remote directory
 if [ "$1" == "pull" ]; then
     rsync -avz $dry --filter "exclude *.out SCARR5_GM_IO2" \
-	$2@mag.gmu.edu:/media/disk/git-data/GaryQ-Physics/magnetosphere .
+	$2@mag.gmu.edu:/media/disk/git-data/GaryQ-Physics/magnetosphere/ .
 fi
 
