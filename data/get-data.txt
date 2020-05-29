@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Get simulation run data. Use either
+
+# rsync -avz --exclude "*.out" --exclude "*.tree" weigel@mag.gmu.edu:/media/disk/git-data/sblake/ .
+
+# or
+
+# wget -m -nP --cut-dirs=2 http://mag.gmu.edu/git-data/sblake/
