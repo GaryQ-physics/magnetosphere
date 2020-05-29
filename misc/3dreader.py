@@ -18,13 +18,3 @@ y = np.array(y)
 z = np.array(z)
 
 print(np.min(x**2 + y**2 + z**2))
-
-
-
-
-
-
-
-
-
-
