@@ -3,9 +3,9 @@
 Download sample data file (see next section for information on how this file was created)
 
 ```
-wget http://mag.gmu.edu/git-data/GaryQ-Physics/magnetosphere/3d__var_3_e20031120-070000-000.out.cdf
+wget http://mag.gmu.edu/git-data/GaryQ-Physics/magnetosphere/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out.cdf
 # or
-curl -O http://mag.gmu.edu/git-data/GaryQ-Physics/magnetosphere/3d__var_3_e20031120-070000-000.out.cdf
+curl -O http://mag.gmu.edu/git-data/GaryQ-Physics/magnetosphere/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out.cdf
 ```
 
 Install Kameleon
