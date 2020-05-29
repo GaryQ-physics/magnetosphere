@@ -18,7 +18,7 @@ fi
 
 # Push files from current directory to master directory
 if [ "$1" == "push" ]; then
-    rsync -avz $dry --filter "exclude *~ SCARR5_GM_IO2" --exclude="rsync.sh" \
+    rsync -avz $dry --filter "exclude *~" --exclude SCARR5_GM_IO2 --exclude="rsync.sh" \
 	. $2@mag.gmu.edu:/media/disk/git-data/GaryQ-Physics/magnetosphere
 fi
 
