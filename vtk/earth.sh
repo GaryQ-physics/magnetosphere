@@ -2,12 +2,12 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-export PYTHONPATH=$DIR/..:$PYTHOPATH
+export PYTHONPATH=$DIR/..:$PYTHONPATH
 
 # Read PARAVIEW variable from config.sh
 . $DIR/../config_paths.sh
 
-COM="$PARAVIEW --script=earth.py"
+COM="$PARAVIEW --script=$DIR/earth.py"
 
 echo "Executing $COM"
 
