@@ -3,14 +3,13 @@
 import sys
 import os
 import numpy as np
+from scipy.integrate import odeint
 
-sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../' )
-from config_paths import config
-conf = config()
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
+from config import conf
+
 import pos_sun as ps
 import cut_plane
-
-from scipy.integrate import odeint
 import _CCMC as ccmc
 
 # run parameters

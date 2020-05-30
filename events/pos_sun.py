@@ -1,12 +1,4 @@
-import sys
-import os
 import numpy as np
-
-# Add path of config_paths.py
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
-from config_paths import config
-conf = config()
-
 import spacepy.coordinates as sc
 from spacepy.time import Ticktock
 
@@ -48,6 +40,7 @@ def GSMtoMAG(v_GSM, time, ctype_in, ctype_out):
     newcoord = cvals.convert('MAG', ctype_out)
     v_MAG = np.array([newcoord.x[0], newcoord.y[0], newcoord.z[0]])
     return v_MAG
+
 
 def GEOtoGSM(v_GEO, time, ctype_in, ctype_out):
     """Convert from GEO to GSM coordinates using SpacePy library

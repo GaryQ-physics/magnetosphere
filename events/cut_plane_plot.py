@@ -3,17 +3,14 @@
 import os
 import sys
 import numpy as np
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from config_paths import config
-conf = config()
-
 import matplotlib.pyplot as plt
 
-import _CCMC as ccmc
-import pos_sun as ps
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
+from config import conf
 
+import _CCMC as ccmc
 from cut_plane import ex_data, Compute
+
 
 def data_in_U(kam, interp, variable, u, v, U1, U2, U3):
     # Get the data in the U coordinates (defined by the cut plane vectors U1 and U2)

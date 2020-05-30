@@ -1,14 +1,11 @@
-# coordinate_test
-
 import os
 import sys
 import numpy as np
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from config_paths import config
-conf = config()
-import _CCMC as ccmc
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
+from config import conf
 
+import _CCMC as ccmc
 import pos_sun as ps
 
 # Inputs for file and magnetic field model

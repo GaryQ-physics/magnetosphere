@@ -1,4 +1,5 @@
 import spacepy.pybats.bats as bats
+
 ############################################################################
 # read in the 3d magnetosphere
 filename = "/Users/robertweigel/git/students/gquaresi/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out"

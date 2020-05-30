@@ -3,9 +3,8 @@
 import os
 import sys
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from config_paths import config
-conf = config()
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
+from config import conf
 
 import field_line_vtk_script
 import kameleon_structured_grid_write

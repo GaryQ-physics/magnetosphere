@@ -9,16 +9,12 @@ execfile('paraview_shell_script.py')
 #fieldFile_path = m_path + 'magnetosphere/vtk/kameleon_field_paraview.vtk'
 
 import sys
-import os
 import numpy as np
-#print os.path.dirname(os.path.abspath(__file__)) + '/../'
+
+# Won't work in paraview b/c __file__ not defined.
 #sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../' )
-sys.path.append( './../' )  # for some reason the other way wont work in paraview
-from config_paths import config
-conf = config()
-#import pos_sun as ps
-#from cut_plane import U1,Mdipole,U2,U3 #note cut plane has to be run seperately once first
-#from paraview.simple import *              already in shell automatically
+sys.path.append( './../' )  
+from config import conf
 
 tag = '_2003:11:20T07:00:00'
 Nlong=5
