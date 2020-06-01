@@ -1,4 +1,11 @@
+import sys
+import os
 import numpy as np
+
+# Add path of config_paths.py
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
+from config import conf
+
 import spacepy.coordinates as sc
 from spacepy.time import Ticktock
 
@@ -25,7 +32,7 @@ def MAGtoGSM(v_MAG, time, ctype_in, ctype_out):
     t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T 
     cvals.ticks = Ticktock(t_str, 'ISO')
     newcoord = cvals.convert('GSM', ctype_out)
-    v_GSM = np.array([newcoord.x[0], newcoord.y[0], newcoord.z[0]])
+    v_GSM = newcoord.data[0,:]
     return v_GSM
 
 
@@ -38,9 +45,8 @@ def GSMtoMAG(v_GSM, time, ctype_in, ctype_out):
     t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T
     cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
     newcoord = cvals.convert('MAG', ctype_out)
-    v_MAG = np.array([newcoord.x[0], newcoord.y[0], newcoord.z[0]])
+    v_MAG = newcoord.data[0,:]
     return v_MAG
-
 
 def GEOtoGSM(v_GEO, time, ctype_in, ctype_out):
     """Convert from GEO to GSM coordinates using SpacePy library
@@ -63,12 +69,12 @@ def GEOtoGSM(v_GEO, time, ctype_in, ctype_out):
     if v_GEO.shape == (3, ):
         cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
         newcoord = cvals.convert('GSM', ctype_out)
-        v_GSM = np.array([newcoord.x[0], newcoord.y[0], newcoord.z[0]])
+        v_GSM = newcoord.data[0,:]
         return v_GSM
     else:
         cvals.ticks = Ticktock([t_str]*v_GEO.shape[0], 'ISO') # add ticks
         newcoord = cvals.convert('GSM', ctype_out)
-        v_GSM = np.column_stack([newcoord.x, newcoord.y, newcoord.z])
+        v_GSM = newcoord.data
         return v_GSM
 
 

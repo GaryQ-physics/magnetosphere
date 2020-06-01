@@ -3,12 +3,14 @@
 import os
 import sys
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
-from config import conf
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
+from config_paths import config
+conf = config()
 
-import field_line_vtk_script
-import kameleon_structured_grid_write
+import B_field_lines_write
+import structured_grid_write
 import cut_plane
+import longitude_lines_write
 
 line_list = [2003, 11, 20, 7, 0, 176.00, 57.50]
 time = line_list[0:5] + [0.]
@@ -17,15 +19,19 @@ T = tuple(time)
 filename = conf["run_path"] + '3d__var_3_e' \
             + '%04d%02d%02d-%02d%02d%02d-000' % T + '.out.cdf'
 
-cut_plane.writevtk(Event)
-field_line_vtk_script.writevtk(Event)
+cut_plane.writedata(Event)
+B_field_lines_write.writevtk(Event)
+longitude_lines_write.writevtk(Event)
 
-if True:
-    kameleon_structured_grid_write.writevtk(Event, 'p')
-    kameleon_structured_grid_write.writevtk(Event, 'jy')
-    kameleon_structured_grid_write.writevtk(Event, 'dB')
-    kameleon_structured_grid_write.writevtk(Event, 'dBx')
-    kameleon_structured_grid_write.writevtk(Event, 'dBy')
+
+if False:
+    structured_grid_write.writevtk(Event, 'p')
+    structured_grid_write.writevtk(Event, 'jy')
+    structured_grid_write.writevtk(Event, 'dB')
+    structured_grid_write.writevtk(Event, 'dBx')
+    structured_grid_write.writevtk(Event, 'dBy')
+    structured_grid_write.writevtk(Event, 'p')
+    structured_grid_write.writevtk(Event, 'dBy', calcTotal=True)
 
 if False:
     N = 10
@@ -46,13 +52,13 @@ if False:
         T = tuple(time)
         filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % T + '.out.cdf'
         if os.path.exists(filename):
-            cut_plane.writevtk(Event)
-            field_line_vtk_script.writevtk(Event)
-            kameleon_structured_grid_write.writevtk(Event, 'p')
-            kameleon_structured_grid_write.writevtk(Event, 'jy')
-            kameleon_structured_grid_write.writevtk(Event, 'dB_dV')
-            kameleon_structured_grid_write.writevtk(Event, 'dBlon_dV')
-            kameleon_structured_grid_write.writevtk(Event, 'dBlat_dV')
+            cut_plane.writedata(Event)
+            B_field_lines_write.writevtk(Event)
+            structured_grid_write.writevtk(Event, 'p')
+            structured_grid_write.writevtk(Event, 'jy')
+            structured_grid_write.writevtk(Event, 'dB_dV')
+            structured_grid_write.writevtk(Event, 'dBlon_dV')
+            structured_grid_write.writevtk(Event, 'dBlat_dV')
         else:
             print('ERROR: ' + filename + ' does not exitst')
     

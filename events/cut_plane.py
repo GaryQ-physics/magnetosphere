@@ -4,9 +4,10 @@ import os
 import sys
 import numpy as np
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 
+from scipy.integrate import odeint
 import _CCMC as ccmc
 import pos_sun as ps
 
@@ -128,7 +129,7 @@ def Compute(Event, ret_sol=False, r=1.01, debug=False):
     return [Mdipole, U1, U2, U3]
 
 
-def writevtk(Event, debug=False):
+def writedata(Event, debug=False):
     """Write output of compute() to file
     
     Calling compute() from ParaView does not work, so write output to file.
@@ -136,9 +137,16 @@ def writevtk(Event, debug=False):
     #year,month,day,hours,minutes,seconds,MLONdeg,MLATdeg = Event
     time = Event[0:6]
     Mdipole,U1,U2,U3 = Compute(Event)
-    tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
 
-    out_fname = conf["run_path_derived"] + 'cut_plane_info' + tag + '.txt'
+    tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
+    subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
+    if not os.path.exists(conf["run_path_derived"] + subdir):
+        os.mkdir(conf["run_path_derived"] + subdir)
+
+    MLON=Event[6]
+    MLAT=Event[7]
+
+    out_fname = conf["run_path_derived"] + subdir + 'cut_plane_info_%.2f_%.2f' %(MLAT, MLON) + tag + '.txt'
     f = open(out_fname, 'w')
     
     print('Writing ' + out_fname)

@@ -1,5 +1,7 @@
 # field_line_vtk_script
 
+print('WRONG SCRIPT')
+
 import sys
 import os
 import numpy as np

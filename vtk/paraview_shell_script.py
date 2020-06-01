@@ -9,23 +9,30 @@ execfile('paraview_shell_script.py')
 #fieldFile_path = m_path + 'magnetosphere/vtk/kameleon_field_paraview.vtk'
 
 import sys
+import os
 import numpy as np
-
-# Won't work in paraview b/c __file__ not defined.
+#print os.path.dirname(os.path.abspath(__file__)) + '/../'
 #sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../' )
-sys.path.append( './../' )  
-from config import conf
+sys.path.append( './../' )  # for some reason the other way wont work in paraview
+from config_paths import config
+conf = config()
+#import pos_sun as ps
+#from paraview.simple import *              already in shell automatically
 
-tag = '_2003:11:20T07:00:00'
+Event = [2003, 11, 20, 7, 0, 0, 176.00, 57.50]
+time = Event[0:6]
+tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
+subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
+
 Nlong=5
 Nb = 6
 N=Nb+1+Nlong
-var='dBy'
+var='p'
 
-cut_plane_name = 'cut_plane_info'+tag+'.txt'
-grid_name = 'kameleon_structured_grid_' + var + tag + '.vtk'
+cut_plane_name = 'cut_plane_info_%.2f_%.2f' %(Event[7], Event[6]) + tag + '.txt'
+grid_name = 'structured_grid_' + var + tag + '.vtk'
 
-f = open(conf["run_path_derived"] + cut_plane_name,'r')
+f = open(conf["run_path_derived"] + subdir + cut_plane_name,'r')
 
 # get string of the 1st line of data (Mdipole components)
 Mdipole_string = f.readline()
@@ -46,7 +53,7 @@ U3 = [float(i) for i in U3_string.split()]
 U3=np.array(U3)
 
 # create a new 'Legacy VTK Reader'
-kameleon_structured_gridvtk = LegacyVTKReader(FileNames=[conf["run_path_derived"] + grid_name])
+structured_gridvtk = LegacyVTKReader(FileNames=[conf["run_path_derived"] + subdir + grid_name])
 
 # get active view
 renderView1 = GetActiveViewOrCreate('RenderView')
@@ -54,29 +61,29 @@ renderView1 = GetActiveViewOrCreate('RenderView')
 # renderView1.ViewSize = [932, 802]
 
 # show data in view
-kameleon_structured_gridvtkDisplay = Show(kameleon_structured_gridvtk, renderView1)
+structured_gridvtkDisplay = Show(structured_gridvtk, renderView1)
 # trace defaults for the display properties.
-kameleon_structured_gridvtkDisplay.Representation = 'Outline'
-kameleon_structured_gridvtkDisplay.ColorArrayName = ['POINTS', '']
-kameleon_structured_gridvtkDisplay.OSPRayScaleArray = var
-kameleon_structured_gridvtkDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
-kameleon_structured_gridvtkDisplay.SelectOrientationVectors = 'None'
-kameleon_structured_gridvtkDisplay.ScaleFactor = 21.0
-kameleon_structured_gridvtkDisplay.SelectScaleArray = var
-kameleon_structured_gridvtkDisplay.GlyphType = 'Arrow'
-kameleon_structured_gridvtkDisplay.GlyphTableIndexArray = var
-kameleon_structured_gridvtkDisplay.DataAxesGrid = 'GridAxesRepresentation'
-kameleon_structured_gridvtkDisplay.PolarAxes = 'PolarAxesRepresentation'
-kameleon_structured_gridvtkDisplay.ScalarOpacityUnitDistance = 5.766431907004487
+structured_gridvtkDisplay.Representation = 'Outline'
+structured_gridvtkDisplay.ColorArrayName = ['POINTS', '']
+structured_gridvtkDisplay.OSPRayScaleArray = var
+structured_gridvtkDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
+structured_gridvtkDisplay.SelectOrientationVectors = 'None'
+structured_gridvtkDisplay.ScaleFactor = 21.0
+structured_gridvtkDisplay.SelectScaleArray = var
+structured_gridvtkDisplay.GlyphType = 'Arrow'
+structured_gridvtkDisplay.GlyphTableIndexArray = var
+structured_gridvtkDisplay.DataAxesGrid = 'GridAxesRepresentation'
+structured_gridvtkDisplay.PolarAxes = 'PolarAxesRepresentation'
+structured_gridvtkDisplay.ScalarOpacityUnitDistance = 5.766431907004487
 
 # reset view to fit data
 renderView1.ResetCamera()
 
 # change representation type
-kameleon_structured_gridvtkDisplay.SetRepresentationType('Points')
+structured_gridvtkDisplay.SetRepresentationType('Points')
 
 # create a new 'Slice'
-slice1 = Slice(Input=kameleon_structured_gridvtk)
+slice1 = Slice(Input=structured_gridvtk)
 slice1.SliceType = 'Plane'
 slice1.SliceOffsetValues = [0.0]
 
@@ -108,7 +115,7 @@ slice1Display.SetScalarBarVisibility(renderView1, True)
 
 
 # create a new 'Slice'
-slice2 = Slice(Input=kameleon_structured_gridvtk)
+slice2 = Slice(Input=structured_gridvtk)
 slice2.SliceType = 'Plane'
 slice2.SliceOffsetValues = [0.0]
 
@@ -141,7 +148,7 @@ slice2Display.SetScalarBarVisibility(renderView1, True)
 
 
 # create a new 'Slice'
-slice3 = Slice(Input=kameleon_structured_gridvtk)
+slice3 = Slice(Input=structured_gridvtk)
 slice3.SliceType = 'Plane'
 slice3.SliceOffsetValues = [0.0]
 
@@ -174,7 +181,7 @@ slice3Display.SetScalarBarVisibility(renderView1, True)
 
 
 # create a new 'Slice'
-slice4 = Slice(Input=kameleon_structured_gridvtk)
+slice4 = Slice(Input=structured_gridvtk)
 slice4.SliceType = 'Plane'
 slice4.SliceOffsetValues = [0.0]
 
@@ -206,7 +213,7 @@ slice4Display.SetScalarBarVisibility(renderView1, True)
 
 
 # hide data in view
-Hide(kameleon_structured_gridvtk, renderView1)
+Hide(structured_gridvtk, renderView1)
 
 # update the view to ensure updated data information
 renderView1.Update()
@@ -395,7 +402,7 @@ cylinderMDisplay.ColorArrayName = [None, '']
 cylinderMDisplay.DiffuseColor = [0.0, 0.0, 1.0]
 # Default Cylinder is orientated along y-axis.
 # To get z cylinder, rotate by 90 around x-axis.
-cylinderMDisplay.Orientation = [alpha/deg, 3.14, gamma/deg]  #3.14 arbitrary
+cylinderMDisplay.Orientation = [alpha/deg, 1./137., gamma/deg]  #1./137. arbitrary
 # cone z
 coneM = Cone()
 # Properties modified on coneM
@@ -420,59 +427,60 @@ coneMDisplay.PolarAxes = 'PolarAxesRepresentation'
 # change solid color
 coneMDisplay.DiffuseColor = [0.0, 0., 1.]
 
-for i in range(N):
+files = os.listdir(conf["run_path_derived"] + subdir)
+for f in files:
     # create a new 'Legacy VTK Reader'
-    field_linevtk = LegacyVTKReader(FileNames=[conf["run_path_derived"] + 'field_line'+str(i)+tag+'.vtk'])
+    if 'line' in f:
+        field_linevtk = LegacyVTKReader(FileNames=[conf["run_path_derived"] + subdir + f])
+        # show data in view
+        field_linevtkDisplay = Show(field_linevtk, renderView1)
+        # trace defaults for the display properties.
+        field_linevtkDisplay.Representation = 'Surface'
+        field_linevtkDisplay.ColorArrayName = [None, '']
+        field_linevtkDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
+        field_linevtkDisplay.SelectOrientationVectors = 'None'
+        field_linevtkDisplay.ScaleFactor = 0.20896326303482057
+        field_linevtkDisplay.SelectScaleArray = 'None'
+        field_linevtkDisplay.GlyphType = 'Arrow'
+        field_linevtkDisplay.GlyphTableIndexArray = 'None'
+        field_linevtkDisplay.DataAxesGrid = 'GridAxesRepresentation'
+        field_linevtkDisplay.PolarAxes = 'PolarAxesRepresentation'
 
-    # show data in view
-    field_linevtkDisplay = Show(field_linevtk, renderView1)
-    # trace defaults for the display properties.
-    field_linevtkDisplay.Representation = 'Surface'
-    field_linevtkDisplay.ColorArrayName = [None, '']
-    field_linevtkDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
-    field_linevtkDisplay.SelectOrientationVectors = 'None'
-    field_linevtkDisplay.ScaleFactor = 0.20896326303482057
-    field_linevtkDisplay.SelectScaleArray = 'None'
-    field_linevtkDisplay.GlyphType = 'Arrow'
-    field_linevtkDisplay.GlyphTableIndexArray = 'None'
-    field_linevtkDisplay.DataAxesGrid = 'GridAxesRepresentation'
-    field_linevtkDisplay.PolarAxes = 'PolarAxesRepresentation'
 
+        # create a new 'Tube'
+        tube1 = Tube(Input=field_linevtk)
+        tube1.Scalars = [None, '']
+        tube1.Vectors = [None, '1']
+        tube1.Radius = 0.05
 
-    # create a new 'Tube'
-    tube1 = Tube(Input=field_linevtk)
-    tube1.Scalars = [None, '']
-    tube1.Vectors = [None, '1']
-    tube1.Radius = 0.05
+        # Properties modified on tube1
+        tube1.Vectors = [None, '']
 
-    # Properties modified on tube1
-    tube1.Vectors = [None, '']
+        # show data in view
+        tube1Display = Show(tube1, renderView1)
+        # trace defaults for the display properties.
+        tube1Display.Representation = 'Surface'
+        tube1Display.ColorArrayName = [None, '']
+        tube1Display.OSPRayScaleArray = 'TubeNormals'
+        tube1Display.OSPRayScaleFunction = 'PiecewiseFunction'
+        tube1Display.SelectOrientationVectors = 'None'
+        tube1Display.ScaleFactor = 0.2129082262516022
+        tube1Display.SelectScaleArray = 'None'
+        tube1Display.GlyphType = 'Arrow'
+        tube1Display.GlyphTableIndexArray = 'None'
+        tube1Display.DataAxesGrid = 'GridAxesRepresentation'
+        tube1Display.PolarAxes = 'PolarAxesRepresentation'
 
-    # show data in view
-    tube1Display = Show(tube1, renderView1)
-    # trace defaults for the display properties.
-    tube1Display.Representation = 'Surface'
-    tube1Display.ColorArrayName = [None, '']
-    tube1Display.OSPRayScaleArray = 'TubeNormals'
-    tube1Display.OSPRayScaleFunction = 'PiecewiseFunction'
-    tube1Display.SelectOrientationVectors = 'None'
-    tube1Display.ScaleFactor = 0.2129082262516022
-    tube1Display.SelectScaleArray = 'None'
-    tube1Display.GlyphType = 'Arrow'
-    tube1Display.GlyphTableIndexArray = 'None'
-    tube1Display.DataAxesGrid = 'GridAxesRepresentation'
-    tube1Display.PolarAxes = 'PolarAxesRepresentation'
+        # hide data in view
+        Hide(field_linevtk, renderView1)
 
-    # hide data in view
-    Hide(field_linevtk, renderView1)
-
-    # change solid color
-    if(i==0):
-        tube1Display.DiffuseColor = [0.8862745098039215, 0.0, 0.0]
-    elif(i > Nb):
-        tube1Display.DiffuseColor = [0., 0.0, 1.]
-    else:
-        tube1Display.DiffuseColor = [0.0, 0.88, 0.0]
+        # change solid color
+        if 'event' in f:
+            tube1Display.DiffuseColor = [0.8862745098039215, 0.0, 0.0]
+        elif 'longitude' in f:
+            tube1Display.DiffuseColor = [0., 0.0, 1.]
+        else:
+            tube1Display.DiffuseColor = [0.0, 0.88, 0.0]
 
 renderView1.Update()
 
@@ -502,6 +510,7 @@ RenameSource('cut_plane', slice4)
 
 # Properties modified on renderView1.AxesGrid
 renderView1.AxesGrid.Visibility = 0
+renderView1.OrientationAxesVisibility = 0
 
 point_scalarsLUT = GetColorTransferFunction(var)
 point_scalarsLUT.RescaleTransferFunction(-0.0005, 0.0005)
