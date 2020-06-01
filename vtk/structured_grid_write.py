@@ -1,5 +1,3 @@
-# structured_grid_write
-
 import sys
 import os
 import numpy as np
@@ -64,7 +62,8 @@ def ex_data(kam,interp, variable, x,y,z, X0, Npole, V_char = 1.):
     data = interp.interpolate(variable, x, y, z)
     return data
 
-def Compute(Event, var):
+def Compute(Event, var, calcTotal=False):
+    total = 0.
     #year,month,day,hours,minutes,seconds,MLONdeg,MLATdeg = Event
     time = Event[0:6]
     MLON = Event[6]
@@ -101,18 +100,24 @@ def Compute(Event, var):
     Aa = (np.nan)*np.empty((B1.size,))
     for l in range(Aa.size):
         Aa[l] = ex_data(kameleon,interpolator, var, B[l,0], B[l,1], B[l,2], X0,Npole, V_char = dx*dy*dz) # dx*dy*dz*R_e**3
-
+        if calcTotal:
+            total = total + Aa[l]
     # close kameleon ---------------------
     kameleon.close()
     print("Closed " + filename)
     #-------------------------------
+    if calcTotal:
+        print('total = ', total)
     return [Aa, B, Nx, Ny, Nz]
 
-def writevtk(Event, var):
-    A, B, Nx, Ny, Nz = Compute(Event, var)
+def writevtk(Event, var, calcTotal=False):
+    Aa, B, Nx, Ny, Nz = Compute(Event, var, calcTotal=calcTotal)
     time = Event[0:6]
     tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
-    fname = conf["run_path_derived"] + 'structured_grid_' + var + tag + '.vtk'
+    subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
+    fname = conf["run_path_derived"] + subdir + 'structured_grid_' + var + tag + '.vtk'
+    if not os.path.exists(conf["run_path_derived"] + subdir):
+        os.mkdir(conf["run_path_derived"] + subdir)
 
     print('also Nx= ',Nx)
 
@@ -129,6 +134,6 @@ def writevtk(Event, var):
     f.write('POINT_DATA ' + str(Nx*Ny*Nz) + '\n')
     f.write('SCALARS '+ var +' float 1\n')
     f.write('LOOKUP_TABLE default\n')
-    np.savetxt(f, A)
+    np.savetxt(f, Aa)
     f.close()
     print("Wrote " + fname)
