@@ -15,7 +15,7 @@ file = conf["data_path"] + "topography/world.topo.200401.3x5400x2700.png-ParaVie
 # get active view
 renderView1 = GetActiveViewOrCreate('RenderView')
 
-
+'''
 sphere1 = pvs.Sphere(guiName="Earth")
 
 sphere1.Radius = 1.0
@@ -26,10 +26,11 @@ sphere1.StartTheta = 1e-05
 sphere1Display = Show(sphere1, renderView1)
 sphere1Display.Representation = 'Surface'
 sphere1Display.Opacity = 1.0
+'''
+
 
 
 '''
-
 
 # create a new 'Transform'
 transform1 = Transform(Input=sphere1)
@@ -55,7 +56,7 @@ renderView1.Update()
 
 '''
 
-'''
+
 
 # create a new 'Legacy VTK Reader'
 rotated_spherevtk = LegacyVTKReader(FileNames=['/home/gary/magnetosphere/vtk/rotated_sphere.vtk'])
@@ -74,10 +75,10 @@ rotated_spherevtkDisplay.DataAxesGrid = 'GridAxesRepresentation'
 rotated_spherevtkDisplay.PolarAxes = 'PolarAxesRepresentation'
 rotated_spherevtkDisplay.ScalarOpacityUnitDistance = 0.15493986305312726
 
+
 '''
 
-
-textureMaptoSphere = TextureMaptoSphere(Input=sphere1, Point=[0,0,1])   #(Input=rotated_spherevtk)
+textureMaptoSphere = TextureMaptoSphere(Input=rotated_spherevtk)   #(Input=rotated_spherevtk)
 textureMaptoSphere.PreventSeam = 0
 textureMaptoSphereDisplay = Show(textureMaptoSphere, renderView1)
 textureMaptoSphereDisplay.Representation = 'Surface'
@@ -85,5 +86,13 @@ texProxy = servermanager.CreateProxy("textures", "ImageTexture")
 texProxy.GetProperty("FileName").SetElement(0, file)
 texProxy.UpdateVTKObjects()
 textureMaptoSphereDisplay.Texture = texProxy
+
+'''
+
+texProxy = servermanager.CreateProxy("textures", "ImageTexture")
+texProxy.GetProperty("FileName").SetElement(0, file)
+texProxy.UpdateVTKObjects()
+rotated_spherevtkDisplay.Texture = texProxy
+
 
 Render()
