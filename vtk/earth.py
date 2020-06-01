@@ -10,7 +10,9 @@ from config import conf
 
 fname = '/home/gary/magnetosphere/vtk/rotated_sphere.vtk'
 
-file = conf["data_path"] + "topography/world.topo.200401.3x5400x2700.png-ParaView.png"
+#file = conf["data_path"] + "topography/world.topo.200401.3x5400x2700.png-ParaView.png"
+
+file = conf["data_path"] + "topography/world.topo.200401.3x5400x2700.png"
 
 # get active view
 renderView1 = GetActiveViewOrCreate('RenderView')

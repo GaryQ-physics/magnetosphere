@@ -19,36 +19,6 @@ from config import conf
 import paraview.simple as pvs
 
 
-
-file = conf["data_path"] + "topography/world.topo.200401.3x5400x2700.png-ParaView.png"
-
-# get active view
-renderView1 = GetActiveViewOrCreate('RenderView')
-
-sphere1 = pvs.Sphere(guiName="Earth")
-
-sphere1.Radius = 1.0
-sphere1.ThetaResolution = 100
-sphere1.PhiResolution = 100
-sphere1.StartTheta = 1e-05
-
-sphere1Display = Show(sphere1, renderView1)
-sphere1Display.Representation = 'Surface'
-sphere1Display.Opacity = 1.0
-
-textureMaptoSphere = TextureMaptoSphere(Input=sphere1)
-textureMaptoSphere.PreventSeam = 0
-textureMaptoSphereDisplay = Show(textureMaptoSphere, renderView1)
-textureMaptoSphereDisplay.Representation = 'Surface'
-texProxy = servermanager.CreateProxy("textures", "ImageTexture")
-texProxy.GetProperty("FileName").SetElement(0, file)
-texProxy.UpdateVTKObjects()
-textureMaptoSphereDisplay.Texture = texProxy
-
-Render()
-
-
-
 Event = [2003, 11, 20, 7, 0, 0, 176.00, 57.50]
 time = Event[0:6]
 tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
@@ -61,6 +31,41 @@ var='p'
 
 cut_plane_name = 'cut_plane_info_%.2f_%.2f' %(Event[7], Event[6]) + tag + '.txt'
 grid_name = 'structured_grid_' + var + tag + '.vtk'
+earth_name = 'earth' + tag + '.vtk'
+
+
+#-----------------
+#file = conf["data_path"] + "topography/world.topo.200401.3x5400x2700.png-ParaView.png"
+file = conf["data_path"] + "topography/world.topo.200401.3x5400x2700.png"
+
+# get active view
+renderView1 = GetActiveViewOrCreate('RenderView')
+
+# create a new 'Legacy VTK Reader'
+rotated_spherevtk = LegacyVTKReader(FileNames=[conf["run_path_derived"] + subdir + earth_name])
+# show data in view
+rotated_spherevtkDisplay = Show(rotated_spherevtk, renderView1)
+# trace defaults for the display properties.
+rotated_spherevtkDisplay.Representation = 'Surface'
+rotated_spherevtkDisplay.ColorArrayName = [None, '']
+rotated_spherevtkDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
+rotated_spherevtkDisplay.SelectOrientationVectors = 'None'
+rotated_spherevtkDisplay.ScaleFactor = 0.4
+rotated_spherevtkDisplay.SelectScaleArray = 'None'
+rotated_spherevtkDisplay.GlyphType = 'Arrow'
+rotated_spherevtkDisplay.GlyphTableIndexArray = 'None'
+rotated_spherevtkDisplay.DataAxesGrid = 'GridAxesRepresentation'
+rotated_spherevtkDisplay.PolarAxes = 'PolarAxesRepresentation'
+rotated_spherevtkDisplay.ScalarOpacityUnitDistance = 0.15493986305312726
+
+texProxy = servermanager.CreateProxy("textures", "ImageTexture")
+texProxy.GetProperty("FileName").SetElement(0, file)
+texProxy.UpdateVTKObjects()
+rotated_spherevtkDisplay.Texture = texProxy
+
+Render()
+#--------------
+
 
 f = open(conf["run_path_derived"] + subdir + cut_plane_name,'r')
 

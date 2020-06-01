@@ -12,6 +12,7 @@ import J_field_lines_write
 import structured_grid_write
 import cut_plane
 import longitude_lines_write
+import earth_write
 
 line_list = [2003, 11, 20, 7, 0, 176.00, 57.50]
 time = line_list[0:5] + [0.]
@@ -24,6 +25,7 @@ cut_plane.writedata(Event)
 B_field_lines_write.writevtk(Event)
 longitude_lines_write.writevtk(Event)
 J_field_lines_write.writevtk(Event)
+earth_write.writevtk(Event)
 
 if False:
     structured_grid_write.writevtk(Event, 'p')
