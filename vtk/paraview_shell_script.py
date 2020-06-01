@@ -587,7 +587,7 @@ for f in files:
 
 
         # create a new 'Tube'
-        tube1 = Tube(Input=field_linevtk)
+        tube1 = Tube(Input=field_linevtk, guiName=f)
         tube1.Scalars = [None, '']
         tube1.Vectors = [None, '1']
         tube1.Radius = 0.05

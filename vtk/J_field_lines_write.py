@@ -53,7 +53,7 @@ def Compute(Event):
         print("Opened " + filename)
     interpolator = kameleon.createNewInterpolator()
 
-    dist=np.linspace(4.,6.,3)
+    dist=np.linspace(6.5,10.,3)
     ang=np.linspace(-1.,1.,5)
     B1, B2 = np.meshgrid(dist,ang)
     B1= B1.flatten(order='C')
