@@ -14,10 +14,40 @@ import numpy as np
 #print os.path.dirname(os.path.abspath(__file__)) + '/../'
 #sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../' )
 sys.path.append( './../' )  # for some reason the other way wont work in paraview
-from config_paths import config
-conf = config()
+from config import conf
 #import pos_sun as ps
-#from paraview.simple import *              already in shell automatically
+import paraview.simple as pvs
+
+
+
+file = conf["data_path"] + "topography/world.topo.200401.3x5400x2700.png-ParaView.png"
+
+# get active view
+renderView1 = GetActiveViewOrCreate('RenderView')
+
+sphere1 = pvs.Sphere(guiName="Earth")
+
+sphere1.Radius = 1.0
+sphere1.ThetaResolution = 100
+sphere1.PhiResolution = 100
+sphere1.StartTheta = 1e-05
+
+sphere1Display = Show(sphere1, renderView1)
+sphere1Display.Representation = 'Surface'
+sphere1Display.Opacity = 1.0
+
+textureMaptoSphere = TextureMaptoSphere(Input=sphere1)
+textureMaptoSphere.PreventSeam = 0
+textureMaptoSphereDisplay = Show(textureMaptoSphere, renderView1)
+textureMaptoSphereDisplay.Representation = 'Surface'
+texProxy = servermanager.CreateProxy("textures", "ImageTexture")
+texProxy.GetProperty("FileName").SetElement(0, file)
+texProxy.UpdateVTKObjects()
+textureMaptoSphereDisplay.Texture = texProxy
+
+Render()
+
+
 
 Event = [2003, 11, 20, 7, 0, 0, 176.00, 57.50]
 time = Event[0:6]
@@ -281,11 +311,17 @@ renderView1.Update()
 # change solid color
 sphere2Display.DiffuseColor = [0.0, 0.0, 0.0]
 
-# cylinder x
+
+
+
+h = 15.
+#------------------
+# x axis
+#------------------
 cylinderX = Cylinder()
-cylinderX.Radius = 0.02
-cylinderX.Center = [0.0, 1.0, 0.0]
-cylinderX.Height = 2.0
+cylinderX.Radius = 0.05
+cylinderX.Center = [0.0, h/2., 0.0]
+cylinderX.Height = h
 cylinderXDisplay = Show(cylinderX, renderView1)
 cylinderXDisplay.ColorArrayName = [None, '']
 cylinderXDisplay.DiffuseColor = [1.0, 0.0, 0.0]
@@ -298,7 +334,7 @@ coneX = Cone()
 coneX.Resolution = 30
 coneX.Radius = 0.2
 coneX.Height = 0.4
-coneX.Center = [2.0, 0.0, 0.0]
+coneX.Center = [h, 0.0, 0.0]
 coneX.Direction = [1., 0., 0.]
 # show data in view
 coneXDisplay = Show(coneX, renderView1)
@@ -315,12 +351,48 @@ coneXDisplay.DataAxesGrid = 'GridAxesRepresentation'
 coneXDisplay.PolarAxes = 'PolarAxesRepresentation'
 # change solid color
 coneXDisplay.DiffuseColor = [1.0, 0.0, 0.0]
+for i in range(int(h)-1):
+    # create a new 'Sphere'
+    sph = Sphere()
 
-# y
+    # Properties modified on sph
+    sph.Center = [i+1, 0.0, 0.0]
+    sph.Radius = 0.2
+    sph.ThetaResolution = 10
+    sph.PhiResolution = 10
+
+    # show data in view
+    sphDisplay = Show(sph, renderView1)
+    # trace defaults for the display properties.
+    sphDisplay.Representation = 'Surface'
+    sphDisplay.ColorArrayName = [None, '']
+    sphDisplay.OSPRayScaleArray = 'Normals'
+    sphDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
+    sphDisplay.SelectOrientationVectors = 'None'
+    sphDisplay.ScaleFactor = 0.2
+    sphDisplay.SelectScaleArray = 'None'
+    sphDisplay.GlyphType = 'Arrow'
+    sphDisplay.GlyphTableIndexArray = 'None'
+    sphDisplay.DataAxesGrid = 'GridAxesRepresentation'
+    sphDisplay.PolarAxes = 'PolarAxesRepresentation'
+
+    # change solid color
+    sphDisplay.DiffuseColor = [1.0, 0.0, 0.0]
+
+
+
+
+
+
+
+
+#------------------
+# y axis
+#------------------
 cylinderY = Cylinder()
-cylinderY.Radius = 0.02
-cylinderY.Center = [0.0, 1., 0.0]
-cylinderY.Height = 2.0
+cylinderY.Radius = 0.05
+cylinderY.Center = [0.0, h/2., 0.0]
+cylinderY.Height = h
 cylinderYDisplay = Show(cylinderY, renderView1)
 cylinderYDisplay.ColorArrayName = [None, '']
 cylinderYDisplay.DiffuseColor = [1.0, 1.0, 0.5]
@@ -333,7 +405,7 @@ coneY = Cone()
 coneY.Resolution = 30
 coneY.Radius = 0.2
 coneY.Height = 0.4
-coneY.Center = [0.0, 2.0, 0.0]
+coneY.Center = [0.0, h, 0.0]
 coneY.Direction = [0., 1., 0.]
 # show data in view
 coneYDisplay = Show(coneY, renderView1)
@@ -350,13 +422,47 @@ coneYDisplay.DataAxesGrid = 'GridAxesRepresentation'
 coneYDisplay.PolarAxes = 'PolarAxesRepresentation'
 # change solid color
 coneYDisplay.DiffuseColor = [1.0, 1.0, 0.5]
+for i in range(int(h)-1):
+    # create a new 'Sphere'
+    sph = Sphere()
+
+    # Properties modified on sph
+    sph.Center = [0., i+1, 0.]
+    sph.Radius = 0.2
+    sph.ThetaResolution = 10
+    sph.PhiResolution = 10
+
+    # show data in view
+    sphDisplay = Show(sph, renderView1)
+    # trace defaults for the display properties.
+    sphDisplay.Representation = 'Surface'
+    sphDisplay.ColorArrayName = [None, '']
+    sphDisplay.OSPRayScaleArray = 'Normals'
+    sphDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
+    sphDisplay.SelectOrientationVectors = 'None'
+    sphDisplay.ScaleFactor = 0.2
+    sphDisplay.SelectScaleArray = 'None'
+    sphDisplay.GlyphType = 'Arrow'
+    sphDisplay.GlyphTableIndexArray = 'None'
+    sphDisplay.DataAxesGrid = 'GridAxesRepresentation'
+    sphDisplay.PolarAxes = 'PolarAxesRepresentation'
+
+    # change solid color
+    sphDisplay.DiffuseColor = [1.0, 1.0, 0.5]
 
 
-# z
+
+
+
+
+
+#------------------
+# z axis
+#------------------
 cylinderZ = Cylinder()
-cylinderZ.Radius = 0.02
-cylinderZ.Center = [0.0, 1., 0.0]
-cylinderZ.Height = 2.0
+cylinderZ.Radius = 0.05
+cylinderZ.Center = [0.0, 15./2., 0.0]
+cylinderZ.Height = h
 cylinderZDisplay = Show(cylinderZ, renderView1)
 cylinderZDisplay.ColorArrayName = [None, '']
 cylinderZDisplay.DiffuseColor = [0.0, 1.0, 0.0]
@@ -369,7 +475,7 @@ coneZ = Cone()
 coneZ.Resolution = 30
 coneZ.Radius = 0.2
 coneZ.Height = 0.4
-coneZ.Center = [0.0, 0.0, 2.0]
+coneZ.Center = [0.0, 0.0, h]
 coneZ.Direction = [0., 0., 1.]
 # show data in view
 coneZDisplay = Show(coneZ, renderView1)
@@ -386,6 +492,39 @@ coneZDisplay.DataAxesGrid = 'GridAxesRepresentation'
 coneZDisplay.PolarAxes = 'PolarAxesRepresentation'
 # change solid color
 coneZDisplay.DiffuseColor = [0.0, 1.0, 0.0]
+for i in range(int(h)-1):
+    # create a new 'Sphere'
+    sph = Sphere()
+
+    # Properties modified on sph
+    sph.Center = [0., 0., i+1]
+    sph.Radius = 0.2
+    sph.ThetaResolution = 10
+    sph.PhiResolution = 10
+
+    # show data in view
+    sphDisplay = Show(sph, renderView1)
+    # trace defaults for the display properties.
+    sphDisplay.Representation = 'Surface'
+    sphDisplay.ColorArrayName = [None, '']
+    sphDisplay.OSPRayScaleArray = 'Normals'
+    sphDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
+    sphDisplay.SelectOrientationVectors = 'None'
+    sphDisplay.ScaleFactor = 0.2
+    sphDisplay.SelectScaleArray = 'None'
+    sphDisplay.GlyphType = 'Arrow'
+    sphDisplay.GlyphTableIndexArray = 'None'
+    sphDisplay.DataAxesGrid = 'GridAxesRepresentation'
+    sphDisplay.PolarAxes = 'PolarAxesRepresentation'
+
+    # change solid color
+    sphDisplay.DiffuseColor = [0.0, 1.0, 0.0]
+
+
+
+
+
+
 
 
 deg=np.pi/180.
@@ -394,9 +533,9 @@ alpha = np.arccos(np.sqrt(Mx**2+My**2))
 gamma = np.arctan(-Mx/My)
 # cylinder M
 cylinderM = Cylinder()
-cylinderM.Radius = 0.02
-cylinderM.Center = [0.0, 1., 0.0]
-cylinderM.Height = 2.0
+cylinderM.Radius = 0.05
+cylinderM.Center = [0.0, h/2., 0.0]
+cylinderM.Height = h
 cylinderMDisplay = Show(cylinderM, renderView1)
 cylinderMDisplay.ColorArrayName = [None, '']
 cylinderMDisplay.DiffuseColor = [0.0, 0.0, 1.0]
@@ -409,7 +548,7 @@ coneM = Cone()
 coneM.Resolution = 30
 coneM.Radius = 0.2
 coneM.Height = 0.4
-coneM.Center = 2*Mdipole
+coneM.Center = h*Mdipole
 coneM.Direction = Mdipole
 # show data in view
 coneMDisplay = Show(coneM, renderView1)
@@ -479,8 +618,12 @@ for f in files:
             tube1Display.DiffuseColor = [0.8862745098039215, 0.0, 0.0]
         elif 'longitude' in f:
             tube1Display.DiffuseColor = [0., 0.0, 1.]
+        elif 'B_' in f:
+            tube1Display.DiffuseColor = [0., 1.0, 0.]
+        elif 'J_' in f:
+            tube1Display.DiffuseColor = [0., 0., 1.]
         else:
-            tube1Display.DiffuseColor = [0.0, 0.88, 0.0]
+            tube1Display.DiffuseColor = [0.0, 0., 0.0]
 
 renderView1.Update()
 

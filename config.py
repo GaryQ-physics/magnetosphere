@@ -24,7 +24,7 @@ if kameleon not in sys.path:
     sys.path.append(kameleon)
 
 if kameleon + 'ccmc/' not in sys.path:
-    sys.path.append(kameleon + + 'ccmc/')
+    sys.path.append(kameleon + 'ccmc/')
     
 if not os.path.exists(conf['run_path_derived']):
     os.mkdirs(conf['run_path_derived'])

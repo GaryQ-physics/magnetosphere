@@ -8,6 +8,7 @@ from config_paths import config
 conf = config()
 
 import B_field_lines_write
+import J_field_lines_write
 import structured_grid_write
 import cut_plane
 import longitude_lines_write
@@ -22,7 +23,7 @@ filename = conf["run_path"] + '3d__var_3_e' \
 cut_plane.writedata(Event)
 B_field_lines_write.writevtk(Event)
 longitude_lines_write.writevtk(Event)
-
+J_field_lines_write.writevtk(Event)
 
 if False:
     structured_grid_write.writevtk(Event, 'p')
