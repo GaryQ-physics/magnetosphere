@@ -1,4 +1,4 @@
-# kameleon_structured_grid_write
+# structured_grid_write
 
 import sys
 import os
@@ -112,7 +112,7 @@ def writevtk(Event, var):
     A, B, Nx, Ny, Nz = Compute(Event, var)
     time = Event[0:6]
     tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
-    fname = conf["run_path_derived"] + 'kameleon_structured_grid_' + var + tag + '.vtk'
+    fname = conf["run_path_derived"] + 'structured_grid_' + var + tag + '.vtk'
 
     print('also Nx= ',Nx)
 
