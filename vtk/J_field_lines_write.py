@@ -14,7 +14,7 @@ from scipy.integrate import odeint
 import _CCMC as ccmc
 
 # run parameters
-debug = True
+debug = False
 
 # units
 deg = (np.pi/180.)
@@ -53,8 +53,30 @@ def Compute(Event):
         print("Opened " + filename)
     interpolator = kameleon.createNewInterpolator()
 
-    dist=np.linspace(6.5,10.,3)
-    ang=np.linspace(-1.,1.,5)
+    ang = np.linspace(-1.,1.,5)
+    #dist = np.linspace(6.5,10.,3)
+    D = np.linspace(1.,10.,90)
+    IC = []
+    for j in range(ang.size):
+        rose = False
+        fell = False
+        start = 7.
+        end = 10.
+        for i in range(D.size):
+            P = ex_data(kameleon, interpolator, 'p', D[i]*np.cos(ang[j]), 0., D[i]*np.sin(ang[j]))
+            if P > 6.:
+                rose = True
+                start = D[i]
+            if rose and P < 2.:
+                fell = True
+                end = D[i]
+                break
+        dist = np.linspace(start-0.3, end+0.3, 4)
+        for k in range(dist.size):
+            dist[k]*np.cos(ang[j]), 0., dist[k]*np.sin(ang[j])
+            IC.append([dist[k]*np.cos(ang[j]), 0., dist[k]*np.sin(ang[j])])
+
+    '''
     B1, B2 = np.meshgrid(dist,ang)
     B1= B1.flatten(order='C')
     B2= B2.flatten(order='C')
@@ -62,16 +84,18 @@ def Compute(Event):
     if debug:
         print('B1=',B1)
 
-    x=B1*np.cos(B2)
-    z=B1*np.sin(B2)
-    y=0.*x
+    x = B1*np.cos(B2)
+    z = B1*np.sin(B2)
+    y = 0.*x
 
     XYZ=np.column_stack((x,y,z))
 
     IC = list(XYZ)
+    
 
     if debug:
         print(XYZ)
+    '''
 
     # Trace field lines
     s_grid = np.linspace(0., 10., 200)
@@ -85,7 +109,7 @@ def Compute(Event):
         sol = odeint(dXds, IC[i], s_grid, args = (kameleon, interpolator))
         solns[:, :, i] = sol
 
-    if debug:
+    if True:
         print('IC', IC)
 
     # restrict the field lines to stop when reaching 1*R_E from the origin

@@ -30,7 +30,7 @@ month = 11
 hours = 7.
 minutes = 0.
 seconds = 0.
-N = 10
+N = 66
 
 filename = conf['f_path'] + '3d__var_3_e' + str(year) + str(month) + str(day) + '-070000-000.out.cdf'
 fname = '../data/kameleon_field_paraview.vtk';
@@ -57,9 +57,9 @@ def ex_data(variable, x,y,z):
     data = interpolator.interpolate(variable, x, y, z)
     return data
 
-X = np.linspace(-5.,5.,N)
-Y = np.linspace(-5.,5.,N)
-Z = np.linspace(-5.,5.,N)
+X = np.linspace(-11.,11.,N)
+Y = np.linspace(-11.,11.,N)
+Z = np.linspace(-11.,11.,N)
 print('length = ' + str(X.size))
 print("Writing " + fname)
 f = open(fname,'w')

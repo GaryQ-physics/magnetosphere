@@ -16,7 +16,7 @@ import _CCMC as ccmc
 #Nlong = 5
 #Nb = 6
 sign = -1  # changes sign of magnetic field used to trace the field lines
-debug = True
+debug = False
 
 # units
 deg = (np.pi/180.)
