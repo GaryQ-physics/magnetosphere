@@ -53,11 +53,14 @@ def ex_data(kam,interp, variable, x,y,z, X0, Npole, V_char = 1.):
         #dB_dV = (mu0/(4*np.pi))*np.cross(J, R)/(np.linalg.norm(R)**3)
         #dBnT = dB_dV*V_char/(nT)
         dBnT = V_char*(mu0/(4*np.pi))*np.cross(J, R)/(np.linalg.norm(R)**3)
-        if(variable=='dB'): return np.linalg.norm(dBnT)
+        if(variable=='dB'):
+            return np.linalg.norm(dBnT)
         a2 = np.cross(Npole, X0)
-        if(variable=='dBx'): return np.dot(dBnT, a2)/np.linalg.norm(a2) # east west direction (east positive)
+        if(variable=='dB_EW'):
+            return np.dot(dBnT, a2)/np.linalg.norm(a2) # east west direction (east positive)
         a1 = np.cross(X0, a2)
-        if(variable=='dBy'): return np.dot(dBnT, a1)/np.linalg.norm(a1) # north south direction (north positive)
+        if(variable=='dB_NS'):
+            return np.dot(dBnT, a1)/np.linalg.norm(a1) # north south direction (north positive)
     kam.loadVariable(variable)
     data = interp.interpolate(variable, x, y, z)
     return data
@@ -84,22 +87,22 @@ def Compute(Event, var, calcTotal=False):
 
     X = np.concatenate((np.arange(-200,-20.05,dx_tail), np.arange(-20.,15.,dx) ))
     Nx = X.size
-    print('Nx= ',Nx)
-    Y = np.arange(-10.,10.,dy)
+    print('Nx = ',Nx)
+    Y = np.arange(-10., 10., dy)
     Ny = Y.size
-    Z = np.arange(-10.,10.,dz)
+    Z = np.arange(-10., 10., dz)
     Nz = Z.size
 
-    B2, B3, B1 = np.meshgrid(Y,Z,X)
-    #B1, B2, B3 = np.meshgrid(X,Y,Z)
+    B2, B3, B1 = np.meshgrid(Y, Z, X)
+    #B1, B2, B3 = np.meshgrid(X, Y, Z)
 
     B1 = B1.flatten(order='C')
     B2 = B2.flatten(order='C')
     B3 = B3.flatten(order='C')
-    B = np.column_stack((B1,B2,B3))
-    Aa = (np.nan)*np.empty((B1.size,))
+    B = np.column_stack((B1, B2, B3))
+    Aa = (np.nan)*np.empty((B1.size, ))
     for l in range(Aa.size):
-        Aa[l] = ex_data(kameleon,interpolator, var, B[l,0], B[l,1], B[l,2], X0,Npole, V_char = dx*dy*dz) # dx*dy*dz*R_e**3
+        Aa[l] = ex_data(kameleon, interpolator, var, B[l, 0], B[l, 1], B[l, 2], X0, Npole, V_char = dx*dy*dz) # dx*dy*dz*R_e**3
         if calcTotal:
             total = total + Aa[l]
     # close kameleon ---------------------
@@ -119,7 +122,7 @@ def writevtk(Event, var, calcTotal=False):
     if not os.path.exists(conf["run_path_derived"] + subdir):
         os.mkdir(conf["run_path_derived"] + subdir)
 
-    print('also Nx= ',Nx)
+    print('also Nx = ',Nx)
 
     f = open(fname,'w')
     print("Writing " + fname)

@@ -26,16 +26,14 @@ cut_plane.writedata(Event)
 B_field_lines_write.writevtk(Event)
 longitude_lines_write.writevtk(Event)
 J_field_lines_write.writevtk(Event)
-J_vector_field_write.writevtk(Event)
+#J_vector_field_write.writevtk(Event)
+earth_write.writevtk(Event)
 if False:
     structured_grid_write.writevtk(Event, 'jy')
-    earth_write.writevtk(Event)
     structured_grid_write.writevtk(Event, 'p')
     structured_grid_write.writevtk(Event, 'dB')
-    structured_grid_write.writevtk(Event, 'dBx')
-    structured_grid_write.writevtk(Event, 'dBy')
-    structured_grid_write.writevtk(Event, 'p')
-    structured_grid_write.writevtk(Event, 'dBy', calcTotal=True)
+    structured_grid_write.writevtk(Event, 'dB_EW')
+    structured_grid_write.writevtk(Event, 'dB_NS', calcTotal=True)
 
 if False:
     N = 10
@@ -60,9 +58,9 @@ if False:
             B_field_lines_write.writevtk(Event)
             structured_grid_write.writevtk(Event, 'p')
             structured_grid_write.writevtk(Event, 'jy')
-            structured_grid_write.writevtk(Event, 'dB_dV')
-            structured_grid_write.writevtk(Event, 'dBlon_dV')
-            structured_grid_write.writevtk(Event, 'dBlat_dV')
+            structured_grid_write.writevtk(Event, 'dB')
+            structured_grid_write.writevtk(Event, 'dB_EW')
+            structured_grid_write.writevtk(Event, 'dB_NS')
         else:
             print('ERROR: ' + filename + ' does not exitst')
     

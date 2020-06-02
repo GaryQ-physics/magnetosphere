@@ -53,9 +53,9 @@ def Compute(Event):
         print("Opened " + filename)
     interpolator = kameleon.createNewInterpolator()
 
-    ang = np.linspace(-1.,1.,5)
-    #dist = np.linspace(6.5,10.,3)
-    D = np.linspace(1.,10.,90)
+    ang = np.linspace(-1., 1., 5)
+    #dist = np.linspace(6.5, 10., 3)
+    D = np.linspace(1., 10., 90)
     IC = []
     for j in range(ang.size):
         rose = False
@@ -78,8 +78,8 @@ def Compute(Event):
 
     '''
     B1, B2 = np.meshgrid(dist,ang)
-    B1= B1.flatten(order='C')
-    B2= B2.flatten(order='C')
+    B1 = B1.flatten(order='C')
+    B2 = B2.flatten(order='C')
 
     if debug:
         print('B1=',B1)
@@ -88,7 +88,7 @@ def Compute(Event):
     z = B1*np.sin(B2)
     y = 0.*x
 
-    XYZ=np.column_stack((x,y,z))
+    XYZ = np.column_stack((x, y, z))
 
     IC = list(XYZ)
     
@@ -157,7 +157,6 @@ def writevtk(Event):
     tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
 
     solns_restr = Compute(Event)
-    #mlong_array = [0., 10., -10., 20., -20.] # per deg
     subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
     if not os.path.exists(conf["run_path_derived"] + subdir):
         os.mkdir(conf["run_path_derived"] + subdir)

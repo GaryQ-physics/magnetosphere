@@ -134,7 +134,6 @@ def writevtk(Event, Nb=6):
     tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
 
     solns_restr = Compute(Event, Nb)
-    #mlong_array = [0., 10., -10., 20., -20.] # per deg
     subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
     if not os.path.exists(conf["run_path_derived"] + subdir):
         os.mkdir(conf["run_path_derived"] + subdir)
