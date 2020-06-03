@@ -1,5 +1,7 @@
 import paraview.simple as pvs
+from paraview.simple import *
 
+import sys
 # Based on
 # https://trac.version.fz-juelich.de/vis/wiki/Examples/Ear5Animating
 
