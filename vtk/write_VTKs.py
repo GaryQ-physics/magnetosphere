@@ -13,7 +13,6 @@ import structured_grid_write
 import cut_plane
 import longitude_lines_write
 import earth_write
-import J_vector_field_write
 
 line_list = [2003, 11, 20, 7, 0, 176.00, 57.50]
 time = line_list[0:5] + [0.]

@@ -3,6 +3,7 @@
 import os
 import sys
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
@@ -29,38 +30,46 @@ def data_in_U(kam, interp, variable, u, v, U1, U2, U3):
 
 
 def plot(time, pos, plane_vs, parameter,
-         xlim=[0,4], ylim=[-3,3], dx=0.1, dy=0.1, png=True, debug=False):
-    # plot(time, [r, mlat, mlong], None, 'p')
-    # plot(time, [GSMx,GSMy,GSMz], [v1, v2], 'p')
-    #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
+         xlim=[-10,10], ylim=[-10,10], zlim=None, dx=0.1, dy=0.1,
+         png=True, pngfile=None, debug=False):
+
+    """
+    plot(time, [r, mlat, mlong], None, 'p')
+    plot(time, [GSMx,GSMy,GSMz], [v1, v2], 'p')
+    """
     
+    xlabel = ''
+    ylabel = ''
     if type(pos) == str:
         if pos == 'xy':
-            plot(time, [0, 0, 0], [[1, 0, 0], [0, 1, 0]],
-                 parameter, xlim=xlim, ylim=ylim)
-            return
+            xlabel = 'X [$R_E$]'
+            ylabel = 'Y [$R_E$]'
+            plane_vs = [[1, 0, 0], [0, 1, 0]]
         if pos == 'xz':
-            plot(time, [0, 0, 0], [[1, 0, 0], [0, 0, 1]],
-                 parameter, xlim=xlim, ylim=ylim)
-            return
+            xlabel = 'X [$R_E$]'
+            ylabel = 'Z [$R_E$]'
+            plane_vs = [[1, 0, 0], [0, 0, 1]]
         if pos == 'yz':
-            plot(time, [0, 0, 0], [[0, 1, 0], [0, 0, 1]],
-                 parameter, xlim=xlim, ylim=ylim)
-            return
+            xlabel = 'Y [$R_E$]'
+            ylabel = 'Z [$R_E$]'
+            plane_vs = [[0, 1, 0], [0, 0, 1]]
+        pos = [0, 0, 0]
             
     # Plot title
     if plane_vs == None:
-        title = 'SCARR5 ' + '%04d%02d%02dT%02d%02d%02d' % tuple(time)
-        title = title + "\n" + "[mlat,mlon]=[{0:.1f}, {1:.1f}]".format(pos[1], pos[2])
+        title = 'SCARR5 ' + '%04d%02d%02dT%02d%02d%02d-%03d' % tuple(time)
+        title = title + "\n" + "[mlat, mlon]=[{0:.1f}$^o$, {1:.1f}$^o$]".format(pos[1], pos[2])
     else:
-        title = 'SCARR5 ' + '%04d%02d%02dT%02d%02d%02d' % tuple(time)
-        title = title + "\n" + "GSM coords"
+        title = 'SCARR5 ' + '%04d-%02d-%02dT%02d:%02d:%02d.%03d' % tuple(time)
 
-    filename = '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % tuple(time)
+    filename = '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-%03d' % tuple(time)
 
     filename_in = conf["run_path"] + filename + '.out.cdf'
-    filename_out = conf["run_path_derived"] + filename + '.png'
-    
+    if pngfile is None:
+        filename_out = conf["run_path_derived"] + "cutplanes/" + filename + '.png'
+    else:    
+        filename_out = pngfile
+        
     # open kameleon
     kameleon = ccmc.Kameleon()
     if debug:
@@ -91,60 +100,70 @@ def plot(time, pos, plane_vs, parameter,
         U2 = np.array(plane_vs[1])
         U3 = np.cross(U1, U2)
 
-    x_1d = np.arange(xlim[0], xlim[1], dx)
-    y_1d = np.arange(ylim[0], ylim[1], dy)
-    X, Y = np.meshgrid(x_1d, y_1d) # grid of points on the cutplane
+    x_1d = np.arange(xlim[0], xlim[1] + dx, dx)
+    y_1d = np.arange(ylim[0], ylim[1] + dy, dy)
+    X, Y = np.meshgrid(x_1d, y_1d) # grid of points on the cut plane
     Z = np.zeros(X.shape)
-    if debug:
-        print x_1d.shape,y_1d.shape
-        print X.shape,Y.shape,Z.shape
-        print x_1d.size, y_1d.size
-        print x_1d
-        print y_1d
-        print X
+
+    print("Interpolating")
+    sys.stdout.flush()
     for i in range(X.shape[0]): # note this is y_1d.size (NOT x)
         for j in range(X.shape[1]): 
             # grid of the corresponding values of variable. To be color plotted
-            Z[i, j] = data_in_U(kameleon, interpolator, parameter, X[i, j], Y[i, j], U1, U2, U3)
+            Z[i, j] = data_in_U(kameleon, interpolator, parameter,
+                                X[i, j], Y[i, j], U1, U2, U3)
 
     kameleon.close()
+    sys.stdout.flush()
     if debug:
         print("Closed " + filename_in + "\n")
 
-    # Plotting
     plt.clf()
-    fig = plt.figure(dpi = 200)
-    ax2 = fig.add_subplot(1, 2, 2)
+    fig = plt.figure(dpi=200)
+    ax2 = fig.add_subplot(1, 1, 1)
 
     # Plot cut plane data
     ax2.set_title(title, fontsize=10)
-    #xlabel = 'xlable'
-    #ylabel = 'ylable'
-    #if plane_vs == None and type(pos) == str:
-    #    xlabel = pos[0] + '_GSM ' + "[$R_E$]"
-    #    ylabel = pos[1] + '_GSM ' + "[$R_E$]"
     if plane_vs == None:
         xlabel = "Tailward distance [$R_E$]"
         ylabel = "Northward distance [$R_E$]"
-    else:
-        xlabel = '[%.2f, %.2f, %.2f]' %tuple(U1) + ' in GSM' + "[$R_E$]"
-        ylabel = '[%.2f, %.2f, %.2f]' %tuple(U2) + ' in GSM' + "[$R_E$]"
+    elif xlabel == '':    
+        xlabel = '[%.1f, %.1f, %.1f]' % tuple(U1) + ' dir' + " [$R_E$]"
+        ylabel = '[%.1f, %.1f, %.1f]' % tuple(U2) + ' dir' + " [$R_E$]"
 
-    ax2.set(xlabel = xlabel)
-    ax2.set(ylabel = ylabel)
+    cmap = matplotlib.pyplot.get_cmap('viridis', 32)
+
+    ax2.set(xlabel=xlabel)
+    ax2.set(ylabel=ylabel)
     ax2.axis('square')
-    pcm = ax2.pcolormesh(X, Y, Z)
+    pcm = ax2.pcolormesh(X, Y, Z, cmap=cmap)
 
-    # Reason for choice of fraction and pad:
-    # https://stackoverflow.com/a/39948312/1491619
-    cb = fig.colorbar(pcm, ax = ax2, fraction = 0.04, pad = 0.08)
-    cb.ax.set_title(parameter + ' [$' + parameter_unit + '$]', ha='left')
+    boundaries = np.linspace(zlim[0], zlim[1], 11)
+    cb = fig.colorbar(pcm, ax=ax2, boundaries=boundaries)
+    #import pdb;pdb.set_trace()
+    if zlim is not None:
+        cb.set_clim(zlim[0], zlim[1])
+    
+    cb.ax.set_title(parameter + ' [$' + parameter_unit + '$]', ha='center')
     plt.xlim(xlim[0], xlim[1])
     plt.ylim(ylim[0], ylim[1])
+    
+    # Set positions of axes and colorbar
+    ax_x = 0.1   # Offset from left
+    ax_y = 0.14  # Offset from bottom
+    ax_w = 0.75  # Width
+    ax_h = 0.73  # Height
+    cb_x = ax_x + ax_w + 0.005 # Offset from left
+    cb_y = ax_y  # Offset from bottom
+    cb_w = 0.1   # Width
+    cb_h = ax_h  # Height
+    
+    ax2.set_position([ax_x,ax_y,ax_w,ax_h])
+    cb.ax.set_position([cb_x,cb_y,cb_w,cb_h])
 
     # Add field line to 2D plot
     if plane_vs == None:
-        solCut=np.zeros((sol.shape[0], 2))
+        solCut = np.zeros((sol.shape[0], 2))
         for k in range(sol.shape[0]):
             solCut[k, 0] = np.dot(sol[k, :], U1)
             solCut[k, 1] = np.dot(sol[k, :], U2)

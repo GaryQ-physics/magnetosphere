@@ -22,18 +22,19 @@ minn = hr/60.
 s = minn/60.
 
 def ex_data(kam, interp, variable, x, y, z):
-    # Get data from file, interpolate to point
+    """Load data from file, interpolate to point"""
+
     kam.loadVariable(variable)
     data = interp.interpolate(variable, x, y, z)
-    if( x**2 + y**2 + z**2 >=1.):
+    if (x**2 + y**2 + z**2 >= 1.):
         return data
     else:
         return 0.
 
 
 def dXds(X, s, kam, interp):
-    """
-    derivative function for field line ODE
+    """Derivative function for field line ODE
+
     dx/ds = Bx(x,y,z)/Bm
     dy/ds = By(x,y,z)/Bm
     dz/ds = Bz(x,y,z)/Bm
@@ -41,14 +42,14 @@ def dXds(X, s, kam, interp):
     X = [x, y, z]
     B = [Bx, By, Bz]
     Bm = sqrt(Bx**2 + By**2 + Bz**2)
-    s=arclength    
+    s = arclength    
     """
     
     B = np.array([ex_data(kam, interp, 'bx', X[0], X[1], X[2]), 
                   ex_data(kam, interp, 'by', X[0], X[1], X[2]), 
                   ex_data(kam, interp, 'bz', X[0], X[1], X[2])])
     Bm = np.sqrt(np.dot(B, B))
-    if 1e-9 < Bm <1e+7:
+    if 1e-9 < Bm < 1e+7:
         return (sign/Bm)*B
     else:
         return [0., 0., 0.] # TODO: Return np.nan?
@@ -60,7 +61,8 @@ def Compute(Event, ret_sol=False, r=1.01, debug=False):
     MLON = Event[6]
     MLAT = Event[7]
 
-    filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % tuple(time) + '.out.cdf'
+    filename = conf["run_path"] + '3d__var_3_e' \
+                + '%04d%02d%02d-%02d%02d%02d-000' % tuple(time) + '.out.cdf'
 
     X0 = ps.MAGtoGSM([r, MLAT, MLON], time, 'sph', 'car')
 
@@ -73,14 +75,16 @@ def Compute(Event, ret_sol=False, r=1.01, debug=False):
     interpolator = kameleon.createNewInterpolator()
 
     # Trace field line
-    s_grid = np.linspace(0., 10., 100.)
-    ds = s_grid[1] - s_grid[0]
+    # TODO: Input to function should include ds and max length
+    s_grid = np.linspace(0., 10., 101.)
 
     soln = odeint(dXds, X0, s_grid, args=(kameleon, interpolator))
-    if debug:
-        print('X0 = ', X0)
-        print(np.dot(X0, X0))
-        print('soln = ', soln)
+    if False:
+        print('X0 = ')
+        print(X0)
+        print('X0 dot X0 = {0:.1e}'.format(np.dot(X0, X0)))
+        print('soln = ')
+        print(soln)
 
     # initialize vectors for defining field line cut plane
     v1 = (np.nan)*np.empty((3, ))
@@ -92,7 +96,8 @@ def Compute(Event, ret_sol=False, r=1.01, debug=False):
     Mdipole = (np.nan)*np.empty((3, ))
 
     # define condition on the field line points
-    tr = np.logical_and(soln[:, 0]**2+soln[:, 1]**2+soln[:, 2]**2 >=1., soln[:, 0]**2+soln[:, 1]**2+soln[:,2]**2 < 20.)
+    tr = np.logical_and(soln[:, 0]**2+soln[:, 1]**2 + soln[:, 2]**2 >=1.,
+                        soln[:, 0]**2+soln[:, 1]**2 + soln[:,2]**2 < 20.)
 
     # create the arrays of the restricted field line componentwise
     sol = soln[tr, :]
@@ -100,23 +105,26 @@ def Compute(Event, ret_sol=False, r=1.01, debug=False):
         print('sol = ', sol)
         
     # define vects for plane of main field line
-    '''
-    v1 = sol[0,:]
-    v2 = sol[-1,:]
-    half = int(sol.shape[0]/2)
-    v3 = sol[half,:]
-    '''
+    if False:
+        # Old method. Use start, middle, and end.
+        # Won't work as desired when field line is not closed.
+        v1 = sol[0,:]
+        v2 = sol[-1,:]
+        half = int(sol.shape[0]/2)
+        v3 = sol[half,:]
 
+    #import pdb; pdb.set_trace()
+    # New method. Use first three field line points.
     v1 = sol[0, :]
-    v2 = sol[int(1./ds), :]
-    v3 = sol[int(0.5/ds), :]
+    v2 = sol[2, :]
+    v3 = sol[1, :]
 
     # define cut plane coordinates based on main field line 
     # (U3 is normal to the plane)
     U2 = (v1 - v2)/np.linalg.norm(v1-v2)
-    Mdipole = ps.MAGtoGSM([0., 0., 1.], time, 'car', 'car')
     U3 = np.cross(v3 - v1, U2)
-    if np.linalg.norm(U3)<1e-3:
+
+    if np.linalg.norm(U3) < 1e-3:
         print("WARNING: close to straight line")
     U3 = U3/np.linalg.norm(U3)
     U1 = np.cross(U2, U3)
@@ -125,8 +133,13 @@ def Compute(Event, ret_sol=False, r=1.01, debug=False):
     if debug:
         print("Closed " + filename)
 
-    if ret_sol: return [Mdipole, U1, U2, U3, sol]
-    return [Mdipole, U1, U2, U3]
+    # Compute centered dipole vector in GSM at given time
+    Mdipole = ps.MAGtoGSM([0., 0., 1.], time, 'car', 'car')
+
+    if ret_sol: 
+        return [Mdipole, U1, U2, U3, sol]
+    else:
+        return [Mdipole, U1, U2, U3]
 
 
 def writedata(Event, debug=False):
