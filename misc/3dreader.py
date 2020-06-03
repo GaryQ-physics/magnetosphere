@@ -2,7 +2,7 @@ import spacepy.pybats.bats as bats
 
 ############################################################################
 # read in the 3d magnetosphere
-filename = "/Users/robertweigel/git/students/gquaresi/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out"
+filename = "/home/gary/Downloads/3d__var_3_e20031120-070000-000.out"
 data3d = bats.Bats2d(filename)
 
 # look at keys:
@@ -18,4 +18,4 @@ x = np.array(x)
 y = np.array(y)
 z = np.array(z)
 
-print(np.min(x**2 + y**2 + z**2))
+print(np.sqrt(np.min(x**2 + y**2 + z**2)))

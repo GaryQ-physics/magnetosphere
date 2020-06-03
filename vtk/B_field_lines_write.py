@@ -25,15 +25,6 @@ hr = 1.
 minn = hr/60.
 s = minn/60.
 
-def ex_data(kam, interp, variable, x, y, z):
-    # Get data from file, interpolate to point
-    kam.loadVariable(variable)
-    data = interp.interpolate(variable, x, y, z)
-    if x**2 + y**2 + z**2 >=1.:
-        return data
-    else:
-        return 0.
-
 
 def Compute(Event, Nb):
     #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
@@ -79,7 +70,7 @@ def Compute(Event, Nb):
 
     solns = (np.nan)*np.empty((s_grid.size, 3, len(IC)))
     for i in range(len(IC)):
-        sol = odeint(cut_plane.dXds, IC[i], s_grid, args = (kameleon, interpolator))
+        sol = odeint(cut_plane.dXds, IC[i], s_grid, args = (kameleon, interpolator, 'b'))
         solns[:, :, i] = sol
 
     if debug:

@@ -8,7 +8,7 @@ sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 import pos_sun as ps
 #import cut_plane
-from B_field_lines_write import ex_data
+from cut_plane import ex_data, dXds
 
 from scipy.integrate import odeint
 import _CCMC as ccmc
@@ -22,17 +22,6 @@ amin = deg/60.
 hr = 1.
 minn = hr/60.
 s = minn/60.
-
-
-def dXds(X, s, kam, interp):    
-    J = np.array([ex_data(kam, interp, 'jx', X[0], X[1], X[2]), 
-                  ex_data(kam, interp, 'jy', X[0], X[1], X[2]), 
-                  ex_data(kam, interp, 'jz', X[0], X[1], X[2])])
-    Jm = np.sqrt(np.dot(J, J))
-    if 1e-9 < Jm <1e+7:
-        return (1./Jm)*J
-    else:
-        return [0., 0., 0.] # TODO: Return np.nan?
 
 
 def Compute(Event):
@@ -53,12 +42,12 @@ def Compute(Event):
         print("Opened " + filename)
     interpolator = kameleon.createNewInterpolator()
 
-    ang = np.linspace(-1., 1., 5)
+    ang = np.linspace(-30.*deg, 30.*deg, 5)
     #dist = np.linspace(6.5, 10., 3)
     D = np.linspace(1., 10., 90)
     IC = []
     IC.append([7.1, 0., 0.])
-    '''
+    
     for j in range(ang.size):
         rose = False
         fell = False
@@ -66,18 +55,19 @@ def Compute(Event):
         end = 10.
         for i in range(D.size):
             P = ex_data(kameleon, interpolator, 'p', D[i]*np.cos(ang[j]), 0., D[i]*np.sin(ang[j]))
-            if P > 6.:
+            Jy = ex_data(kameleon, interpolator, 'jy', D[i]*np.cos(ang[j]), 0., D[i]*np.sin(ang[j]))
+            if P > 5. and False:
                 rose = True
                 start = D[i]
-            if rose and P < 2.:
+            if rose and P < 1. and False:
                 fell = True
                 end = D[i]
                 break
-        dist = np.linspace(start-0.3, end+0.3, 4)
+        dist = np.linspace(start-0.3, end+0.3, 6)
         for k in range(dist.size):
             dist[k]*np.cos(ang[j]), 0., dist[k]*np.sin(ang[j])
             IC.append([dist[k]*np.cos(ang[j]), 0., dist[k]*np.sin(ang[j])])
-    '''
+
 
     '''
     B1, B2 = np.meshgrid(dist,ang)
@@ -109,7 +99,7 @@ def Compute(Event):
 
     solns = (np.nan)*np.empty((s_grid.size, 3, len(IC)))
     for i in range(len(IC)):
-        sol = odeint(dXds, IC[i], s_grid, args = (kameleon, interpolator))
+        sol = odeint(dXds, IC[i], s_grid, args = (kameleon, interpolator, 'j'))
         solns[:, :, i] = sol
 
     if True:

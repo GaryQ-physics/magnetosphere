@@ -12,7 +12,7 @@ import sys
 import os
 import numpy as np
 #print os.path.dirname(os.path.abspath(__file__)) + '/../'
-#sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../' )
+#sys.path.append( os.path.dirname(os.path.abspath(_file_)) + '/../' )
 sys.path.append( './../' )  # for some reason the other way wont work in paraview
 from config import conf
 #import pos_sun as ps
@@ -28,7 +28,7 @@ subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
 Nlong=5
 Nb = 6
 N=Nb+1+Nlong
-var='jy'
+var='dB_EW'
 
 cut_plane_name = 'cut_plane_info_%.2f_%.2f' %(Event[7], Event[6]) + tag + '.txt'
 grid_name = 'structured_grid_' + var + tag + '.vtk'
