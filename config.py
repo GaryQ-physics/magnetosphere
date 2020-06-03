@@ -15,6 +15,9 @@ conf = {
         'run_path_derived': base + 'data/SCARR5_GM_IO2-derived/'
     }
 
+if base + 'util/' not in sys.path:
+    sys.path.append(base + 'util/')
+
 if base + 'events/' not in sys.path:
     sys.path.append(base + 'events/')
 
