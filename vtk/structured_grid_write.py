@@ -48,7 +48,7 @@ def ex_data(kam,interp, variable, x,y,z, X0, Npole, V_char = 1.):
                       ex_data(kam, interp, 'jy', x, y, z, X0, Npole), 
                       ex_data(kam, interp, 'jz', x, y, z, X0, Npole)])
         J = J*(muA/m**2)
-        R = np.array([x, y, z])-X0
+        R = X0 - np.array([x, y, z])
         #R = R*R_e
         #dB_dV = (mu0/(4*np.pi))*np.cross(J, R)/(np.linalg.norm(R)**3)
         #dBnT = dB_dV*V_char/(nT)

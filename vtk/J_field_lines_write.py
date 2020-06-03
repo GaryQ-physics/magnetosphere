@@ -57,6 +57,8 @@ def Compute(Event):
     #dist = np.linspace(6.5, 10., 3)
     D = np.linspace(1., 10., 90)
     IC = []
+    IC.append([7.1, 0., 0.])
+    '''
     for j in range(ang.size):
         rose = False
         fell = False
@@ -75,6 +77,7 @@ def Compute(Event):
         for k in range(dist.size):
             dist[k]*np.cos(ang[j]), 0., dist[k]*np.sin(ang[j])
             IC.append([dist[k]*np.cos(ang[j]), 0., dist[k]*np.sin(ang[j])])
+    '''
 
     '''
     B1, B2 = np.meshgrid(dist,ang)
