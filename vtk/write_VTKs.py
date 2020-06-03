@@ -24,20 +24,20 @@ filename = conf["run_path"] + '3d__var_3_e' \
 J_field_lines_write.writevtk(Event)
 
 
-if True:
+if False:
     cut_plane.writedata(Event)
     B_field_lines_write.writevtk(Event)
     longitude_lines_write.writevtk(Event)
     #J_vector_field_write.writevtk(Event)
     earth_write.writevtk(Event)
 
-    #structured_grid_write.writevtk(Event, 'jy')
-    #structured_grid_write.writevtk(Event, 'p')
+    structured_grid_write.writevtk(Event, 'jy')
+    structured_grid_write.writevtk(Event, 'p')
     structured_grid_write.writevtk(Event, 'dB')
     structured_grid_write.writevtk(Event, 'dB_EW')
     structured_grid_write.writevtk(Event, 'dB_NS', calcTotal=True)
 
-if True:
+if False:
     N = 10
 
     g = open(conf["run_path_derived"] + 'LOCALIZED.txt', 'r')

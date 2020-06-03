@@ -15,24 +15,61 @@ import pos_sun as ps
 sign = -1  # changes sign of magnetic field used to trace the field lines
 
 # units
+hr = 1.
+muA = 1.
+R_e = 1.
+nT = 1.
+
 deg = (np.pi/180.)
 amin = deg/60.
-hr = 1.
 minn = hr/60.
 s = minn/60.
+
+A = 1e+6*muA
+Tesla = 1e+9*nT
+m = R_e/6.3781e+6  # R_e == 6.3781e+6*m
+#kg = Tesla*A*s**2
+
+#mu0 = 1.2566370614e-6*kg*m/((s**2)*(A**2))
+mu0 = 1.970237314e-10*nT*R_e/muA
+
+def ex_data_full(kam,interp, variable, x, y, z, X0, Npole, V_char = 1.):
+    if np.sqrt(x**2+y**2+z**2)<1e-4: return 0.
+    # Get data from file, interpolate to point
+    if('dB' in variable):
+        if np.sqrt(x**2+y**2+z**2)<1.5: return 0.
+        J = np.array([ex_data(kam, interp, 'jx', x, y, z, X0, Npole), 
+                      ex_data(kam, interp, 'jy', x, y, z, X0, Npole), 
+                      ex_data(kam, interp, 'jz', x, y, z, X0, Npole)])
+        J = J*(muA/m**2)
+        R = X0 - np.array([x, y, z])
+        #R = R*R_e
+        #dB_dV = (mu0/(4*np.pi))*np.cross(J, R)/(np.linalg.norm(R)**3)
+        #dBnT = dB_dV*V_char/(nT)
+        dBnT = V_char*(mu0/(4*np.pi))*np.cross(J, R)/(np.linalg.norm(R)**3)
+        if(variable=='dB'):
+            return np.linalg.norm(dBnT)
+        a2 = np.cross(Npole, X0)
+        if(variable=='dB_EW'):
+            return np.dot(dBnT, a2)/np.linalg.norm(a2) # east west direction (east positive)
+        a1 = np.cross(X0, a2)
+        if(variable=='dB_NS'):
+            return np.dot(dBnT, a1)/np.linalg.norm(a1) # north south direction (north positive)
+    kam.loadVariable(variable)
+    data = interp.interpolate(variable, x, y, z)
+    return data
+
 
 def ex_data(kam, interp, variable, x, y, z):
     """Load data from file, interpolate to point"""
 
-    kam.loadVariable(variable)
-    data = interp.interpolate(variable, x, y, z)
     if (x**2 + y**2 + z**2 >= 1.):
-        return data
+        return ex_data_full(kam,interp, variable, x, y, z, 0, 0)
     else:
         return 0.
 
 
-def dXds(X, s, kam, interp):
+def dXds(X, s, kam, interp, var):
     """Derivative function for field line ODE
 
     dx/ds = Bx(x,y,z)/Bm
@@ -45,9 +82,9 @@ def dXds(X, s, kam, interp):
     s = arclength    
     """
     
-    B = np.array([ex_data(kam, interp, 'bx', X[0], X[1], X[2]), 
-                  ex_data(kam, interp, 'by', X[0], X[1], X[2]), 
-                  ex_data(kam, interp, 'bz', X[0], X[1], X[2])])
+    B = np.array([ex_data(kam, interp, var + 'x', X[0], X[1], X[2]), 
+                  ex_data(kam, interp, var + 'y', X[0], X[1], X[2]), 
+                  ex_data(kam, interp, var + 'z', X[0], X[1], X[2])])
     Bm = np.sqrt(np.dot(B, B))
     if 1e-9 < Bm < 1e+7:
         return (sign/Bm)*B
