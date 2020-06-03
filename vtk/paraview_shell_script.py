@@ -16,7 +16,8 @@ import numpy as np
 sys.path.append( './../' )  # for some reason the other way wont work in paraview
 from config import conf
 #import pos_sun as ps
-import paraview.simple as pvs
+#import paraview.simple as pvs
+from paraview.simple import *  #needed for paraview 5.8
 
 
 Event = [2003, 11, 20, 7, 0, 0, 176.00, 57.50]
