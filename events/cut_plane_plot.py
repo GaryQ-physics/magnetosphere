@@ -30,7 +30,10 @@ def data_in_U(kam, interp, variable, u, v, U1, U2, U3):
 
 
 def plot(time, pos, plane_vs, parameter,
-         xlim=[-10,10], ylim=[-10,10], zlim=None, dx=0.1, dy=0.1,
+         xlims=[-10,10], ylims=[-10,10], zlims=None, 
+         xticks=None, yticks=None, zticks=None,
+         dx=0.1, dy=0.1,
+         dpi=300,
          png=True, pngfile=None, debug=False):
 
     """
@@ -93,19 +96,19 @@ def plot(time, pos, plane_vs, parameter,
         U2 = ret[2]
         U3 = ret[3]
         sol = ret[4]
-        
+
         if debug: print('sol = ', sol)
     else:
         U1 = np.array(plane_vs[0])
         U2 = np.array(plane_vs[1])
         U3 = np.cross(U1, U2)
 
-    x_1d = np.arange(xlim[0], xlim[1] + dx, dx)
-    y_1d = np.arange(ylim[0], ylim[1] + dy, dy)
+    x_1d = np.arange(xlims[0], xlims[1] + dx, dx)
+    y_1d = np.arange(ylims[0], ylims[1] + dy, dy)
     X, Y = np.meshgrid(x_1d, y_1d) # grid of points on the cut plane
     Z = np.zeros(X.shape)
 
-    print("Interpolating")
+    print("Interpolating {0:s} onto {1:d}x{2:d} grid".format(parameter,len(x_1d),len(y_1d)))
     sys.stdout.flush()
     for i in range(X.shape[0]): # note this is y_1d.size (NOT x)
         for j in range(X.shape[1]): 
@@ -118,9 +121,10 @@ def plot(time, pos, plane_vs, parameter,
     if debug:
         print("Closed " + filename_in + "\n")
 
-    plt.clf()
-    fig = plt.figure(dpi=200)
-    ax2 = fig.add_subplot(1, 1, 1)
+    r = float(xlims[1]-xlims[0])/float(ylims[1]-ylims[0])
+    
+    fig = plt.figure(figsize=(6, 6/r), dpi=dpi, tight_layout=False)
+    ax2 = fig.gca()
 
     # Plot cut plane data
     ax2.set_title(title, fontsize=10)
@@ -131,35 +135,43 @@ def plot(time, pos, plane_vs, parameter,
         xlabel = '[%.1f, %.1f, %.1f]' % tuple(U1) + ' dir' + " [$R_E$]"
         ylabel = '[%.1f, %.1f, %.1f]' % tuple(U2) + ' dir' + " [$R_E$]"
 
-    cmap = matplotlib.pyplot.get_cmap('viridis', 32)
+    from niceticks import niceticks
+
+    if zticks is not None and zlims is not None:
+        zlims = None
+        print('Ignoring zlims b/c zticks given.')
+
+    if zlims is not None:
+        boundaries = niceticks(zlims[0], zlims[1], 10)
+    elif zticks is not None:
+        boundaries = zticks
+    else:
+        boundaries = niceticks(np.min(Z.flatten()), np.max(Z.flatten()), 10)
+
+    if zticks is None:
+        zticks = boundaries
+
+    Nbt = 4 # Number of colors between ticks
+    cmap = matplotlib.pyplot.get_cmap('viridis', Nbt*len(boundaries))
 
     ax2.set(xlabel=xlabel)
     ax2.set(ylabel=ylabel)
     ax2.axis('square')
     pcm = ax2.pcolormesh(X, Y, Z, cmap=cmap)
 
-    boundaries = np.linspace(zlim[0], zlim[1], 11)
-    cb = fig.colorbar(pcm, ax=ax2, boundaries=boundaries)
-    #import pdb;pdb.set_trace()
-    if zlim is not None:
-        cb.set_clim(zlim[0], zlim[1])
-    
-    cb.ax.set_title(parameter + ' [$' + parameter_unit + '$]', ha='center')
-    plt.xlim(xlim[0], xlim[1])
-    plt.ylim(ylim[0], ylim[1])
-    
-    # Set positions of axes and colorbar
-    ax_x = 0.1   # Offset from left
-    ax_y = 0.14  # Offset from bottom
-    ax_w = 0.75  # Width
-    ax_h = 0.73  # Height
-    cb_x = ax_x + ax_w + 0.005 # Offset from left
-    cb_y = ax_y  # Offset from bottom
-    cb_w = 0.1   # Width
-    cb_h = ax_h  # Height
-    
-    ax2.set_position([ax_x,ax_y,ax_w,ax_h])
-    cb.ax.set_position([cb_x,cb_y,cb_w,cb_h])
+    plt.xlim(xlims[0], xlims[1])
+    plt.ylim(ylims[0], ylims[1])
+
+    db = boundaries[1]-boundaries[0]
+    boundaries = np.arange(boundaries[0], boundaries[-1] + db/Nbt, db/Nbt)
+
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+    divider = make_axes_locatable(ax2)
+    cax1 = divider.append_axes("right", size="5%", pad=0.05)
+    cb = fig.colorbar(pcm, cax=cax1, ticks=zticks, boundaries=boundaries)
+    cb.ax.set_title(parameter + ' [' + parameter_unit + ']', va='bottom', fontsize=10)
+    fig.tight_layout(h_pad=0)
 
     # Add field line to 2D plot
     if plane_vs == None:
@@ -172,8 +184,14 @@ def plot(time, pos, plane_vs, parameter,
     if png:
         if debug:
             print('Writing ' + filename_out)
-        plt.savefig(filename_out, dpi=300, bbox_inches='tight')
+        plt.savefig(filename_out, dpi=dpi, bbox_inches='tight')
         if debug:
             print('Wrote ' + filename_out)
 
     plt.show()
+
+    info = {'min': np.min(Z.flatten()),
+            'max': np.max(Z.flatten())
+            }
+    
+    return info

@@ -4,6 +4,9 @@ import sys
 if os.path.exists('/Users/robertweigel/'):
     base = '/Users/robertweigel/git/students/gquaresi/magnetosphere/'
     kameleon = '/Users/robertweigel/kameleon/lib/python2.7/site-packages/'
+elif os.path.exists('/home/weigel/'):
+    base = '/home/weigel/git/students/GaryQ-physics/magnetosphere/'
+    kameleon = '/home/weigel/kameleon/lib/python2.7/site-packages/'
 else:
     base = '/home/gary/magnetosphere/'
     kameleon = '/home/gary/magnetosphere/kameleon/lib/python2.7/site-packages/'
@@ -31,6 +34,5 @@ if kameleon + 'ccmc/' not in sys.path:
     sys.path.append(kameleon + 'ccmc/')
     
 if not os.path.exists(conf['run_path_derived']):
-    os.mkdirs(conf['run_path_derived'])
+    os.makedirs(conf['run_path_derived'])
     print('Created directory ' + conf['run_path_derived'])
-    
