@@ -32,7 +32,7 @@ if kameleon not in sys.path:
 
 if kameleon + 'ccmc/' not in sys.path:
     sys.path.append(kameleon + 'ccmc/')
-    
+
 if not os.path.exists(conf['run_path_derived']):
     os.makedirs(conf['run_path_derived'])
     print('Created directory ' + conf['run_path_derived'])

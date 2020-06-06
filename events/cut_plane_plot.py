@@ -4,8 +4,6 @@ import os
 import sys
 import numpy as np
 import pickle
-import matplotlib
-import matplotlib.pyplot as plt
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
@@ -41,6 +39,11 @@ def plot(time, pos, plane_vs, parameter,
     plot(time, [r, mlat, mlong], None, 'p')
     plot(time, [GSMx,GSMy,GSMz], [v1, v2], 'p')
     """
+
+    import matplotlib
+    if not showplot:
+        matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
     
     xlabel = ''
     ylabel = ''
@@ -192,6 +195,8 @@ def plot(time, pos, plane_vs, parameter,
 
     if showplot:
         plt.show()
+    else:
+        plt.close()
 
     info = {'min': np.min(Z.flatten()),
             'max': np.max(Z.flatten())
