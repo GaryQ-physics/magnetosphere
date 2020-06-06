@@ -83,7 +83,7 @@ def plot(time, pos, plane_vs, parameter,
     interpolator = kameleon.createNewInterpolator()
 
     parameter_unit = kameleon.getVisUnit(parameter)
-    parameter_unit = parameter_unit.replace('mu', '\\mu ')
+    parameter_unit = parameter_unit.replace('mu', '$\mu$')
 
     if plane_vs == None:
         r = pos[0]
@@ -108,7 +108,8 @@ def plot(time, pos, plane_vs, parameter,
     X, Y = np.meshgrid(x_1d, y_1d) # grid of points on the cut plane
     Z = np.zeros(X.shape)
 
-    print("Interpolating {0:s} onto {1:d}x{2:d} grid".format(parameter,len(x_1d),len(y_1d)))
+    if debug:
+        print("Interpolating {0:s} onto {1:d}x{2:d} grid".format(parameter,len(x_1d),len(y_1d)))
     sys.stdout.flush()
     for i in range(X.shape[0]): # note this is y_1d.size (NOT x)
         for j in range(X.shape[1]): 
