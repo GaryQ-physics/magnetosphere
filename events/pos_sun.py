@@ -2,7 +2,7 @@ import sys
 import os
 import numpy as np
 
-# Add path of config_paths.py
+# Add path of config.py
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 

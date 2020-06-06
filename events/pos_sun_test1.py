@@ -4,9 +4,9 @@ import os
 import sys
 import numpy as np
 
+# Add path of config.py
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
-from config_paths import config
-conf = config()
+from config import conf
 
 import pos_sun as ps
 

@@ -21,7 +21,7 @@ import cut_plane_plot as cp
 from urlretrieve import urlretrieve
 
 ###############################################################################
-para = True # Process in parallel using all CPUs
+para = True   # Process in parallel using all CPUs
 debug = False
 vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
 ###############################################################################
@@ -32,7 +32,7 @@ opts = {
         'ylims': [-20, 20], # Vertical axis limits in R_E
         'zticks': None,     # z-axis ticks for variable
         'dpi': 300,
-        'nf': 2,         # Number of files to process. None => all files
+        'nf': None,         # Number of files to process. None => all files
         'delta1': 0.5,      # Low-res cut plane resolution in R_E
         'delta2': 0.1,      # High-res cut plane resolution in R_E
         }
