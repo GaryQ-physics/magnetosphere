@@ -38,9 +38,9 @@ def ex_data_full(kam, interp, variable, x, y, z, X0, Npole, V_char = 1.):
     # Get data from file, 'Interate to point
     if('dB' in variable):
         if np.sqrt(x**2+y**2+z**2)<1.5: return 0.
-        J = np.array([ex_data(kam, interp, 'jx', x, y, z, X0, Npole), 
-                      ex_data(kam, interp, 'jy', x, y, z, X0, Npole), 
-                      ex_data(kam, interp, 'jz', x, y, z, X0, Npole)])
+        J = np.array([ex_data_full(kam, interp, 'jx', x, y, z, X0, Npole), 
+                      ex_data_full(kam, interp, 'jy', x, y, z, X0, Npole), 
+                      ex_data_full(kam, interp, 'jz', x, y, z, X0, Npole)])
         J = J*(muA/m**2)
         R = X0 - np.array([x, y, z])
         #R = R*R_e
@@ -94,14 +94,14 @@ def dXds(X, s, kam, interp, var):
 
 def Compute(Event, ret_sol=False, r=1.01, debug=False):
     #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
-    time = Event[0:6]
-    MLON = Event[6]
-    MLAT = Event[7]
+    time = Event[0:7]
+    MLON = Event[7]
+    MLAT = Event[8]
 
     filename = conf["run_path"] + '3d__var_3_e' \
-                + '%04d%02d%02d-%02d%02d%02d-000' % tuple(time) + '.out.cdf'
+                + '%04d%02d%02d-%02d%02d%02d-%03d' % tuple(time) + '.out.cdf'
 
-    X0 = ps.MAGtoGSM([r, MLAT, MLON], time, 'sph', 'car')
+    X0 = ps.MAGtoGSM([r, MLAT, MLON], time[0:6], 'sph', 'car')
 
     if debug:
         print(filename, "Opening " + filename)
@@ -115,7 +115,7 @@ def Compute(Event, ret_sol=False, r=1.01, debug=False):
     # TODO: Input to function should include ds and max length
     s_grid = np.linspace(0., 10., 101.)
 
-    soln = odeint(dXds, X0, s_grid, args=(kameleon, interpolator))
+    soln = odeint(dXds, X0, s_grid, args=(kameleon, interpolator, 'b'))
     if False:
         print('X0 = ')
         print(X0)
@@ -171,7 +171,7 @@ def Compute(Event, ret_sol=False, r=1.01, debug=False):
         print("Closed " + filename)
 
     # Compute centered dipole vector in GSM at given time
-    Mdipole = ps.MAGtoGSM([0., 0., 1.], time, 'car', 'car')
+    Mdipole = ps.MAGtoGSM([0., 0., 1.], time[0:6], 'car', 'car')
 
     if ret_sol: 
         return [Mdipole, U1, U2, U3, sol]
@@ -184,11 +184,11 @@ def writedata(Event, debug=False):
     
     Calling compute() from ParaView does not work, so write output to file.
     """
-    #year,month,day,hours,minutes,seconds,MLONdeg,MLATdeg = Event
-    time = Event[0:6]
+    #year,month,day,hours,minutes,seconds,milisec,MLONdeg,MLATdeg = Event
+    time = Event[0:7]
     Mdipole,U1,U2,U3 = Compute(Event)
 
-    tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
+    tag = '_%04d:%02d:%02dT%02d:%02d:%02d.%03d' % tuple(time)
     subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
     if not os.path.exists(conf["run_path_derived"] + subdir):
         os.mkdir(conf["run_path_derived"] + subdir)
