@@ -4,6 +4,10 @@ import sys
 import imageio # Also need to install imageio-ffmpeg
 from pathlib import Path
 
+if not sys.version_info[0] == 3 and sys.version_info[1] >= 5:
+    print("Python >= 3.5 required.")
+    sys.exit(1)
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 

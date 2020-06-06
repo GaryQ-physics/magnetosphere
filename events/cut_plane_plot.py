@@ -3,6 +3,7 @@
 import os
 import sys
 import numpy as np
+import pickle
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -33,7 +34,7 @@ def plot(time, pos, plane_vs, parameter,
          xlims=[-10,10], ylims=[-10,10], zlims=None, 
          xticks=None, yticks=None, zticks=None,
          dx=0.1, dy=0.1,
-         dpi=300,
+         dpi=300, showplot=True,
          png=True, pngfile=None, debug=False):
 
     """
@@ -110,7 +111,7 @@ def plot(time, pos, plane_vs, parameter,
 
     if debug:
         print("Interpolating {0:s} onto {1:d}x{2:d} grid".format(parameter,len(x_1d),len(y_1d)))
-    sys.stdout.flush()
+    #sys.stdout.flush()
     for i in range(X.shape[0]): # note this is y_1d.size (NOT x)
         for j in range(X.shape[1]): 
             # grid of the corresponding values of variable. To be color plotted
@@ -118,7 +119,7 @@ def plot(time, pos, plane_vs, parameter,
                                 X[i, j], Y[i, j], U1, U2, U3)
 
     kameleon.close()
-    sys.stdout.flush()
+    #sys.stdout.flush()
     if debug:
         print("Closed " + filename_in + "\n")
 
@@ -189,7 +190,8 @@ def plot(time, pos, plane_vs, parameter,
         if debug:
             print('Wrote ' + filename_out)
 
-    plt.show()
+    if showplot:
+        plt.show()
 
     info = {'min': np.min(Z.flatten()),
             'max': np.max(Z.flatten())

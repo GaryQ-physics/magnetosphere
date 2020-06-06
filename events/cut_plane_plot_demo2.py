@@ -6,12 +6,21 @@ each variable. Second set is at high resolution. Use cut_plane_plot_animate.py
 to create movie from images.
 
 When running in parallel wih IPython, sometimes thre is a broken pipe error
-message. Program always runs after second attempt, however.
+message. Program always runs after second attempt, however. In addition,
+the disabiling of output buffering will not work (see line that starts with
+sys.stdout =).
+
+TODO: If number of cores > number of vars, parallelize by files instead of
+variables.
 """
 
 import os
 import sys
 import numpy as np
+import pickle
+
+#from pympler import tracker
+#tr = tracker.SummaryTracker()
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
@@ -20,10 +29,18 @@ from niceticks import niceticks
 import cut_plane_plot as cp
 from urlretrieve import urlretrieve
 
+# https://stackoverflow.com/questions/107705/disable-output-buffering
+# Throws error in IPython.
+try:
+    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
+except:
+    pass
+
 ###############################################################################
 para = True   # Process in parallel using all CPUs
 debug = False
 vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
+#vars = ['bx']
 ###############################################################################
 opts = {
         'regen': True,      # Regenerate image even if found
@@ -35,6 +52,7 @@ opts = {
         'nf': None,         # Number of files to process. None => all files
         'delta1': 0.5,      # Low-res cut plane resolution in R_E
         'delta2': 0.1,      # High-res cut plane resolution in R_E
+        'showplot': False   # Show the plot on screen
         }
 
 def filename2ts(filename):
@@ -52,6 +70,8 @@ def process_var(var, opts):
     maxes = []
     mins = []
     for file in files:
+        #tr.print_diff()
+
         if k > opts['nf']:
             break
         filename = file.rstrip()
@@ -89,7 +109,7 @@ def process_var(var, opts):
             info = cp.plot(times[-1], opts['plane'], None, var, 
                              dx=opts['delta'], dy=opts['delta'],
                              xlims=opts['xlims'], ylims=opts['ylims'],
-                             dpi=opts['dpi'],
+                             dpi=opts['dpi'], showplot=opts['showplot'],
                              zticks=opts['zticks'],
                              png=True, pngfile=filename_png, debug=debug)
 
@@ -104,6 +124,7 @@ def process_all(opts):
         from joblib import Parallel, delayed
         import multiprocessing
         num_cores = multiprocessing.cpu_count()
+        num_cores = 12
         print('Parallel processing {0:d} variables using {1:d} cores'\
               .format(len(opts.keys()), num_cores))
         results = Parallel(n_jobs=num_cores)(\
@@ -142,6 +163,15 @@ for var in vars:
 print('First processing.')
 results = process_all(Opts)
 
+
+print('Second processing.')
+# Save results file in case error occurs after first processing.
+with open('cut_plane_plot2.pkl', 'wb') as handle:
+    pickle.dump(results, handle)
+
+with open('cut_plane_plot2.pkl', 'rb') as handle:
+    results = pickle.load(handle)
+
 results = np.array(results)
 ticks = []
 i = 0
@@ -152,5 +182,4 @@ for var in vars:
     Opts[var]['zticks'] = ticks
     Opts[var]['delta'] = opts['delta2']
 
-print('Second processing.')
 results = process_all(Opts)
