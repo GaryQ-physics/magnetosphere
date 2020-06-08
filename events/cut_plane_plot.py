@@ -3,7 +3,6 @@
 import os
 import sys
 import numpy as np
-import pickle
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
@@ -45,6 +44,9 @@ def plot(time, pos, plane_vs, parameter,
         matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     
+    matplotlib.rc('font', family='serif')
+    matplotlib.rcParams['mathtext.fontset'] = 'dejavuserif'
+    
     xlabel = ''
     ylabel = ''
     if type(pos) == str:
@@ -73,8 +75,8 @@ def plot(time, pos, plane_vs, parameter,
 
     filename_in = conf["run_path"] + filename + '.out.cdf'
     if pngfile is None:
-        filename_out = conf["run_path_derived"] + "cutplanes/" + filename + '.png'
-    else:    
+        filename_out = conf["run_path_derived"] + filename + '.png'
+    else:
         filename_out = pngfile
         
     # open kameleon
@@ -87,7 +89,38 @@ def plot(time, pos, plane_vs, parameter,
     interpolator = kameleon.createNewInterpolator()
 
     parameter_unit = kameleon.getVisUnit(parameter)
-    parameter_unit = parameter_unit.replace('mu', '$\mu$')
+
+    units = {
+                'bx': 'nT',
+                'by': 'nT',
+                'bz': 'nT',
+                'ux': 'km/s',
+                'uy': 'km/s',
+                'uz': 'km/s',
+                'jx': '$\\mu$A/m$^2$',
+                'jy': '$\\mu$A/m$^2$',
+                'jz': '$\\mu$A/m$^2$',
+                'rho': 'amu/cm$^3$',
+                'p': 'nPa',
+                'e': parameter_unit
+             }
+    labels = {
+                'bx': 'B_x',
+                'by': 'B_y',
+                'bz': 'B_z',
+                'ux': 'U_x',
+                'uy': 'U_y',
+                'uz': 'U_z',
+                'jx': 'J_x',
+                'jy': 'J_y',
+                'jz': 'J_z',
+                'rho': '\\rho',
+                'p': 'p',
+                'e': 'e'
+             }
+             
+    parameter_unit = units[parameter] 
+    parameter_label = "$" + labels[parameter] + "$"
 
     if plane_vs == None:
         r = pos[0]
@@ -128,11 +161,11 @@ def plot(time, pos, plane_vs, parameter,
 
     r = float(xlims[1]-xlims[0])/float(ylims[1]-ylims[0])
     
-    fig = plt.figure(figsize=(6, 6/r), dpi=dpi, tight_layout=False)
+    fig = plt.figure(figsize=(7, 6), dpi=dpi, tight_layout=False)
     ax2 = fig.gca()
 
     # Plot cut plane data
-    ax2.set_title(title, fontsize=10)
+    ax2.set_title(title, fontsize=10, family='monospace')
     if plane_vs == None:
         xlabel = "Tailward distance [$R_E$]"
         ylabel = "Northward distance [$R_E$]"
@@ -152,31 +185,65 @@ def plot(time, pos, plane_vs, parameter,
         boundaries = zticks
     else:
         boundaries = niceticks(np.min(Z.flatten()), np.max(Z.flatten()), 10)
-
+    
+    #import pdb;pdb.set_trace()
+    
     if zticks is None:
         zticks = boundaries
 
-    Nbt = 4 # Number of colors between ticks
-    cmap = matplotlib.pyplot.get_cmap('viridis', Nbt*len(boundaries))
+    Nbt = 4 # Approximate number of colors between ticks
+    cmap = matplotlib.pyplot.get_cmap('viridis', Nbt*(len(boundaries)-1))
+
 
     ax2.set(xlabel=xlabel)
     ax2.set(ylabel=ylabel)
     ax2.axis('square')
-    pcm = ax2.pcolormesh(X, Y, Z, cmap=cmap)
+    pcm = ax2.pcolormesh(X, Y, Z, cmap=cmap, vmin=boundaries[0], vmax=boundaries[-1])
 
     plt.xlim(xlims[0], xlims[1])
     plt.ylim(ylims[0], ylims[1])
 
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    import  matplotlib.ticker as ticker
+    
+    def fmt(x, pos):
+        if abs(x) >= 1e3 or abs(x) <= 1e-3 and x != 0:
+            a, b = '{:.0e}'.format(x).split('e')
+            b = int(b)
+            return r'${} \cdot 10^{{{}}}$'.format(a, b)
+        else:
+            return r'{0:.1f}'.format(x)
+
+    formatter = ticker.FuncFormatter(fmt)
+    formatter = ticker.ScalarFormatter(useMathText=True)
+    formatter.set_scientific(True)
+    formatter.set_powerlimits((-2,2))
+    
     db = boundaries[1]-boundaries[0]
     boundaries = np.arange(boundaries[0], boundaries[-1] + db/Nbt, db/Nbt)
 
-    from mpl_toolkits.axes_grid1 import make_axes_locatable
-
     divider = make_axes_locatable(ax2)
     cax1 = divider.append_axes("right", size="5%", pad=0.05)
-    cb = fig.colorbar(pcm, cax=cax1, ticks=zticks, boundaries=boundaries)
-    cb.ax.set_title(parameter + ' [' + parameter_unit + ']', va='bottom', fontsize=10)
-    fig.tight_layout(h_pad=0)
+    cb = fig.colorbar(pcm, cax=cax1, ticks=zticks, boundaries=boundaries,
+                      format=formatter)
+    cb.ax.set_title(parameter_label + ' [' + parameter_unit + ']', va='bottom', fontsize=10)
+    
+    plt.draw()
+    ot = cb.ax.yaxis.offsetText.get_text()
+    #import pdb;pdb.set_trace()
+    
+    if True:
+        cb.ax.yaxis.offsetText.set_visible(False)
+        z = cb.ax.get_yticklabels(0)
+        nt = z[-1].get_text()
+        nt = nt + ot.replace('times', 'cdot')
+        z[-1].set_text(nt)
+        cb.ax.set_yticklabels(z)
+        #print(z[-1])
+        #import pdb;pdb.set_trace()
+        #cb.ax.get_yticks()
+    
+    #fig.tight_layout(h_pad=0)
 
     # Add field line to 2D plot
     if plane_vs == None:
@@ -189,7 +256,7 @@ def plot(time, pos, plane_vs, parameter,
     if png:
         if debug:
             print('Writing ' + filename_out)
-        plt.savefig(filename_out, dpi=dpi, bbox_inches='tight')
+        plt.savefig(filename_out, dpi=dpi) # bbox_inches='tight')
         if debug:
             print('Wrote ' + filename_out)
 
