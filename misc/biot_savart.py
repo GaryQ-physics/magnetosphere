@@ -19,8 +19,11 @@ m = R_e/6.3781e+6  # R_e == 6.3781e+6*m  (note m < 10^-6 Re)
 #kg = Tesla*A*s**2
 
 mu0_SI = 1.25663706212e-6 # almost 4*pi*1e-7
-#mu0 = mu0_SI*kg*m/((s**2)*(A**2))
-mu0 = 1.970237314e-10*nT*R_e/muA
+if False:
+    mu0 = mu0_SI*kg*m/((s**2)*(A**2))
+else:
+    mu0 = 1.970237314e-10*nT*R_e/muA
+
 #--------------------
 
 Npole = np.array([0., 0., 1.])
@@ -30,7 +33,7 @@ j_mag = 1. # considered in units muA/m^2
 # analytic calculation:---------------
 r_SI = 0.75*6.3781e+6
 
-Rad_SI = 0.5*6.3781e+6
+Rad_SI = Rad*6.3781e+6
 J_SI = j_mag*1e-6
 I_SI = J_SI*np.pi*Rad_SI**2 # 3.19501226e+7
 
@@ -195,12 +198,13 @@ def B_EW_fromSingle(X0, Npole, mult=1, length=10.):
         total = total + deltaB_single('dB_EW', Bgrid[l,:], X0, Npole, V_char = dx*dy*dz) # dx*dy*dz*R_e**3
     return total
 
-if False:
-    print B_EW([0., 0.75, 0.], Npole, mult=i+1)
+if True:
+    print B_EW([0., 0.75, 0.], Npole)
     print B_EW_fromSingle([0., 0.75, 0.], Npole)  # should be the same as line above but take longer
 
-for i in range(8):
-    print B_EW([0., 0.75, 0.], Npole, mult=i+1)
-print ('---')
-for i in range(4):
-    print B_EW([0., 0.75, 0.], Npole, mult=4, length=10.*(i+1))
+if False:
+    for i in range(8):
+        print B_EW([0., 0.75, 0.], Npole, mult=i+1)
+    print ('---')
+    for i in range(4):
+        print B_EW([0., 0.75, 0.], Npole, mult=4, length=10.*(i+1))
