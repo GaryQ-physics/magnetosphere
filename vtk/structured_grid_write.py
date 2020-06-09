@@ -18,17 +18,28 @@ dz = 0.2
 dx_tail = 10.
 
 # units
+hr = 1.
+muA = 1.
+R_e = 1.
+nT = 1.
+
 deg = (np.pi/180.)
 amin = deg/60.
-minn = 1./60.
+minn = hr/60.
 s = minn/60.
+
+A = 1e+6*muA
+Tesla = 1e+9*nT
+m = R_e/6.3781e+6  # R_e == 6.3781e+6*m  (note m < 10^-6 Re)
+#kg = Tesla*A*s**2
+
 
 def J_kameleon(kam, interp, X):
     Jkunits = (np.nan)*np.empty(X.shape)
     for k in range(X.shape[0]):
-        J[k,0] = ex_data(kam, interp, 'jx', X[k,0], X[k,1], X[k,2])
-        J[k,1] = ex_data(kam, interp, 'jy', X[k,0], X[k,1], X[k,2])
-        J[k,2] = ex_data(kam, interp, 'jz', X[k,0], X[k,1], X[k,2])
+        Jkunits[k,0] = ex_data(kam, interp, 'jx', X[k,0], X[k,1], X[k,2])
+        Jkunits[k,1] = ex_data(kam, interp, 'jy', X[k,0], X[k,1], X[k,2])
+        Jkunits[k,2] = ex_data(kam, interp, 'jz', X[k,0], X[k,1], X[k,2])
     return Jkunits
 
 def Compute(Event, var, calcTotal=False):
@@ -90,7 +101,7 @@ def Compute(Event, var, calcTotal=False):
 
     if calcTotal:
         print('total = ', np.sum(Aa))
-    return [Aa, B, Nx, Ny, Nz]
+    return [Aa, Bgrid, Nx, Ny, Nz]
 
 def writevtk(Event, var, calcTotal=False):
     Aa, B, Nx, Ny, Nz = Compute(Event, var, calcTotal=calcTotal)
