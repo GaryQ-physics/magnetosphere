@@ -28,11 +28,8 @@ s = minn/60.
 A = 1e+6*muA
 Tesla = 1e+9*nT
 m = R_e/6.3781e+6  # R_e == 6.3781e+6*m
-#kg = Tesla*A*s**2
 
-#mu0 = 1.2566370614e-6*kg*m/((s**2)*(A**2))
-mu0 = 1.970237314e-10*nT*R_e/muA
-
+'''
 def ex_data_full(kam, interp, variable, x, y, z, X0, Npole, V_char = 1.):
     if np.sqrt(x**2+y**2+z**2)<1e-4: return 0.
     # Get data from file, 'Interate to point
@@ -58,15 +55,15 @@ def ex_data_full(kam, interp, variable, x, y, z, X0, Npole, V_char = 1.):
     kam.loadVariable(variable)
     data = interp.interpolate(variable, x, y, z)
     return data
-
+'''
 
 def ex_data(kam, interp, variable, x, y, z):
     """Load data from file, interpolate to point"""
-
-    if (x**2 + y**2 + z**2 >= 1.):
-        return ex_data_full(kam,interp, variable, x, y, z, 0, 0)
-    else:
-        return 0.
+    if (x**2 + y**2 + z**2 < 1.):
+        return 0
+    kam.loadVariable(variable)
+    data = interp.interpolate(variable, x, y, z)
+    return data
 
 
 def dXds(X, s, kam, interp, var):
