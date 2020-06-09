@@ -18,22 +18,21 @@ dx_tail = 10.
 # units
 deg = (np.pi/180.)
 amin = deg/60.
-minn = hr/60.
+minn = 1./60.
 s = minn/60.
-
 
 def Compute(Event, var, calcTotal=False):
     total = 0.
-    #year,month,day,hours,minutes,seconds,MLONdeg,MLATdeg = Event
-    time = Event[0:6]
-    MLON = Event[6]
-    MLAT = Event[7]
+    #Event = [year, month, day, hours, minutes, seconds, miliseconds, MLONdeg, MLATdeg]
+    time = Event[0:7]
+    MLON = Event[7]
+    MLAT = Event[8]
 
-    X0 = ps.MAGtoGSM([1.,MLAT,MLON],time,'sph','car')
-    Npole = ps.GEOtoGSM([0.,0.,1.],time,'car','car')
+    X0 = ps.MAGtoGSM([1.,MLAT,MLON],time[0:6],'sph','car')
+    Npole = ps.GEOtoGSM([0.,0.,1.],time[0:6],'car','car')
 
     # datafile
-    filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % tuple(time) + '.out.cdf'
+    filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-%03d' % tuple(time) + '.out.cdf'
 
     # open kameleon ---------------
     kameleon = ccmc.Kameleon()
@@ -72,8 +71,8 @@ def Compute(Event, var, calcTotal=False):
 
 def writevtk(Event, var, calcTotal=False):
     Aa, B, Nx, Ny, Nz = Compute(Event, var, calcTotal=calcTotal)
-    time = Event[0:6]
-    tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
+    time = Event[0:7]
+    tag = '_%04d:%02d:%02dT%02d:%02d:%02d.%03d' % tuple(time)
     subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
     fname = conf["run_path_derived"] + subdir + 'structured_grid_' + var + tag + '.vtk'
     if not os.path.exists(conf["run_path_derived"] + subdir):

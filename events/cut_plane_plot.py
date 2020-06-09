@@ -88,7 +88,7 @@ def plot(time, pos, plane_vs, parameter,
         print("Opened " + filename_in)
     interpolator = kameleon.createNewInterpolator()
 
-    parameter_unit = kameleon.getVisUnit(parameter)
+    parameter_unit = kameleon.getVisUnit(parameter)  #?
 
     units = {
                 'bx': 'nT',

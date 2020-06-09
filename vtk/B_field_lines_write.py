@@ -27,14 +27,14 @@ s = minn/60.
 
 
 def Compute(Event, Nb):
-    #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
-    time = Event[0:6]
-    MLON = Event[6]
-    MLAT = Event[7]
+    #Event = [year, month, day, hours, minutes, seconds, miliseconds, MLONdeg, MLATdeg]
+    time = Event[0:7]
+    MLON = Event[7]
+    MLAT = Event[8]
     T = tuple(time)
 
     filename = conf["run_path"] + '3d__var_3_e' \
-                + '%04d%02d%02d-%02d%02d%02d-000' % T + '.out.cdf'
+                + '%04d%02d%02d-%02d%02d%02d-%03d' % T + '.out.cdf'
 
     kameleon = ccmc.Kameleon()
     if debug:
@@ -56,7 +56,7 @@ def Compute(Event, Nb):
         else:
             #delta=(i-Nb/2)*eps
             delta = (-i)*eps
-        IC.append(ps.MAGtoGSM([R, MLAT-delta, MLON], time, 'sph', 'car'))
+        IC.append(ps.MAGtoGSM([R, MLAT-delta, MLON], time[0:6], 'sph', 'car'))
 
     if debug:
         print(IC)
@@ -121,8 +121,8 @@ def Compute(Event, Nb):
 
 def writevtk(Event, Nb=6):
     #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
-    time = Event[0:6]
-    tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
+    time = Event[0:7]
+    tag = '_%04d:%02d:%02dT%02d:%02d:%02d.%03d' % tuple(time)
 
     solns_restr = Compute(Event, Nb)
     subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
@@ -132,7 +132,7 @@ def writevtk(Event, Nb=6):
         from_list = solns_restr[i]
         sol = np.array(from_list)
 
-        v = ps.GSMtoMAG([sol[0, 0], sol[0, 1], sol[0, 2]], time, 'car', 'sph')
+        v = ps.GSMtoMAG([sol[0, 0], sol[0, 1], sol[0, 2]], time[0:6], 'car', 'sph')
         if i==0:
             out_fname = conf["run_path_derived"] + subdir + 'B_field_line_event_%.2f_%.2f.vtk' %(Event[7], Event[6]) #(MLAT, MLON)
         else:

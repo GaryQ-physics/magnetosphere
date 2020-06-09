@@ -15,23 +15,22 @@ import longitude_lines_write
 import earth_write
 
 line_list = [2003, 11, 20, 7, 0, 176.00, 57.50]
-time = line_list[0:5] + [0.]
+time = line_list[0:5] + [0, 0.]
 Event = time + line_list[5:7]
 T = tuple(time)
 filename = conf["run_path"] + '3d__var_3_e' \
-            + '%04d%02d%02d-%02d%02d%02d-000' % T + '.out.cdf'
+            + '%04d%02d%02d-%02d%02d%02d-%03d' % T + '.out.cdf'
 
 J_field_lines_write.writevtk(Event)
+cut_plane.writedata(Event)
+B_field_lines_write.writevtk(Event)
+longitude_lines_write.writevtk(Event) #need ad
+#J_vector_field_write.writevtk(Event)
+earth_write.writevtk(Event) #need ad
+structured_grid_write.writevtk(Event, 'jy')
 
 
 if False:
-    cut_plane.writedata(Event)
-    B_field_lines_write.writevtk(Event)
-    longitude_lines_write.writevtk(Event)
-    #J_vector_field_write.writevtk(Event)
-    earth_write.writevtk(Event)
-
-    structured_grid_write.writevtk(Event, 'jy')
     structured_grid_write.writevtk(Event, 'p')
     structured_grid_write.writevtk(Event, 'dB')
     structured_grid_write.writevtk(Event, 'dB_EW')

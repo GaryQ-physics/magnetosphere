@@ -93,7 +93,7 @@ def dXds(X, s, kam, interp, var):
 
 
 def Compute(Event, ret_sol=False, r=1.01, debug=False):
-    #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
+    #Event = [year, month, day, hours, minutes, seconds, miliseconds, MLONdeg, MLATdeg]
     time = Event[0:7]
     MLON = Event[7]
     MLAT = Event[8]

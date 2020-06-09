@@ -25,14 +25,14 @@ s = minn/60.
 
 
 def Compute(Event):
-    #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
-    time = Event[0:6]
-    MLON = Event[6]
-    MLAT = Event[7]
+    #Event = [year, month, day, hours, minutes, seconds, miliseconds, MLONdeg, MLATdeg]
+    time = Event[0:7]
+    MLON = Event[7]
+    MLAT = Event[8]
     T = tuple(time)
 
     filename = conf["run_path"] + '3d__var_3_e' \
-                + '%04d%02d%02d-%02d%02d%02d-000' % T + '.out.cdf'
+                + '%04d%02d%02d-%02d%02d%02d-%03d' % T + '.out.cdf'
 
     kameleon = ccmc.Kameleon()
     if debug:
@@ -146,8 +146,8 @@ def Compute(Event):
 
 def writevtk(Event):
     #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
-    time = Event[0:6]
-    tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
+    time = Event[0:7]
+    tag = '_%04d:%02d:%02dT%02d:%02d:%02d.%03d' % tuple(time)
 
     solns_restr = Compute(Event)
     subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
