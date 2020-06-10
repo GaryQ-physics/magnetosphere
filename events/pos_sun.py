@@ -9,44 +9,71 @@ from config import conf
 import spacepy.coordinates as sc
 from spacepy.time import Ticktock
 
-
+def tstr(time):
+    
+    # TODO: Check that time is valid
+    if len(time) < 4:
+        # TODO: Throw error
+        pass
+    
+    if len(time) > 6:
+        time = time[0:6]
+    else:
+        pad = 6 - len(time)
+        time = time + pad*[0]
+    
+    print(time)
+    return '%04d-%02d-%02dT%02d:%02d:%02d' % tuple(time)
+    
 def MAGtoGSM(v_MAG, time, ctype_in, ctype_out):
     """Convert from MAG to GSM coordinates using SpacePy library.
 
-    MAG: array-like
+    Parameters
+    ----------
+    MAG : array-like
     
-    time: list or tuple of ints
-          [year,month,day,hours,minutes,seconds]
+    time : list or tuple of ints
+           [year, month, day, hours, minutes, sseconds]
     
-    ctype_in: str
-        'car' or 'sph'
+    ctype_in : str
+               'car' or 'sph'
 
-    ctype_out: str
-        'car' or 'sph'
+    ctype_out : str
+               'car' or 'sph'
+               
+    Returns
+    -------
+    GSM : array-like
           
     """
     
+    in_type = type(v_MAG)    
     v_MAG = np.array(v_MAG)
     cvals = sc.Coords(v_MAG, 'MAG', ctype_in)
-    T = tuple(time)
-    t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T 
-    cvals.ticks = Ticktock(t_str, 'ISO')
+    cvals.ticks = Ticktock(tstr(time), 'ISO')
     newcoord = cvals.convert('GSM', ctype_out)
     v_GSM = newcoord.data[0,:]
-    return v_GSM
+    
+    if in_type == np.ndarray:
+        return v_GSM
+    else:
+        return v_GSM.tolist()
 
 
 def GSMtoMAG(v_GSM, time, ctype_in, ctype_out):
     """Convert from GSM to MAG coordinates using SpacePy library"""
 
+    in_type = type(v_GSM)
     v_GSM = np.array(v_GSM)
     cvals = sc.Coords(v_GSM, 'GSM', ctype_in)
-    T = tuple(time)
-    t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T
-    cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
+    cvals.ticks = Ticktock(tstr(time), 'ISO') # add ticks
     newcoord = cvals.convert('MAG', ctype_out)
     v_MAG = newcoord.data[0,:]
-    return v_MAG
+    
+    if in_type == np.ndarray:
+        return v_MAG
+    else:
+        return v_MAG.tolist()
 
 def GEOtoGSM(v_GEO, time, ctype_in, ctype_out):
     """Convert from GEO to GSM coordinates using SpacePy library
@@ -60,23 +87,24 @@ def GEOtoGSM(v_GEO, time, ctype_in, ctype_out):
     
     """
 
-    T = tuple(time)
-    t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % T
+    in_type = type(v_GEO)
 
     v_GEO = np.array(v_GEO)
     cvals = sc.Coords(v_GEO, 'GEO', ctype_in)
     
     if v_GEO.shape == (3, ):
-        cvals.ticks = Ticktock(t_str, 'ISO') # add ticks
+        cvals.ticks = Ticktock(tstr(time), 'ISO')
         newcoord = cvals.convert('GSM', ctype_out)
-        v_GSM = newcoord.data[0,:]
-        return v_GSM
+        v_GSM = newcoord.data[0, :]        
     else:
-        cvals.ticks = Ticktock([t_str]*v_GEO.shape[0], 'ISO') # add ticks
+        cvals.ticks = Ticktock([tstr(time)]*v_GEO.shape[0], 'ISO')
         newcoord = cvals.convert('GSM', ctype_out)
         v_GSM = newcoord.data
-        return v_GSM
 
+    if in_type == np.ndarray:
+        return v_GSM
+    else:
+        return v_GSM.tolist()
 
 def StoC(r, theta, phi):
     """Convert from spherical to cartesian coordinates
