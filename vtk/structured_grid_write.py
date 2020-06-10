@@ -12,10 +12,10 @@ from cut_plane import ex_data
 import biot_savart as bs
 # run parameters
 
-dx = 0.2
-dy = 0.2
-dz = 0.2
-dx_tail = 10.
+dx = 0.5  # 0.2
+dy = 0.5
+dz = 0.5
+dx_tail = 10.  # dx_tail not used if using bs.make_grid
 
 # units
 hr = 1.
@@ -43,6 +43,15 @@ def J_kameleon(kam, interp, X):
     return Jkunits
 
 def Compute(Event, var, calcTotal=False):
+    """
+    Given an event time (and location), outputs an array for a grid of GSM coordinates
+        covering the magnetosphere, and a corresponding array of the physical quantity
+        var at those grid points.
+
+    Note: the location part of Event is only used if var is a quantity measured
+        relative to the event location, for example dB.
+    """
+
     #Event = [year, month, day, hours, minutes, seconds, miliseconds, MLONdeg, MLATdeg]
     time = Event[0:7]
     MLON = Event[7]
@@ -61,6 +70,7 @@ def Compute(Event, var, calcTotal=False):
     interpolator = kameleon.createNewInterpolator()
     #-----------------------------
 
+    '''
     X = np.concatenate((np.arange(-200,-20.05,dx_tail), np.arange(-20.,15.,dx) ))
     Nx = X.size
     print('Nx = ',Nx)
@@ -76,6 +86,10 @@ def Compute(Event, var, calcTotal=False):
     B2 = B2.flatten(order='C')
     B3 = B3.flatten(order='C')
     Bgrid = np.column_stack((B1, B2, B3))
+    '''
+
+    Xgrid = bs.make_grid([-200.,-20.], [-10., 10.], [-10., 10.], dx, dy, dz)
+
     if 'dB' in var:
         unit_v = np.array([1., 0., 0.])
         if '_EW' in var:
@@ -86,13 +100,13 @@ def Compute(Event, var, calcTotal=False):
             unit_v = a2
         unit_v = np.repeat([unit_v], Bgrid.shape[0], axis=0)
 
-        deltaBnT = bs.deltaB('dB', Bgrid, X0, J=J_kameleon(kameleon, interpolator, Bgrid)*(muA/m**2)) #/nT
+        deltaBnT = bs.deltaB('dB', X0, Xgrid, J=J_kameleon(kameleon, interpolator, Bgrid)*(muA/m**2)) #/nT
         Aa = np.einsum('ij,ij->i', deltaBnT, unit_v) #https://stackoverflow.com/questions/15616742/vectorized-way-of-calculating-row-wise-dot-product-two-matrices-with-scipy
 
     else:
         Aa = (np.nan)*np.empty((B1.size, ))
         for l in range(Aa.size):
-            Aa[l] = ex_data(kameleon, interpolator, var, Bgrid[l, 0], Bgrid[l, 1], Bgrid[l, 2], X0, Npole, V_char = dx*dy*dz) # dx*dy*dz*R_e**3
+            Aa[l] = ex_data(kameleon, interpolator, var, Xgrid[l, 0], Xgrid[l, 1], Xgrid[l, 2], X0, Npole, V_char = dx*dy*dz) # dx*dy*dz*R_e**3
 
     # close kameleon ---------------------
     kameleon.close()
@@ -101,7 +115,7 @@ def Compute(Event, var, calcTotal=False):
 
     if calcTotal:
         print('total = ', np.sum(Aa))
-    return [Aa, Bgrid, Nx, Ny, Nz]
+    return [Aa, Xgrid, Nx, Ny, Nz]
 
 def writevtk(Event, var, calcTotal=False):
     Aa, B, Nx, Ny, Nz = Compute(Event, var, calcTotal=calcTotal)

@@ -69,14 +69,17 @@ def ex_data(kam, interp, variable, x, y, z):
 def dXds(X, s, kam, interp, var):
     """Derivative function for field line ODE
 
-    dx/ds = Bx(x,y,z)/Bm
-    dy/ds = By(x,y,z)/Bm
-    dz/ds = Bz(x,y,z)/Bm
+    dx/ds = Fx(x,y,z)/Fm
+    dy/ds = Fy(x,y,z)/Fm
+    dz/ds = Fz(x,y,z)/Fm
     
     X = [x, y, z]
-    B = [Bx, By, Bz]
-    Bm = sqrt(Bx**2 + By**2 + Bz**2)
-    s = arclength    
+    F = [Fx, Fy, Fz]
+    Fm = sqrt(Fx**2 + Fy**2 + Fz**2)
+    s = arclength
+
+    F is magnetic field for          var = 'b'
+    F is current density field for   var = 'j'
     """
     
     B = np.array([ex_data(kam, interp, var + 'x', X[0], X[1], X[2]), 
@@ -181,7 +184,7 @@ def Compute(Event, ret_sol=False, r=1.01, debug=False):
 def writedata(Event, debug=False):
     """Write output of compute() to file
     
-    Calling compute() from ParaView does not work, so write output to file.
+    Calling compute() from ParaView does not work, so write output to txt file.
     """
     #year,month,day,hours,minutes,seconds,milisec,MLONdeg,MLATdeg = Event
     time = Event[0:7]
