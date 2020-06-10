@@ -31,13 +31,13 @@ N=Nb+1+Nlong
 var='dB_EW'
 
 cut_plane_name = 'cut_plane_info_%.2f_%.2f' %(Event[7], Event[6]) + tag + '.txt'
-grid_name = 'structured_grid_' + var + tag + '.vtk'
+grid_name = 'structured_grid_' + var + tag + '.000' + '.vtk'
 earth_name = 'earth' + tag + '.vtk'
 
 
 #-----------------
 #file = conf["data_path"] + "topography/world.topo.200401.3x5400x2700.png-ParaView.png"
-file = conf["data_path"] + "topography/world.topo.200401.3x5400x2700.png"
+file = conf["data_path"] + "topography/world.topo.2004{0:02d}.3x5400x2700.png".format(Event[1])
 
 # get active view
 renderView1 = GetActiveViewOrCreate('RenderView')

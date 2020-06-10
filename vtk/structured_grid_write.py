@@ -4,10 +4,12 @@ import numpy as np
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
+sys.path.append(os.path.dirname('/home/gary/magnetosphere/misc/' ))
 
 import _CCMC as ccmc
 import pos_sun as ps
-from cut_plane import ex_data_full
+from cut_plane import ex_data
+import biot_savart as bs
 # run parameters
 
 dx = 0.2
@@ -16,13 +18,31 @@ dz = 0.2
 dx_tail = 10.
 
 # units
+hr = 1.
+muA = 1.
+R_e = 1.
+nT = 1.
+
 deg = (np.pi/180.)
 amin = deg/60.
-minn = 1./60.
+minn = hr/60.
 s = minn/60.
 
+A = 1e+6*muA
+Tesla = 1e+9*nT
+m = R_e/6.3781e+6  # R_e == 6.3781e+6*m  (note m < 10^-6 Re)
+#kg = Tesla*A*s**2
+
+
+def J_kameleon(kam, interp, X):
+    Jkunits = (np.nan)*np.empty(X.shape)
+    for k in range(X.shape[0]):
+        Jkunits[k,0] = ex_data(kam, interp, 'jx', X[k,0], X[k,1], X[k,2])
+        Jkunits[k,1] = ex_data(kam, interp, 'jy', X[k,0], X[k,1], X[k,2])
+        Jkunits[k,2] = ex_data(kam, interp, 'jz', X[k,0], X[k,1], X[k,2])
+    return Jkunits
+
 def Compute(Event, var, calcTotal=False):
-    total = 0.
     #Event = [year, month, day, hours, minutes, seconds, miliseconds, MLONdeg, MLATdeg]
     time = Event[0:7]
     MLON = Event[7]
@@ -55,19 +75,33 @@ def Compute(Event, var, calcTotal=False):
     B1 = B1.flatten(order='C')
     B2 = B2.flatten(order='C')
     B3 = B3.flatten(order='C')
-    B = np.column_stack((B1, B2, B3))
-    Aa = (np.nan)*np.empty((B1.size, ))
-    for l in range(Aa.size):
-        Aa[l] = ex_data_full(kameleon, interpolator, var, B[l, 0], B[l, 1], B[l, 2], X0, Npole, V_char = dx*dy*dz) # dx*dy*dz*R_e**3
-        if calcTotal:
-            total = total + Aa[l]
+    Bgrid = np.column_stack((B1, B2, B3))
+    if 'dB' in var:
+        unit_v = np.array([1., 0., 0.])
+        if '_EW' in var:
+            a2 = np.cross(Npole, X0)
+            a1 = np.cross(X0, a2)
+            a1 = a1/np.linalg.norm(a1)
+            a2 = a2/np.linalg.norm(a2)
+            unit_v = a2
+        unit_v = np.repeat([unit_v], Bgrid.shape[0], axis=0)
+
+        deltaBnT = bs.deltaB('dB', Bgrid, X0, J=J_kameleon(kameleon, interpolator, Bgrid)*(muA/m**2)) #/nT
+        Aa = np.einsum('ij,ij->i', deltaBnT, unit_v) #https://stackoverflow.com/questions/15616742/vectorized-way-of-calculating-row-wise-dot-product-two-matrices-with-scipy
+
+    else:
+        Aa = (np.nan)*np.empty((B1.size, ))
+        for l in range(Aa.size):
+            Aa[l] = ex_data(kameleon, interpolator, var, Bgrid[l, 0], Bgrid[l, 1], Bgrid[l, 2], X0, Npole, V_char = dx*dy*dz) # dx*dy*dz*R_e**3
+
     # close kameleon ---------------------
     kameleon.close()
     print("Closed " + filename)
     #-------------------------------
+
     if calcTotal:
-        print('total = ', total)
-    return [Aa, B, Nx, Ny, Nz]
+        print('total = ', np.sum(Aa))
+    return [Aa, Bgrid, Nx, Ny, Nz]
 
 def writevtk(Event, var, calcTotal=False):
     Aa, B, Nx, Ny, Nz = Compute(Event, var, calcTotal=calcTotal)

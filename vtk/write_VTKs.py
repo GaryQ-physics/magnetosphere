@@ -21,16 +21,18 @@ T = tuple(time)
 filename = conf["run_path"] + '3d__var_3_e' \
             + '%04d%02d%02d-%02d%02d%02d-%03d' % T + '.out.cdf'
 
-J_field_lines_write.writevtk(Event)
-cut_plane.writedata(Event)
-B_field_lines_write.writevtk(Event)
-longitude_lines_write.writevtk(Event) #need ad
+#J_field_lines_write.writevtk(Event)
+#cut_plane.writedata(Event)
+#B_field_lines_write.writevtk(Event)
+#longitude_lines_write.writevtk(Event) #need ad
 #J_vector_field_write.writevtk(Event)
-earth_write.writevtk(Event) #need ad
-structured_grid_write.writevtk(Event, 'jy')
+#earth_write.writevtk(Event) #need ad
+#structured_grid_write.writevtk(Event, 'jy')
+structured_grid_write.writevtk(Event, 'dB_EW', calcTotal=True)
 
 
 if False:
+    structured_grid_write.writevtk(Event, 'dB', calcTotal=True)
     structured_grid_write.writevtk(Event, 'p')
     structured_grid_write.writevtk(Event, 'dB')
     structured_grid_write.writevtk(Event, 'dB_EW')

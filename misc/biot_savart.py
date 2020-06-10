@@ -26,26 +26,28 @@ else:
 
 #--------------------
 
+Test = False
 Npole = np.array([0., 0., 1.])
 Rad = 0.5 # considered in units R_e
 j_mag = 1. # considered in units muA/m^2
 
-# analytic calculation:---------------
-r_SI = 0.75*6.3781e+6
+if Test:
+    # analytic calculation:---------------
+    r_SI = 0.75*6.3781e+6
 
-Rad_SI = Rad*6.3781e+6
-J_SI = j_mag*1e-6
-I_SI = J_SI*np.pi*Rad_SI**2 # 3.19501226e+7
+    Rad_SI = Rad*6.3781e+6
+    J_SI = j_mag*1e-6
+    I_SI = J_SI*np.pi*Rad_SI**2 # 3.19501226e+7
 
-Itot = np.pi*(Rad*R_e)**2*(j_mag*muA/m**2) # pi * (0.5*6.3781e+6 m)**2 * (1. muA/m^2) = 3.19501226e+13 muA = 3.19501226e+7 Amps
-print('Itot= ', Itot)
-print('I_SI= ', I_SI)
-print(' ?=? 3.19501226')
+    Itot = np.pi*(Rad*R_e)**2*(j_mag*muA/m**2) # pi * (0.5*6.3781e+6 m)**2 * (1. muA/m^2) = 3.19501226e+13 muA = 3.19501226e+7 Amps
+    print('Itot= ', Itot)
+    print('I_SI= ', I_SI)
+    print(' ?=? 3.19501226')
 
-B_SI = mu0_SI*I_SI/(2*np.pi*r_SI) # 1.33582614*1e-6
-print('B_SI*1e+9= ', B_SI*1e+9) # 1335.82614
+    B_SI = mu0_SI*I_SI/(2*np.pi*r_SI) # 1.33582614*1e-6
+    print('B_SI*1e+9= ', B_SI*1e+9) # 1335.82614
 
-#----------------------
+    #----------------------
 
 def J_kunits(X):
     X=np.array(X)
@@ -63,35 +65,31 @@ def J_kunits_single(X):
         j = np.zeros((3,))
     return j
 
-def deltaB(variable, X, X0, Npole, V_char = 1.):
+def deltaB(variable, X, X0, V_char = 1., J=None):
     X=np.array(X)
     if X.shape == (3,):
         X=np.array([X])
 
     X0=np.array(X0)
-    Npole=np.array(Npole)
-
-    a2 = np.cross(Npole, X0)
-    a1 = np.cross(X0, a2)
-
-    a1 = a1/np.linalg.norm(a1)
-    a2 = a2/np.linalg.norm(a2)
-    #a1 = np.repeat([a1], X.shape[0], axis=0)
-    #a2 = np.repeat([a2], X.shape[0], axis=0)
+    
 
     X0 = np.repeat([X0], X.shape[0], axis=0)
-    J = J_kunits(X)*(muA/m**2)
+    if J is None:
+        J = J_kunits(X)*(muA/m**2)
     R = X0 - X # )*R_e
 
     Rcubed = (R[:,0]**2 + R[:,1]**2 + R[:,2]**2)**1.5
     divRcubed = 1./Rcubed
 
     dBnT = V_char*(mu0/(4*np.pi))*( np.cross(J, R)*divRcubed[:,np.newaxis] ) #https://stackoverflow.com/questions/5795700/multiply-numpy-array-of-scalars-by-array-of-vectors
-    if(variable=='dB_seperately'):
+    if(variable=='dB'):
         return dBnT
+
     deltaBnT = np.sum(dBnT, axis=0)
     if(variable=='deltaB'):
         return deltaBnT
+
+    '''
     if(variable=='deltaB_mag'):
         return np.sqrt(deltaBnT[:,0]**2 + deltaBnT[:,1]**2 + deltaBnT[:,2]**2)
     if(variable=='deltaB_EW'):
@@ -103,6 +101,7 @@ def deltaB(variable, X, X0, Npole, V_char = 1.):
         return np.einsum('ij,ij->i', deltaBnT, a1)
     if(variable=='deltaBx'):
         return deltaBnT[:,0]
+    '''
     return np.nan
 
 def deltaB_single(variable, X, X0, Npole, V_char = 1.):
@@ -130,32 +129,40 @@ def deltaB_single(variable, X, X0, Npole, V_char = 1.):
         return dBnT[0]
 
 
-if False: # test that the deltaB_single function and variety of inputs on the deltaB function agree 
-    print deltaB('dB_seperately', [[0,0.5,0], [0,.499,0], [0,0,1]], [0,2,0], Npole)
+if Test: # test that the deltaB_single function and variety of inputs on the deltaB function agree 
+    print deltaB('dB', [[0,0.5,0], [0,.499,0], [0,0,1]], [0,2,0])
 
-    print deltaB('dB_seperately', [[0,0.5,0]], [0,2,0], Npole)
-    print deltaB('deltaB', [[0,0.5,0]], [0,2,0], Npole)
-    print deltaB('dB_seperately', [0,0.5,0], [0,2,0], Npole)
-    print deltaB('deltaB', [0,0.5,0], [0,2,0], Npole)
+    print deltaB('dB', [[0,0.5,0]], [0,2,0])
+    print deltaB('deltaB', [[0,0.5,0]], [0,2,0])
+    print deltaB('dB', [0,0.5,0], [0,2,0])
+    print deltaB('deltaB', [0,0.5,0], [0,2,0])
 
-    print deltaB('dB_seperately', [[0,.499,0]], [0,2,0], Npole)
-    print deltaB('deltaB', [[0,.499,0]], [0,2,0], Npole)
-    print deltaB('dB_seperately', [0,.499,0], [0,2,0], Npole)
-    print deltaB('deltaB', [0,.499,0], [0,2,0], Npole)
+    print deltaB('dB', [[0,.499,0]], [0,2,0])
+    print deltaB('deltaB', [[0,.499,0]], [0,2,0])
+    print deltaB('dB', [0,.499,0], [0,2,0])
+    print deltaB('deltaB', [0,.499,0], [0,2,0])
 
-    print deltaB('dB_seperately', [[0,0,1]], [0,2,0], Npole)
-    print deltaB('deltaB', [[0,0,1]], [0,2,0], Npole)
+    print deltaB('dB', [[0,0,1]], [0,2,0])
+    print deltaB('deltaB', [[0,0,1]], [0,2,0])
 
     print deltaB_single('dB', [0,0.5,0], [0,2,0], Npole)
     print deltaB_single('dB', [0,.499,0], [0,2,0], Npole)
     print deltaB_single('dB', [0,0,1], [0,2,0], Npole)
 
     print deltaB_single('dB', [0,0.5,0], [0,2,0], Npole) + deltaB_single('dB', [0,.499,0], [0,2,0], Npole) + deltaB_single('dB', [0,0,1], [0,2,0], Npole)
-    print deltaB('deltaB', [[0,0.5,0], [0,.499,0], [0,0,1]], [0,2,0], Npole)
+    print deltaB('deltaB', [[0,0.5,0], [0,.499,0], [0,0,1]], [0,2,0])
+    print deltaB('deltaB', [[0,0.5,0], [0,.499,0], [0,0,1]], [0,2,0], J=J_kunits([[0,0.5,0], [0,.499,0], [0,0,1]])*(muA/m**2))
 
 
 def B_EW(X0, Npole, mult=1, length=10.):
-    dx = 0.05/mult
+    Npole=np.array(Npole)
+
+    a2 = np.cross(Npole, X0)
+    a1 = np.cross(X0, a2)
+    a1 = a1/np.linalg.norm(a1)
+    a2 = a2/np.linalg.norm(a2)
+
+    dx = 0.05/mult # )*R_e
     dy = 0.05/mult
     dz = 0.1/mult
     X = np.arange(-Rad - 0.1, Rad + 0.1 + dx, dx)
@@ -172,8 +179,8 @@ def B_EW(X0, Npole, mult=1, length=10.):
     B3 = B3.flatten(order='C')
     Bgrid = np.column_stack((B1, B2, B3))
 
-    total = deltaB('deltaB_EW', Bgrid, X0, Npole, V_char = dx*dy*dz) # dx*dy*dz*R_e**3
-    return total
+    deltaBnT = deltaB('deltaB', Bgrid, X0, V_char = dx*dy*dz) # /nT
+    return np.dot(deltaBnT,a2)
 
 def B_EW_fromSingle(X0, Npole, mult=1, length=10.):
     dx = 0.05/mult
@@ -198,11 +205,11 @@ def B_EW_fromSingle(X0, Npole, mult=1, length=10.):
         total = total + deltaB_single('dB_EW', Bgrid[l,:], X0, Npole, V_char = dx*dy*dz) # dx*dy*dz*R_e**3
     return total
 
-if True:
+if Test:
     print B_EW([0., 0.75, 0.], Npole)
     print B_EW_fromSingle([0., 0.75, 0.], Npole)  # should be the same as line above but take longer
 
-if False:
+if Test and False:
     for i in range(8):
         print B_EW([0., 0.75, 0.], Npole, mult=i+1)
     print ('---')
