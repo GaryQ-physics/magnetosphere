@@ -112,6 +112,8 @@ def Compute(Event, ret_sol=False, r=1.01, debug=False):
     # TODO: Input to function should include ds and max length
     s_grid = np.linspace(0., 10., 101.)
 
+    # TODO: Consider using
+    # https://github.com/spacepy/spacepy/blob/master/spacepy/pybats/trace2d.py
     soln = odeint(dXds, X0, s_grid, args=(kameleon, interpolator, 'b'))
     if False:
         print('X0 = ')
