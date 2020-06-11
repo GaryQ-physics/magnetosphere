@@ -67,4 +67,4 @@ def make_grid(xlims, ylims, zlims, dx, dy, dz):
     B3 = B3.flatten(order='C')
     Bgrid = np.column_stack((B1, B2, B3))
 
-    return Bgrid
+    return [Bgrid, Nx, Ny, Nz]

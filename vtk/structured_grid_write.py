@@ -4,7 +4,6 @@ import numpy as np
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
-sys.path.append(os.path.dirname('/home/gary/magnetosphere/misc/' ))
 
 import _CCMC as ccmc
 import pos_sun as ps
@@ -37,9 +36,14 @@ m = R_e/6.3781e+6  # R_e == 6.3781e+6*m  (note m < 10^-6 Re)
 def J_kameleon(kam, interp, X):
     Jkunits = (np.nan)*np.empty(X.shape)
     for k in range(X.shape[0]):
-        Jkunits[k,0] = ex_data(kam, interp, 'jx', X[k,0], X[k,1], X[k,2])
-        Jkunits[k,1] = ex_data(kam, interp, 'jy', X[k,0], X[k,1], X[k,2])
-        Jkunits[k,2] = ex_data(kam, interp, 'jz', X[k,0], X[k,1], X[k,2])
+        if np.dot(X[k,:], X[k,:]) >= 1.5**2:
+            Jkunits[k,0] = ex_data(kam, interp, 'jx', X[k,0], X[k,1], X[k,2])
+            Jkunits[k,1] = ex_data(kam, interp, 'jy', X[k,0], X[k,1], X[k,2])
+            Jkunits[k,2] = ex_data(kam, interp, 'jz', X[k,0], X[k,1], X[k,2])
+        else:
+            Jkunits[k,0] = 0.
+            Jkunits[k,1] = 0.
+            Jkunits[k,2] = 0.
     return Jkunits
 
 def Compute(Event, var, calcTotal=False):
@@ -88,7 +92,8 @@ def Compute(Event, var, calcTotal=False):
     Bgrid = np.column_stack((B1, B2, B3))
     '''
 
-    Xgrid = bs.make_grid([-200.,-20.], [-10., 10.], [-10., 10.], dx, dy, dz)
+    ret = bs.make_grid([-200.,-20.], [-10., 10.], [-10., 10.], dx, dy, dz)
+    Xgrid = ret[0]
 
     if 'dB' in var:
         unit_v = np.array([1., 0., 0.])
@@ -98,15 +103,15 @@ def Compute(Event, var, calcTotal=False):
             a1 = a1/np.linalg.norm(a1)
             a2 = a2/np.linalg.norm(a2)
             unit_v = a2
-        unit_v = np.repeat([unit_v], Bgrid.shape[0], axis=0)
+        unit_v = np.repeat([unit_v], Xgrid.shape[0], axis=0)
 
-        deltaBnT = bs.deltaB('dB', X0, Xgrid, J=J_kameleon(kameleon, interpolator, Bgrid)*(muA/m**2)) #/nT
+        deltaBnT = bs.deltaB('dB', X0, Xgrid, J=J_kameleon(kameleon, interpolator, Xgrid)*(muA/m**2)) #/nT
         Aa = np.einsum('ij,ij->i', deltaBnT, unit_v) #https://stackoverflow.com/questions/15616742/vectorized-way-of-calculating-row-wise-dot-product-two-matrices-with-scipy
 
     else:
         Aa = (np.nan)*np.empty((B1.size, ))
         for l in range(Aa.size):
-            Aa[l] = ex_data(kameleon, interpolator, var, Xgrid[l, 0], Xgrid[l, 1], Xgrid[l, 2], X0, Npole, V_char = dx*dy*dz) # dx*dy*dz*R_e**3
+            Aa[l] = ex_data(kameleon, interpolator, var, Xgrid[l, 0], Xgrid[l, 1], Xgrid[l, 2])
 
     # close kameleon ---------------------
     kameleon.close()
@@ -115,7 +120,9 @@ def Compute(Event, var, calcTotal=False):
 
     if calcTotal:
         print('total = ', np.sum(Aa))
-    return [Aa, Xgrid, Nx, Ny, Nz]
+        print(Xgrid.shape)
+        print(Aa.shape)
+    return [Aa, Xgrid, ret[1], ret[2], ret[3]]
 
 def writevtk(Event, var, calcTotal=False):
     Aa, B, Nx, Ny, Nz = Compute(Event, var, calcTotal=calcTotal)

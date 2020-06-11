@@ -9,7 +9,7 @@ from config import conf
 
 debug = True
 
-import cut_plane_plot as cp
+#import cut_plane_plot as cp
 from urlretrieve import urlretrieve
 
 if not os.path.exists(conf['run_path'] + 'mag_grid_e20031120-070000.out'):
@@ -40,8 +40,8 @@ for i in range(N):
 
 data = np.genfromtxt(fname, skip_header=4)
 headers=np.loadtxt(fname, dtype=str, skiprows=3, max_rows=1)
+
 '''
-print(headers)
 for k in range(data.shape[0]):
     if 176.00 == data[k, 0] and 57. < data[k, 1] and data[k, 1] < 58.: # want 176.00, 57.50
         print(k)
@@ -50,9 +50,12 @@ for k in range(data.shape[0]):
         print(data[k, 2], data[k, 5], data[k, 8], data[k, 11], data[k, 14], data[k, 5] + data[k, 8] + data[k, 11] + data[k, 14])
 '''
 
+print(headers)
+
 Tr = np.all([176.00 == data[:, 0], 57. < data[:, 1], data[:, 1] < 58.], axis=0)# want 176.00, 57.50
 k = np.where(Tr==True)[0][0]
 print(k)
 print(data[k, 0],data[k, 1])
-print(headers[2], headers[5], headers[8], headers[11], headers[14])
-print(data[k, 2], data[k, 5], data[k, 8], data[k, 11], data[k, 14], data[k, 5] + data[k, 8] + data[k, 11] + data[k, 14])
+i = 1
+print(headers[2+i], headers[5+i], headers[8+i], headers[11+i], headers[14+i])
+print(data[k, 2+i], data[k, 5+i], data[k, 8+i], data[k, 11+i], data[k, 14+i], data[k, 5+i] + data[k, 8+i] + data[k, 11+i] + data[k, 14+i])
