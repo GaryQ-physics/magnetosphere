@@ -53,11 +53,17 @@ def B_EW(X0, X, J, Npole, dV_grid):
     return np.dot(deltaBnT,a2)
 
 def make_grid(xlims, ylims, zlims, dx, dy, dz):
-    X = np.arange(xlims[0], xlims[1]+dx, dx)
+    if xlims[0] > 0. or xlims[1] < 0.:
+        X = np.arange(xlims[0], xlims[1]+dx, dx)
+        Y = np.arange(ylims[0], ylims[1]+dy, dy)
+        Z = np.arange(zlims[0], zlims[1]+dz, dz)
+    else:
+        X = np.concatenate([ -np.flip(np.delete(np.arange(0., -xlims[0]+dx, dx), 0)) , np.arange(0., xlims[1]+dx, dx) ])
+        Y = np.concatenate([ -np.flip(np.delete(np.arange(0., -ylims[0]+dy, dy), 0)) , np.arange(0., ylims[1]+dy, dy) ])
+        Z = np.concatenate([ -np.flip(np.delete(np.arange(0., -zlims[0]+dz, dz), 0)) , np.arange(0., zlims[1]+dz, dz) ])
+
     Nx= X.size
-    Y = np.arange(ylims[0], ylims[1]+dy, dy)
     Ny = Y.size
-    Z = np.arange(zlims[0], zlims[1]+dz, dz)
     Nz = Z.size
     B2, B3, B1 = np.meshgrid(Y, Z, X)
     #B1, B2, B3 = np.meshgrid(X, Y, Z) # seems more natural but doesnt work with vtk structured_grid format

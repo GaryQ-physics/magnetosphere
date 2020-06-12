@@ -50,7 +50,7 @@ if run_seperately:
 
     steps = []
     B_an = -B_SI*1e+9
-    for i in range(16):
+    for i in range(21):
         mult = i+1.
 
         dx = 0.05*phys['R_e']/mult
@@ -65,10 +65,17 @@ if run_seperately:
         J = J_kunits(Xgrid)*(phys['muA']/phys['m']**2)
 
         B_num = bs.deltaB('deltaB', X0, Xgrid, J, V_char=dx*dy*dz)
-        print B_num
+        print(mult)
+        print(Xgrid.shape)
+        print(B_num)
         #print bs.B_EW(X0, Xgrid, J, Npole, dx*dy*dz)
 
         error = np.linalg.norm(B_num - B_an)/np.linalg.norm(B_an)
         steps.append(error)
 
     print steps
+    import matplotlib.pyplot as plt
+    plt.plot(steps)
+    plt.plot(np.zeros((len(steps),)))
+    plt.ylabel('fraction of error')
+    plt.show()
