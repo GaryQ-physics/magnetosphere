@@ -155,6 +155,7 @@ def writevtk(Event, var, calcTotal=False):
     f.write('DATASET STRUCTURED_GRID\n')
     f.write('DIMENSIONS ' + str(Nx) + ' ' + str(Ny) + ' ' + str(Nz) + '\n' )
     f.write('POINTS '+str(Nx*Ny*Nz)+' float\n')
+    #f.write(B.tobytes())
     np.savetxt(f, B)
     f.write('\n')
     f.write('POINT_DATA ' + str(Nx*Ny*Nz) + '\n')

@@ -6,8 +6,11 @@
 from kamodo.readers._kameleon_kamodo import Kameleon
 import numpy as np
 
-python_path = '/Users/robertweigel/kameleon/bin/python'
-fname = '/Users/robertweigel/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070102-000.out.cdf'
+#python_path = '/Users/robertweigel/kameleon/bin/python'
+#fname = '/Users/robertweigel/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070102-000.out.cdf'
+
+python_path = '/home/gary/magnetosphere/kameleon/bin/python'
+fname = '/home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out.cdf'
 
 kameleon = Kameleon(fname, python_path, 'p')
 

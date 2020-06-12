@@ -48,7 +48,9 @@ if run_seperately:
     print('B_SI*1e+9= ', B_SI*1e+9) # B in nanotesla 
     #----------------------
 
-    for i in range(13):
+    steps = []
+    B_an = -B_SI*1e+9
+    for i in range(16):
         mult = i+1.
 
         dx = 0.05*phys['R_e']/mult
@@ -62,6 +64,11 @@ if run_seperately:
         X0 = np.array([0., 0.75, 0.])*phys['R_e']
         J = J_kunits(Xgrid)*(phys['muA']/phys['m']**2)
 
-        #print J[1300,:]
-        print bs.deltaB('deltaB', X0, Xgrid, J, V_char=dx*dy*dz)
-        print bs.B_EW(X0, Xgrid, J, Npole, dx*dy*dz)
+        B_num = bs.deltaB('deltaB', X0, Xgrid, J, V_char=dx*dy*dz)
+        print B_num
+        #print bs.B_EW(X0, Xgrid, J, Npole, dx*dy*dz)
+
+        error = np.linalg.norm(B_num - B_an)/np.linalg.norm(B_an)
+        steps.append(error)
+
+    print steps

@@ -1,11 +1,15 @@
 import sys
-import _CCMC as ccmc
 import numpy as np
 
-sys.path.append('/Users/robertweigel/kameleon/lib/python2.7/site-packages/ccmc/')
+sys.path.append('/home/gary/magnetosphere/kameleon/lib/python2.7/site-packages/ccmc/')
+
+import _CCMC as ccmc
+
 
 # http://mag.gmu.edu/git-data/sblake/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070102-000.out.cdf
 fname = '/Users/robertweigel/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070102-000.out.cdf'
+fname = '/home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out.cdf'
+
 
 kameleon = ccmc.Kameleon()
 

@@ -63,7 +63,7 @@ def writevtk(Event, Nt=100, Np=100):
     f.write('\n')
 
     f.write('POINT_DATA ' + str(Nt*Np) + '\n')
-    f.write('TEXTURE_COORDINATES TextureCoordinates 2 float\n')
+    f.write('TEXTURE_COORDINATES TextureCoordinates 2 float\n') # http://www.earthmodels.org/data-and-tools/topography/paraview-topography-by-texture-mapping
     np.savetxt(f, UV)
 
     f.close()
