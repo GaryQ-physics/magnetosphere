@@ -53,7 +53,9 @@ def B_EW(X0, X, J, Npole, dV_grid):
     return np.dot(deltaBnT,a2)
 
 def make_grid(xlims, ylims, zlims, dx, dy, dz):
-    if xlims[0] > 0. or xlims[1] < 0.:
+    no_origin = xlims[0] > 0. or xlims[1] < 0. or ylims[0] > 0. or ylims[1] < 0. or zlims[0] > 0. or zlims[1] < 0.
+    if no_origin:
+        print('WARNING: grid does not contain origin')
         X = np.arange(xlims[0], xlims[1]+dx, dx)
         Y = np.arange(ylims[0], ylims[1]+dy, dy)
         Z = np.arange(zlims[0], zlims[1]+dz, dz)

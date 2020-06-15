@@ -48,9 +48,9 @@ if run_seperately:
     print('B_SI*1e+9= ', B_SI*1e+9) # B in nanotesla 
     #----------------------
 
-    steps = []
+    log_e = []
     B_an = -B_SI*1e+9
-    for i in range(21):
+    for i in range(24):
         mult = i+1.
 
         dx = 0.05*phys['R_e']/mult
@@ -71,11 +71,12 @@ if run_seperately:
         #print bs.B_EW(X0, Xgrid, J, Npole, dx*dy*dz)
 
         error = np.linalg.norm(B_num - B_an)/np.linalg.norm(B_an)
-        steps.append(error)
+        log_e.append(np.log10(error))
 
-    print steps
+    print log_e
     import matplotlib.pyplot as plt
-    plt.plot(steps)
+    plt.plot(log_e)
     plt.plot(np.zeros((len(steps),)))
-    plt.ylabel('fraction of error')
+    plt.ylabel('log10 of fraction of error')
+    plt.xlabel('mult')
     plt.show()
