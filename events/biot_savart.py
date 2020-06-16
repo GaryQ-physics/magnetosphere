@@ -63,16 +63,33 @@ def make_grid(xlims, ylims, zlims, dx, dy, dz):
         X = np.concatenate([ -np.flip(np.delete(np.arange(0., -xlims[0]+dx, dx), 0)) , np.arange(0., xlims[1]+dx, dx) ])
         Y = np.concatenate([ -np.flip(np.delete(np.arange(0., -ylims[0]+dy, dy), 0)) , np.arange(0., ylims[1]+dy, dy) ])
         Z = np.concatenate([ -np.flip(np.delete(np.arange(0., -zlims[0]+dz, dz), 0)) , np.arange(0., zlims[1]+dz, dz) ])
-
-    Nx= X.size
+    Nx = X.size
     Ny = Y.size
     Nz = Z.size
+
     B2, B3, B1 = np.meshgrid(Y, Z, X)
     #B1, B2, B3 = np.meshgrid(X, Y, Z) # seems more natural but doesnt work with vtk structured_grid format
-
     B1 = B1.flatten(order='C')
     B2 = B2.flatten(order='C')
     B3 = B3.flatten(order='C')
     Bgrid = np.column_stack((B1, B2, B3))
 
-    return [Bgrid, Nx, Ny, Nz]
+    Xind = np.arange(0, Nx, 1)
+    Yind = np.arange(0, Ny, 1)
+    Zind = np.arange(0, Nz, 1)
+    C2, C3, C1 = np.meshgrid(Yind, Zind, Xind)
+    C1 = C1.flatten(order='C')
+    C2 = C2.flatten(order='C')
+    C3 = C3.flatten(order='C')
+    inds = np.column_stack((C1, C2, C3))
+
+    Xc = np.arange(0, Nx-1, 1)
+    Yc = np.arange(0, Ny-1, 1)
+    Zc = np.arange(0, Nz-1, 1)
+    D2, D3, D1 = np.meshgrid(Yc, Zc, Xc)
+    D1 = D1.flatten(order='C')
+    D2 = D2.flatten(order='C')
+    D3 = D3.flatten(order='C')
+    cell_inds = np.column_stack((D1, D2, D3))
+
+    return [Bgrid, Nx, Ny, Nz, cell_inds, inds]

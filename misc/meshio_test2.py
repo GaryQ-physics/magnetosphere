@@ -140,5 +140,6 @@ print(np.all(cust_cells==file_cells))
 
 
 c_np = [('hexahedron', cust_cells.astype(int))]
-cust_mesh = meshio.Mesh(p_np, c_np)
+fvals_dict= {'sample_scalars': fvals}
+cust_mesh = meshio.Mesh(p_np, c_np, point_data=fvals_dict)
 meshio.vtk.write(cust_fname, cust_mesh, binary=False)
