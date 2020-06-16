@@ -20,9 +20,9 @@ points = np.linspace(2,10,999999).reshape((-1,3))
 
 print(points.shape)
 import time
-to = time.time()
 i = 0
 data = np.empty((points.shape[0]))
+to = time.time()
 for i in range(points.shape[0]):
     data[i] = interpolator.interpolate("p", points[i, 0], points[i, 1], points[i, 2])
 kameleon.close()
