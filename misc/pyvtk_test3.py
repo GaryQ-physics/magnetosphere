@@ -22,7 +22,6 @@ c = 120
 def f(x,y,z):
     return x*y*z
 
-to = time.time()
 
 # -- ----------
 X = np.array([i for i in range(a)])
@@ -54,12 +53,13 @@ if loop:
     fil.write('DIMENSIONS ' + str(a) + ' ' + str(b) + ' ' + str(c) + '\n')
     fil.write('POINTS ' + str(a*b*c) + ' int\n')
     for l in range(p_np.shape[0]):
-        fil.write(str(p_np[l,0]) + ' ' + str(p_np[l,0]) + ' ' + str(p_np[l,0]) + '\n')
+        fil.write(str(p_np[l,0]) + ' ' + str(p_np[l,1]) + ' ' + str(p_np[l,2]) + '\n')
     fil.write('POINT_DATA ' + str(a*b*c) + '\n')
     fil.write('SCALARS sample_scalars int 1\n')
     fil.write('LOOKUP_TABLE my_table\n')
     for l in range(p_np.shape[0]):
         fil.write(str(fvals[l]) + ' ')
+    fil.close()
 else:
     pointdata = pyvtk.PointData(\
     pyvtk.Scalars(fvals,
