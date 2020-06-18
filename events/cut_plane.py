@@ -12,7 +12,7 @@ import _CCMC as ccmc
 import pos_sun as ps
 
 # run parameters
-sign = -1  # changes sign of magnetic field used to trace the field lines
+#sign = -1  # changes sign of magnetic field used to trace the field lines
 
 # units
 hr = 1.
@@ -66,7 +66,7 @@ def ex_data(kam, interp, variable, x, y, z):
     return data
 
 
-def dXds(X, s, kam, interp, var):
+def dXds(X, s, kam, interp, var, sign):
     """Derivative function for field line ODE
 
     dx/ds = Fx(x,y,z)/Fm
@@ -82,12 +82,12 @@ def dXds(X, s, kam, interp, var):
     F is current density field for   var = 'j'
     """
     
-    B = np.array([ex_data(kam, interp, var + 'x', X[0], X[1], X[2]), 
+    F = np.array([ex_data(kam, interp, var + 'x', X[0], X[1], X[2]), 
                   ex_data(kam, interp, var + 'y', X[0], X[1], X[2]), 
                   ex_data(kam, interp, var + 'z', X[0], X[1], X[2])])
-    Bm = np.sqrt(np.dot(B, B))
-    if 1e-9 < Bm < 1e+7:
-        return (sign/Bm)*B
+    Fm = np.sqrt(np.dot(F, F))
+    if 1e-9 < Fm < 1e+7:
+        return (sign/Fm)*F
     else:
         return [0., 0., 0.] # TODO: Return np.nan?
 

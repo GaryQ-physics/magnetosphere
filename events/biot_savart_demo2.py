@@ -50,7 +50,7 @@ if run_seperately:
 
     log_e = []
     B_an = -B_SI*1e+9
-    for i in range(24):
+    for i in range(22):
         mult = i+1.
 
         dx = 0.05*phys['R_e']/mult
@@ -73,10 +73,10 @@ if run_seperately:
         error = np.linalg.norm(B_num - B_an)/np.linalg.norm(B_an)
         log_e.append(np.log10(error))
 
-    print log_e
+    print(log_e)
     import matplotlib.pyplot as plt
     plt.plot(log_e)
-    plt.plot(np.zeros((len(steps),)))
+    plt.plot(np.zeros((len(log_e),)))
     plt.ylabel('log10 of fraction of error')
     plt.xlabel('mult')
     plt.show()

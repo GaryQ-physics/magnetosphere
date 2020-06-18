@@ -60,9 +60,10 @@ def make_grid(xlims, ylims, zlims, dx, dy, dz):
         Y = np.arange(ylims[0], ylims[1]+dy, dy)
         Z = np.arange(zlims[0], zlims[1]+dz, dz)
     else:
-        X = np.concatenate([ -np.flip(np.delete(np.arange(0., -xlims[0]+dx, dx), 0)) , np.arange(0., xlims[1]+dx, dx) ])
-        Y = np.concatenate([ -np.flip(np.delete(np.arange(0., -ylims[0]+dy, dy), 0)) , np.arange(0., ylims[1]+dy, dy) ])
-        Z = np.concatenate([ -np.flip(np.delete(np.arange(0., -zlims[0]+dz, dz), 0)) , np.arange(0., zlims[1]+dz, dz) ])
+        # need flip(a,0) for python 2.7.17 whereas flip(a,0) or flip(a) works in 2.7.18 and 3.7.4
+        X = np.concatenate([ -np.flip(np.delete(np.arange(0., -xlims[0]+dx, dx), 0), 0) , np.arange(0., xlims[1]+dx, dx) ])
+        Y = np.concatenate([ -np.flip(np.delete(np.arange(0., -ylims[0]+dy, dy), 0), 0) , np.arange(0., ylims[1]+dy, dy) ])
+        Z = np.concatenate([ -np.flip(np.delete(np.arange(0., -zlims[0]+dz, dz), 0), 0) , np.arange(0., zlims[1]+dz, dz) ])
     Nx = X.size
     Ny = Y.size
     Nz = Z.size

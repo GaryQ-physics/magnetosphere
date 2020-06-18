@@ -123,6 +123,26 @@ fil.write('LOOKUP_TABLE my_table\n')
 for l in range(p_np.shape[0]):
     fil.write(str(fvals[l]) + ' ')
 
+fil.close()
+
+'''
+fil = open(in_fname,'w')
+
+fil.write('# vtk DataFile Version 2.0\n')
+fil.write('Really cool data\n')
+fil.write('BINARY\n')
+fil.write('DATASET STRUCTURED_GRID\n')
+fil.write('DIMENSIONS ' + str(a) + ' ' + str(b) + ' ' + str(c) + '\n')
+fil.write('POINTS ' + str(a*b*c) + ' float\n')
+fil.write(str(p_np[l,0]) + ' ' + str(p_np[l,1]) + ' ' + str(p_np[l,2]) + '\n')
+fil.write('POINT_DATA ' + str(a*b*c) + '\n')
+fil.write('SCALARS sample_scalars float 1\n')
+fil.write('LOOKUP_TABLE my_table\n')
+for l in range(p_np.shape[0]):
+    fil.write(str(fvals[l]) + ' ')
+
+fil.close()
+'''
 
 mesh = meshio.vtk.read(in_fname)
 

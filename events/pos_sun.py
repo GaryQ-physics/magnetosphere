@@ -22,7 +22,7 @@ def tstr(time):
         pad = 6 - len(time)
         time = time + pad*[0]
     
-    print(time)
+    #print(time)
     return '%04d-%02d-%02dT%02d:%02d:%02d' % tuple(time)
     
 def MAGtoGSM(v_MAG, time, ctype_in, ctype_out):
