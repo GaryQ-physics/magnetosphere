@@ -20,7 +20,6 @@ dz = .5
 dx_tail = 10.  # dx_tail not used if using bs.make_grid
 Test = False
 debug = False
-new = False
 
 def J_kameleon(kam, interp, X):
     Jkunits = (np.nan)*np.empty(X.shape)
@@ -136,7 +135,7 @@ def Compute(Event, var, calcTotal=False):
         print(Aa.shape)
     return [Aa, Xgrid, ret[1], ret[2], ret[3]]
 
-def writevtk(Event, var, calcTotal=False):
+def writevtk(Event, var, calcTotal=False, binary=False):
     Aa, Bb, Nx, Ny, Nz = Compute(Event, var, calcTotal=calcTotal)
     time = Event[0:7]
     tag = '_%04d:%02d:%02dT%02d:%02d:%02d.%03d' % tuple(time)
@@ -147,77 +146,36 @@ def writevtk(Event, var, calcTotal=False):
 
     if debug:
         print('also Nx = ',Nx)
-    if new:
-        Xind = np.array([i for i in range(a)])
-        Yind = np.array([j for j in range(b)])
-        Zind = np.array([k for k in range(c)])
-        C2, C3, C1 = np.meshgrid(Yind, Zind, Xind)
-        C1 = C1.flatten(order='C')
-        C2 = C2.flatten(order='C')
-        C3 = C3.flatten(order='C')
-        ind_p_np = np.column_stack((C1, C2, C3))
 
-        X = np.array([1.5*i for i in range(a)])
-        Y = np.array([1.5*j for j in range(b)])
-        Z = np.array([1.5*k for k in range(c)])
-        B2, B3, B1 = np.meshgrid(Y, Z, X)
-        #B1, B2, B3 = np.meshgrid(X, Y, Z) # seems more natural but doesnt work with vtk structured_grid format
-        B1 = B1.flatten(order='C')
-        B2 = B2.flatten(order='C')
-        B3 = B3.flatten(order='C')
-        p_np = np.column_stack((B1, B2, B3))
-
-        fvals = 0.1*p_np[:,0]*p_np[:,1]*p_np[:,2]
-
-        Xc = np.array([i for i in range(a-1)])
-        Yc = np.array([j for j in range(b-1)])
-        Zc = np.array([k for k in range(c-1)])
-        D2, D3, D1 = np.meshgrid(Yc, Zc, Xc)
-        D1 = D1.flatten(order='C')
-        D2 = D2.flatten(order='C')
-        D3 = D3.flatten(order='C')
-        cell_inds = np.column_stack((D1, D2, D3))
-
-        shifts = np.array( [[0, 0, 0],
-                            [1, 0, 0],
-                            [1, 1, 0],
-                            [0, 1, 0],
-                            [0, 0, 1],
-                            [1, 0, 1],
-                            [1, 1, 1],
-                            [0, 1, 1]] )
-
-        cust_cells = np.nan*np.empty(((a-1)*(b-1)*(c-1), 8))
-        for k in range((a-1)*(b-1)*(c-1)):
-            for n in range(8):
-                tup = tuple(cell_inds[k,:] + shifts[n,:])
-                cust_cells[k,n] = np.where(np.all([ind_p_np[:,0]==tup[0],ind_p_np[:,1]==tup[1],ind_p_np[:,2]==tup[2]],axis=0))[0][0]
-
-        c_np = [('hexahedron', cust_cells.astype(int))]
-        fvals_dict= {'sample_scalars': fvals}
-        cust_mesh = meshio.Mesh(p_np, c_np, point_data=fvals_dict)
-        print("Writing " + fname + 'with meshio')
-        meshio.vtk.write(fname, cust_mesh, binary=False)
-        print("Wrote " + fname)
-
+    f = open(fname,'w')
+    print("Writing " + fname)
+    f.write('# vtk DataFile Version 3.0\n')
+    f.write('Structured Grid ' + var + '\n')
+    if binary:
+        f.write('BINARY\n')
     else:
-        f = open(fname,'w')
-        print("Writing " + fname)
-        f.write('# vtk DataFile Version 3.0\n')
-        f.write('Structured Grid ' + var + '\n')
         f.write('ASCII\n')
-        f.write('DATASET STRUCTURED_GRID\n')
-        f.write('DIMENSIONS ' + str(Nx) + ' ' + str(Ny) + ' ' + str(Nz) + '\n' )
-        f.write('POINTS '+str(Nx*Ny*Nz)+' float\n')
-        #f.write(B.tobytes())
+    f.write('DATASET STRUCTURED_GRID\n')
+    f.write('DIMENSIONS ' + str(Nx) + ' ' + str(Ny) + ' ' + str(Nz) + '\n' )
+    f.write('POINTS '+str(Nx*Ny*Nz)+' float\n')
+    if binary:
+        Bb = np.array(Bb, dtype='>f')
+        f.write(Bb.tobytes())
+    else:
         np.savetxt(f, Bb)
-        f.write('\n')
-        f.write('POINT_DATA ' + str(Nx*Ny*Nz) + '\n')
-        if var=='J':
-            f.write('VECTORS ' + var + ' float\n')
-        else:
-            f.write('SCALARS ' + var + ' float 1\n')
-            f.write('LOOKUP_TABLE default\n')
+
+    f.write('\n')
+    f.write('POINT_DATA ' + str(Nx*Ny*Nz) + '\n')
+    if var=='J':
+        f.write('VECTORS ' + var + ' float\n')
+    else:
+        f.write('SCALARS ' + var + ' float 1\n')
+        f.write('LOOKUP_TABLE default\n')
+    if binary:
+        Aa = np.array(Aa, dtype='>f')
+        f.write(Aa.tobytes())
+    else:
         np.savetxt(f, Aa)
-        f.close()
-        print("Wrote " + fname)
+
+    f.close()
+    print("Wrote " + fname)

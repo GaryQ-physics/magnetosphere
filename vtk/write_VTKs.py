@@ -22,7 +22,9 @@ filename = conf["run_path"] + '3d__var_3_e' \
             + '%04d%02d%02d-%02d%02d%02d-%03d' % T + '.out.cdf'
 
 #structured_grid_write.writevtk(Event, 'J', calcTotal=True)
-ret = structured_grid_write.Compute(Event, 'dB_EW', calcTotal=True)
+#ret = structured_grid_write.Compute(Event, 'dB_EW', calcTotal=True)
+structured_grid_write.writevtk(Event, 'p', binary=True)
+
 
 if False:
     #J_field_lines_write.writevtk(Event)
