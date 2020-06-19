@@ -3,14 +3,17 @@
 import numpy as np
 import meshio
 
-in_fname = '/home/gary/magnetosphere/test_data/mesh_import.vtk'
+in_fname = 'mesh_test2_import.vtk'
 #out_fname = '/home/gary/magnetosphere/test_data/mesh_export.vtk'
-cust_fname = '/home/gary/magnetosphere/test_data/meshio_test.vtk'
+cust_fname = 'meshio_test2_cust.vtk'
 
-a = 6
-b = 8
-c = 12
+"""
+Demonstrate writing VTK using meshio using data created in Python.
+"""
 
+a = 2
+b = 2
+c = 3
 
 Xind = np.array([i for i in range(a)])
 Yind = np.array([j for j in range(b)])
@@ -66,17 +69,18 @@ def flat2(i,j,k):
     #https://stackoverflow.com/questions/16094563/numpy-get-index-where-value-is-true
     return np.where(np.all([ind_p_np[:,0]==i,ind_p_np[:,1]==j,ind_p_np[:,2]==k],axis=0))[0][0]
 
-tup=(1,4,7)
-print(tup)
-print(flat(*tup))
-print(unflat(flat(*tup)))
-
-ind=15
-print(ind)
-print(unflat(ind))
-print(flat(*unflat(ind)))
-print(unflat(ind,npar=True))
-print(flat(*tuple(unflat(ind,npar=True))))
+if False:
+    tup=(1,4,7)
+    print(tup)
+    print(flat(*tup))
+    print(unflat(flat(*tup)))
+    
+    ind=15
+    print(ind)
+    print(unflat(ind))
+    print(flat(*unflat(ind)))
+    print(unflat(ind,npar=True))
+    print(flat(*tuple(unflat(ind,npar=True))))
 
 
 shifts = np.array( [[0, 0, 0],
@@ -157,7 +161,6 @@ print(np.all(cust_cells==file_cells))
 
 #print(cust_cells)
 #print(cust_cells.astype(int))
-
 
 c_np = [('hexahedron', cust_cells.astype(int))]
 fvals_dict= {'sample_scalars': fvals}
