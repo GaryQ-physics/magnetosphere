@@ -4,23 +4,43 @@ pip install meshio
 only runs with python3
 """
 
+"""
+Typical output:
+    
+num points is  576000
+1.70s: Write ASCII VTK with structured_grid using loop
+1.23s: Read ASCII VTK with structured grid using meshio.read()
+1.23s: Read ASCII VTK with structured grid using meshio.vtk.read()
+1.22s: Read ASCII VTK with structured grid using meshio.vtk.read()
+1.23s: Read ASCII VTK with structured grid using meshio.Mesh.read()
+0.05s: Write with meshio.write()
+0.04s: Write with meshio.vtk.write()
+2.19s: Write with meshio.write(..., binary=False)
+0.05s: Write with m.write(..., file_format="vtk")
+
+Conclusions:
+    1. Writing ASCII VTK is slightly faster using custom code (1.70 vs. 2.19)
+       (but output file structure is not identical - was not able to determine
+       how to write structured grid using meshio)
+    2. Writing binary using meshio is ~2.19/.05 ~100 times faster than writing
+       ASCII with meshio.
+    3. Best to use meshio.vtk.write(...,binary=True) since it can be more easily
+       debuged by changing binary to False
+"""
+
 # meshio_test1
 
 import numpy as np
 import meshio
-#import pathlib
 import time
 
-# Older Version?  https://python.hotexamples.com/examples/meshio/-/write/python-write-function-examples.html
-
-
-in_fname = '/home/gary/magnetosphere/test_data/mesh_import.vtk'
-out_fname = '/home/gary/magnetosphere/test_data/mesh_export.vtk'
-
+in_fname = 'mesh_test1_import.vtk'
+out_fname = 'mesh_test1_export.vtk'
 
 a = 60
 b = 80
 c = 120
+print('Nx*Ny*Nz =', a*b*c)
 
 X = np.array([i for i in range(a)])
 Y = np.array([j for j in range(b)])
@@ -34,16 +54,12 @@ p_np = np.column_stack((B1, B2, B3))
 
 fvals = 0.1*p_np[:,0]*p_np[:,1]*p_np[:,2]
 
-print('num points is ', a*b*c)
-
-
 to = time.time()
-
 
 fil = open(in_fname,'w')
 
 fil.write('# vtk DataFile Version 2.0\n')
-fil.write('Really cool data\n')
+fil.write('test data structured grid with scalar associated with each point\n')
 fil.write('ASCII\n')
 fil.write('DATASET STRUCTURED_GRID\n')
 fil.write('DIMENSIONS ' + str(a) + ' ' + str(b) + ' ' + str(c) + '\n')
@@ -59,72 +75,70 @@ for l in range(p_np.shape[0]):
 fil.close()
 
 tf = time.time()
-print('time to write structured_grid with loop =', tf - to)
+print('{0:.2f}s: Write ASCII VTK with structured_grid using loop'.format(tf - to))
 
-#print(mesh1.points)
-#print(mesh1.cells)
+for Try in range(5):
+    if Try==1:
+        to = time.time()
+        mesh1 = meshio.read(
+            in_fname,  # string, os.PathLike, or a buffer/open file
+            file_format="vtk"  # optional if filename is a path; inferred from extension
+        )
+        """
+        when using python 2, gives error: Unknown file format 'vtk' 
+        if the optional file_format isn't given, gives error: Only VTK
+        UNSTRUCTURED_GRID supported (not STRUCTURED_GRID)
+        """
+    
+        tf = time.time()
+        print('{0:.2f}s: Read ASCII VTK with structured grid using meshio.read()'.format(tf - to))
+    
+    if Try==2 or Try==3:
+        to = time.time()
+        mesh2 = meshio.vtk.read(in_fname)
+        tf = time.time()
+        print('{0:.2f}s: Read ASCII VTK with structured grid using meshio.vtk.read()'.format(tf - to))
+    
+    if Try==4:
+        to = time.time()
+        mesh4 = meshio.Mesh.read(in_fname, "vtk")  # same arguments as meshio.read
+        tf = time.time()
+        print('{0:.2f}s: Read ASCII VTK with structured grid using meshio.Mesh.read()'.format(tf - to))
+    
+for Try in range(5):
+        
+    # all are comparable speed except meshio.vtk.write(...,binary=False)
+    
+    if Try==1:
+        to = time.time()
+        meshio.write(
+            out_fname,  # str, os.PathLike, or buffer/ open file
+            mesh1,
+            file_format="vtk",  # optional if first argument is a path; inferred from extension
+        )
+        tf = time.time()
+        print('{0:.2f}s: Write with meshio.write()'.format(tf - to))
+    
+    if Try==2:
+        to = time.time()
+        # writes ascii unstructured grid but with cells
+        meshio.vtk.write(out_fname, mesh2, binary=True) 
+        tf = time.time()
+        print('{0:.2f}s: Write with meshio.vtk.write()'.format(tf - to))
+    
+    if Try==3:
+        to = time.time()
+        meshio.vtk.write(out_fname, mesh2, binary=False)
+        tf = time.time()
+        print('{0:.2f}s: Write with meshio.write(..., binary=False)'.format(tf - to))
+    
+    if Try==4:
+        to = time.time()
+        # same arguments as meshio.write, besides `mesh`
+        mesh4.write(out_fname, file_format="vtk")  
+        tf = time.time()
+        print('{0:.2f}s: Write with mesh.write(..., file_format="vtk")'.format(tf - to))
 
-Try=2
-
-if Try==1:
-    to = time.time()
-    mesh1 = meshio.read(
-        in_fname,  # string, os.PathLike, or a buffer/open file
-        file_format="vtk"  # optional if filename is a path; inferred from extension
-    )
-    """
-    when using python 2, gives error: Unknown file format 'vtk' 
-        if the optional file_format isn't given, gives error: Only VTK UNSTRUCTURED_GRID supported (not STRUCTURED_GRID)
-    """
-
-    tf = time.time()
-    print('time to read the ascii structured grid with meshio.read( ) =', tf - to)
-
-if Try==2 or Try==3:
-    to = time.time()
-    mesh2 = meshio.vtk.read(in_fname)
-    tf = time.time()
-    print('time to read the ascii structured grid with meshio.vtk.read( ) =', tf - to)
-
-if Try==4:
-    to = time.time()
-    m = meshio.Mesh.read(in_fname, "vtk")  # same arguments as meshio.read
-    tf = time.time()
-    print('time to read the ascii structured grid with meshio.Mesh.read( ) =', tf - to)
-
-#print(mesh1==mesh2)
-
-
-if Try==1:
-    to = time.time()
-    meshio.write(
-        out_fname,  # str, os.PathLike, or buffer/ open file
-        mesh1,
-        file_format="vtk",  # optional if first argument is a path; inferred from extension
-    )
-    tf = time.time()
-    print('time to write with meshio.write( ) =', tf - to)
-
-if Try==2:
-    to = time.time()
-    meshio.vtk.write(out_fname, mesh2, binary=True) #writes ascii unstructured grid but with cells
-    tf = time.time()
-    print('time to write with meshio.vtk.write( ,binary=True) =', tf - to)
-
-if Try==3:
-    to = time.time()
-    meshio.vtk.write(out_fname, mesh2, binary=False)
-    tf = time.time()
-    print('time to write with meshio.vtk.write( ,binary=False) =', tf - to)
-
-if Try==4:
-    to = time.time()
-    m.write(out_fname, file_format="vtk")  # same arguments as meshio.write, besides `mesh`
-    tf = time.time()
-    print('time to write with m.write( ,binary) =', tf - to)
-
-# all are comparable speed except meshio.vtk.write( ,binary=False)
-# best to use meshio.vtk.write( ,binary=True) since it can be more easily debuged by changing binary to False
 
 if False:
     points = np.array([
