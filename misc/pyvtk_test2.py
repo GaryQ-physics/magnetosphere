@@ -49,7 +49,7 @@ else:
 
 
 
-vtk.tofile('/home/gary/magnetosphere/test_data/pyvtk_sg_test2','ascii')
+vtk.tofile('pyvtk_test2','ascii')
 #vtk.tofile('/home/gary/magnetosphere/test_data/pyvtk_sg_test2','binary')
 
 

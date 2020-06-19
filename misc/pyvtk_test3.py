@@ -36,7 +36,7 @@ p_np = np.column_stack((B1, B2, B3))
 
 fvals = f(p_np[:,0], p_np[:,1], p_np[:,2])
 
-fname = '/home/gary/magnetosphere/test_data/pyvtk_sg_test3'
+fname = 'pyvtk_test3'
 
 #------------------
 

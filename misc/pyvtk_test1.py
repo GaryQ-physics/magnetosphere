@@ -64,7 +64,7 @@ else:
         vtk = pyvtk.VtkData(pyvtk.StructuredGrid([a,b,c],p_tup))
     vtk.point_data.append(vtk.structure.Scalars(f,'x*y*z'))
 
-vtk.tofile('/home/gary/magnetosphere/test_data/pyvtk_sg_test1','ascii')
+vtk.tofile('pyvtk_test1','ascii')
 
 tf = time.time()
 
