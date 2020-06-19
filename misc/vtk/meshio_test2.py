@@ -1,7 +1,11 @@
 # meshio_test2
 
+import sys
 import numpy as np
 import meshio
+
+if sys.version_info.major != 2:
+    raise Exception("Python 2 is required.")
 
 in_fname = 'mesh_test2_import.vtk'
 #out_fname = '/home/gary/magnetosphere/test_data/mesh_export.vtk'

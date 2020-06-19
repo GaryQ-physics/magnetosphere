@@ -30,10 +30,14 @@ Conclusions:
 
 # meshio_test1
 
+import sys
+import time
 import numpy as np
 import meshio
-import time
 
+if sys.version_info.major != 2:
+    raise Exception("Python 2 is required.")
+      
 in_fname = 'mesh_test1_import.vtk'
 out_fname = 'mesh_test1_export.vtk'
 
