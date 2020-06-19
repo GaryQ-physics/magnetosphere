@@ -4,6 +4,9 @@ import sys
 if os.path.exists('/Users/robertweigel/'):
     base = '/Users/robertweigel/git/students/gquaresi/magnetosphere/'
     kameleon = '/Users/robertweigel/kameleon/lib/python2.7/site-packages/'
+if os.path.exists('/Users/weigel/'):
+    base = '/Users/weigel/git/magnetosphere/'
+    kameleon = '/Users/weigel/kameleon/lib/python2.7/site-packages/'
 elif os.path.exists('/home/weigel/'):
     base = '/home/weigel/git/students/GaryQ-physics/magnetosphere/'
     kameleon = '/home/weigel/kameleon/lib/python2.7/site-packages/'
