@@ -61,7 +61,7 @@ def ex_data(kam, interp, variable, x, y, z):
     """Load data from file, interpolate to point"""
     if (x**2 + y**2 + z**2 < 1.):
         return 0
-    kam.loadVariable(variable)
+    #kam.loadVariable(variable)
     data = interp.interpolate(variable, x, y, z)
     return data
 

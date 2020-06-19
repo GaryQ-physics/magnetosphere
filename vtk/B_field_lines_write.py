@@ -129,6 +129,9 @@ def Compute(Event, Nb, use_grid=True):
             if debug:
                 print("Opened " + filename)
             interpolator = kameleon.createNewInterpolator()
+            kameleon.loadVariable('bx')
+            kameleon.loadVariable('by')
+            kameleon.loadVariable('bz')
             sol = odeint(cut_plane.dXds, IC[i], s_grid, args = (kameleon, interpolator, 'b', -1))
             kameleon.close()
 

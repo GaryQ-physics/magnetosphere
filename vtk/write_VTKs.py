@@ -23,7 +23,7 @@ filename = conf["run_path"] + '3d__var_3_e' \
 
 #structured_grid_write.writevtk(Event, 'J', calcTotal=True)
 #ret = structured_grid_write.Compute(Event, 'dB_EW', calcTotal=True)
-structured_grid_write.writevtk(Event, 'p', binary=True)
+structured_grid_write.writevtk(Event, 'dB_EW', binary=True, calcTotal=True)
 
 
 if False:

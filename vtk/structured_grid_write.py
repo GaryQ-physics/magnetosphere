@@ -14,27 +14,28 @@ from biot_savart_demo1 import J_kunits
 
 # run parameters
 
-dx = .5
-dy = .5 # 0.2
-dz = .5
+dx = .3
+dy = .3 # 0.2
+dz = .3
 dx_tail = 10.  # dx_tail not used if using bs.make_grid
 Test = False
 debug = False
 
+R_0 = 3.
 def J_kameleon(kam, interp, X):
     Jkunits = (np.nan)*np.empty(X.shape)
     for k in range(X.shape[0]):
-        if np.dot(X[k,:], X[k,:]) >= 1.5**2:
-            Jkunits[k,0] = ex_data(kam, interp, 'jx', X[k,0], X[k,1], X[k,2])
-            Jkunits[k,1] = ex_data(kam, interp, 'jy', X[k,0], X[k,1], X[k,2])
-            Jkunits[k,2] = ex_data(kam, interp, 'jz', X[k,0], X[k,1], X[k,2])
+        if np.dot(X[k,:], X[k,:]) >= R_0**2:
+            Jkunits[k, 0] = ex_data(kam, interp, 'jx', X[k,0], X[k,1], X[k,2])
+            Jkunits[k, 1] = ex_data(kam, interp, 'jy', X[k,0], X[k,1], X[k,2])
+            Jkunits[k, 2] = ex_data(kam, interp, 'jz', X[k,0], X[k,1], X[k,2])
         else:
-            Jkunits[k,0] = 0.
-            Jkunits[k,1] = 0.
-            Jkunits[k,2] = 0.
+            Jkunits[k, 0] = 0.
+            Jkunits[k, 1] = 0.
+            Jkunits[k, 2] = 0.
     return Jkunits
 
-def Compute(Event, var, calcTotal=False):
+def Compute(Event, var, calcTotal=False, retTotal=False, mult=1):
     """
     Given an event time (and location), outputs an array for a grid of GSM coordinates
         covering the magnetosphere, and a corresponding array of the physical quantity
@@ -42,6 +43,8 @@ def Compute(Event, var, calcTotal=False):
 
     Note: the location part of Event is only used if var is a quantity measured
         relative to the event location, for example dB.
+
+    var can be one of the following strings: 'J', 'dB_EW', 'dB_NS', 'bx', 'by', 'bz', 'jx', 'jy', 'jz', 'p', 'rho'
     """
 
     #Event = [year, month, day, hours, minutes, seconds, miliseconds, MLONdeg, MLATdeg]
@@ -53,8 +56,8 @@ def Compute(Event, var, calcTotal=False):
         X0 = np.array([0., 0.75, 0.])
         Npole = np.array([0., 0., 1.])
     else:
-        X0 = ps.MAGtoGSM([1.,MLAT,MLON],time[0:6],'sph','car')
-        Npole = ps.GEOtoGSM([0.,0.,1.],time[0:6],'car','car')
+        X0 = ps.MAGtoGSM([1., MLAT, MLON], time[0:6], 'sph', 'car')
+        Npole = ps.GEOtoGSM([0., 0., 1.], time[0:6], 'car', 'car')
 
     # datafile
     filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-%03d' % tuple(time) + '.out.cdf'
@@ -84,25 +87,32 @@ def Compute(Event, var, calcTotal=False):
     Bgrid = np.column_stack((B1, B2, B3))
     '''
     #tail = -200.
-    tail = -100.
+    #tail = -100.
+    tail = -75.
 
-    ret = bs.make_grid([tail, 15.], [-10., 10.], [-10., 10.], dx, dy, dz)
+    ret = bs.make_grid([tail, 15.], [-15., 15.], [-15., 15.], dx/mult, dy/mult, dz/mult)
     Xgrid = ret[0]
     
     print('X0=',X0)
     if 'dB' in var or var=='J':
         unit_v = np.array([1., 0., 0.])
-        if '_EW' in var:
+        if '_' in var:
             a2 = np.cross(Npole, X0)
             a1 = np.cross(X0, a2)
             a1 = a1/np.linalg.norm(a1)
             a2 = a2/np.linalg.norm(a2)
-            unit_v = a2
+            if '_EW' in var:
+                unit_v = a2
+            if '_NS' in var:
+                unit_v = a1
         unit_v = np.repeat([unit_v], Xgrid.shape[0], axis=0)
-        
+
         if Test:
             Jin = J_kunits(Xgrid)*(phys['muA']/phys['m']**2)
         else:
+            kameleon.loadVariable('jx')
+            kameleon.loadVariable('jy')
+            kameleon.loadVariable('jz')
             Jin = J_kameleon(kameleon, interpolator, Xgrid)*(phys['muA']/phys['m']**2)
 
         if debug:
@@ -118,6 +128,7 @@ def Compute(Event, var, calcTotal=False):
         if debug:
             print('Aa=',Aa)
     else:
+        kameleon.loadVariable(var)
         Aa = (np.nan)*np.empty((Xgrid.shape[0], ))
         for l in range(Aa.size):
             Aa[l] = ex_data(kameleon, interpolator, var, Xgrid[l, 0], Xgrid[l, 1], Xgrid[l, 2])
@@ -128,11 +139,14 @@ def Compute(Event, var, calcTotal=False):
     #-------------------------------
 
     if calcTotal:
+        total = np.sum(Aa)
         print('Test=',Test)
-        print('dx,dy,dz = ', dx, dy, dz)
-        print('total = ', np.sum(Aa))
+        print('dx,dy,dz = ', dx/mult, dy/mult, dz/mult)
+        print('total = ', total)
         print(Xgrid.shape)
         print(Aa.shape)
+        if retTotal:
+            return total
     return [Aa, Xgrid, ret[1], ret[2], ret[3]]
 
 def writevtk(Event, var, calcTotal=False, binary=False):
