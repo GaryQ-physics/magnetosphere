@@ -11,12 +11,11 @@
 # Under Display(Geometry Representation), select Glyph
 # Click Apply
 
-# works in python2, but not python3 where it gives error:
-#       write() argument must be str, not bytes
+# Works in Python 2 and 3
 
 import numpy as np
 
-N = 100
+N = 3
 X=np.linspace(-5.,5.,N)
 Y=np.linspace(-5.,5.,N)
 Z=np.linspace(-5.,5.,N)
@@ -55,13 +54,14 @@ import struct
 fname = 'write_vtk_binary.vtk';
 
 print("Writing " + fname)
-f = open(fname,'w')
-f.write('# vtk DataFile Version 3.0\n')
-f.write('Wind velocity at unstructured points\n')
-f.write('BINARY\n')
-f.write('\n')
-f.write('DATASET POLYDATA\n')
-f.write('POINTS '+str(N**3)+' float\n')
+f = open(fname,'wb')
+f.write('# vtk DataFile Version 3.0\n'.encode('ascii'))
+f.write('Wind velocity at unstructured points\n'.encode('ascii'))
+f.write('BINARY\n'.encode('ascii'))
+f.write('\n'.encode('ascii'))
+f.write('DATASET POLYDATA\n'.encode('ascii'))
+s = 'POINTS '+str(N**3)+' float\n'
+f.write(s.encode('ascii'))
 for i in range(N):
     for j in range(N):
         for k in range(N):
@@ -69,8 +69,9 @@ for i in range(N):
             f.write(struct.pack('>f', float(Y[j])))
             f.write(struct.pack('>f', float(Z[k])))
 
-f.write('\n')
-f.write('POINT_DATA '+str(N**3)+'\n')
+f.write('\n'.encode('ascii'))
+s = 'POINT_DATA '+str(N**3)+'\n'
+f.write(s.encode('ascii'))
 f.write('VECTORS point_vectors float\n')
 for i in range(N):
     for j in range(N):
@@ -91,18 +92,20 @@ P = P.flatten(order='F')
 P = np.array(P, dtype='>f')
 
 print("Writing " + fname)
-f = open(fname,'w')
-f.write('# vtk DataFile Version 3.0\n')
-f.write('Wind velocity at unstructured points\n')
-f.write('BINARY\n')
-f.write('\n')
-f.write('DATASET POLYDATA\n')
-f.write('POINTS '+str(N**3)+' float\n')
+f = open(fname,'wb'.encode('ascii'))
+f.write('# vtk DataFile Version 3.0\n'.encode('ascii'))
+f.write('Wind velocity at unstructured points\n'.encode('ascii'))
+f.write('BINARY\n'.encode('ascii'))
+f.write('\n'.encode('ascii'))
+f.write('DATASET POLYDATA\n'.encode('ascii'))
+s = 'POINTS '+str(N**3)+' float\n'
+f.write(s.encode('ascii'))
 f.write(P.tobytes())
 
-f.write('\n')
-f.write('POINT_DATA '+str(N**3)+'\n')
-f.write('VECTORS point_vectors float\n')
+f.write('\n'.encode('ascii'))
+s = 'POINT_DATA '+str(N**3)+'\n'
+f.write(s)
+f.write('VECTORS point_vectors float\n'.encode('ascii'))
 f.write(P.tobytes())
 
 f.close()
