@@ -29,7 +29,7 @@ data = Bgrid[:,0]**2 + Bgrid[:,1]**2 + Bgrid[:,2]**2
 
 ###############################################################################
 
-fname = 'structured_grid_test_ascii.vtk';
+fname = 'write_structured_grid_test_ascii.vtk';
 
 print("Writing " + fname)
 f = open(fname,'w')
@@ -64,7 +64,7 @@ print("Wrote " + fname)
 
 ###############################################################################
 
-fname = 'structured_grid_test_binary.vtk';
+fname = 'write_structured_grid_test_binary.vtk';
 
 Bgrid_toB = np.array(Bgrid, dtype='>f')
 data_toB = np.array(data, dtype='>f')
