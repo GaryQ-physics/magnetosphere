@@ -117,7 +117,10 @@ def Compute(Event, ret_sol=False, r=1.01, debug=False):
 
     # TODO: Consider using
     # https://github.com/spacepy/spacepy/blob/master/spacepy/pybats/trace2d.py
-    soln = odeint(dXds, X0, s_grid, args=(kameleon, interpolator, 'b'))
+    kameleon.loadVariable('bx')
+    kameleon.loadVariable('by')
+    kameleon.loadVariable('bz')
+    soln = odeint(dXds, X0, s_grid, args=(kameleon, interpolator, 'b', -1))
     if False:
         print('X0 = ')
         print(X0)

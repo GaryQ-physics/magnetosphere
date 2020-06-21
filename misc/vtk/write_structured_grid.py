@@ -27,6 +27,23 @@ Bgrid = np.column_stack((B1, B2, B3))
 
 data = Bgrid[:,0]**2 + Bgrid[:,1]**2 + Bgrid[:,2]**2
 
+'''
+if;
+yv, xv, zv = np.meshgrid(X, Y, Z)
+P = np.array([xv.flatten(), yv.flatten(), zv.flatten()], order='F') , P.shape == (3,N)
+
+B2, B3, B1 = np.meshgrid(Y, Z, X)
+B1 = B1.flatten(order='C')
+B2 = B2.flatten(order='C')
+B3 = B3.flatten(order='C')
+Bgrid = np.column_stack((B1, B2, B3)) , Bgrid.shape == (N,3)
+
+then;
+xv.flatten(order='F') == B1.flatten(order='C')
+xv.flatten(order='C') == B1.flatten(order='F')
+.flatten() defaults  order='C'
+Bgrid.flattens and P.flattens arent equal in any combo
+'''
 ###############################################################################
 
 fname = 'write_structured_grid_test_ascii.vtk';

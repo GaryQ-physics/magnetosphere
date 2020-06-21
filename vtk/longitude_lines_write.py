@@ -9,7 +9,6 @@ from config import conf
 import pos_sun as ps
 import cut_plane
 
-from scipy.integrate import odeint
 import _CCMC as ccmc
 
 # run parameters

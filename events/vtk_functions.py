@@ -11,7 +11,7 @@ from config import conf
 from units_and_constants import phys
 import biot_savart as bs
 
-def writevtk(fname, p_np, cust_cells):
+def writevtk(fname, p_np, cust_cells, fvals): #NEED TO TEST
     c_np = [('hexahedron', cust_cells.astype(int))]
     fvals_dict= {'sample_scalars': fvals}
     cust_mesh = meshio.Mesh(p_np, c_np, point_data=fvals_dict)
@@ -60,4 +60,4 @@ if True:
     print(cust_cells)
     print(cust_cells.shape)
 
-    writevtk(fname, p_np, cust_cells)
+    writevtk(fname, p_np, cust_cells, fvals)

@@ -14,13 +14,20 @@ from scipy.interpolate import RegularGridInterpolator
 from scipy.integrate import odeint
 import _CCMC as ccmc
 
+global_x_min = -224.
+global_x_max = 32.
+global_y_min = -128.
+global_y_max = 128.
+global_z_min = -128.
+global_z_max = 128.
+
 # run parameters
 #Nlong = 5
 #Nb = 6
 sign = -1  # changes sign of magnetic field used to trace the field lines
 debug = False
 
-xlims = [-100, 15.]
+xlims = [-100., 15.]
 ylims = [-10., 10.]
 zlims = [-15., 15.]
 dx = 0.3
@@ -42,7 +49,7 @@ Nx = X.size
 Ny = Y.size
 Nz = Z.size
 
-filename = '/home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out.cdf'
+filename = conf['run_path'] + '3d__var_3_e20031120-070000-000.out.cdf'
 kameleon = ccmc.Kameleon()
 if debug:
     print("Opening " + filename)

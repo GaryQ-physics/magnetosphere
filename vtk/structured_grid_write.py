@@ -12,8 +12,15 @@ from cut_plane import ex_data
 import biot_savart as bs
 from biot_savart_demo1 import J_kunits
 
-# run parameters
+rbody = 1.25 #???
+global_x_min = -224.
+global_x_max = 32.
+global_y_min = -128.
+global_y_max = 128.
+global_z_min = -128.
+global_z_max = 128.
 
+# run parameters
 dx = .3
 dy = .3 # 0.2
 dz = .3

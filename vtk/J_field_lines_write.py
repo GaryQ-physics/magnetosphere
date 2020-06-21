@@ -98,8 +98,11 @@ def Compute(Event):
         print(s_grid.size)
 
     solns = (np.nan)*np.empty((s_grid.size, 3, len(IC)))
+    kameleon.loadVariable('jx')
+    kameleon.loadVariable('jy')
+    kameleon.loadVariable('jz')
     for i in range(len(IC)):
-        sol = odeint(dXds, IC[i], s_grid, args = (kameleon, interpolator, 'j'))
+        sol = odeint(dXds, IC[i], s_grid, args = (kameleon, interpolator, 'j', -1))
         solns[:, :, i] = sol
 
     if True:

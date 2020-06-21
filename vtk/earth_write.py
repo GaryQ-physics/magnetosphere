@@ -48,8 +48,9 @@ def writevtk(Event, Nt=100, Np=100):
     XYZ = np.column_stack((x, y, z))
 
     XYZr = (np.nan)*np.empty(XYZ.shape)
-    for l in range(B1.size):
-        XYZr[l, :] = ps.GEOtoGSM(XYZ[l, :], time, 'car', 'car')
+    #for l in range(B1.size):
+    #XYZr[l, :] = ps.GEOtoGSM(XYZ[l, :], time, 'car', 'car')
+    XYZr = ps.GEOtoGSM(XYZ, time, 'car', 'car')
 
     print("Writing " + fname)
     f = open(fname,'w')
