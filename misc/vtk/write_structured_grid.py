@@ -10,10 +10,15 @@
 
 # works in python2, but not python3 where it gives error:
 #       write() argument must be str, not bytes
+"""
+Typical output(python2):
+    ('time to write ascii =', 2.2)
+    ('time to write binary =', 0.03)
+"""
 
 import numpy as np
+import time
 
-var = 'Test'
 N = 100
 X=np.linspace(-5.,5.,N)
 Y=np.linspace(-5.,5.,N)
@@ -45,13 +50,14 @@ xv.flatten(order='C') == B1.flatten(order='F')
 Bgrid.flattens and P.flattens arent equal in any combo
 '''
 ###############################################################################
+to = time.time()
 
 fname = 'write_structured_grid_test_ascii.vtk';
 
 print("Writing " + fname)
 f = open(fname,'w')
 f.write('# vtk DataFile Version 3.0\n')
-f.write('Structured Grid ' + var + '\n')
+f.write('Structured Grid Test' + '\n')
 f.write('ASCII\n')
 f.write('DATASET STRUCTURED_GRID\n')
 f.write('DIMENSIONS ' + str(N) + ' ' + str(N) + ' ' + str(N) + '\n' )
@@ -71,7 +77,7 @@ for k in range(N):
 
 f.write('\n')
 f.write('POINT_DATA ' + str(N*N*N) + '\n')
-f.write('SCALARS ' + var + ' float 1\n')
+f.write('SCALARS Test' + ' float 1\n')
 f.write('LOOKUP_TABLE default\n')
 for l in range(Bgrid.shape[0]):
     f.write('%e\n' % (data[l],))
@@ -79,7 +85,10 @@ for l in range(Bgrid.shape[0]):
 f.close()
 print("Wrote " + fname)
 
+tf = time.time()
+print('time to write ascii =', tf-to)
 ###############################################################################
+to = time.time()
 
 fname = 'write_structured_grid_test_binary.vtk';
 
@@ -89,7 +98,7 @@ data_toB = np.array(data, dtype='>f')
 print("Writing " + fname)
 f = open(fname,'w')
 f.write('# vtk DataFile Version 3.0\n')
-f.write('Structured Grid ' + var + '\n')
+f.write('Structured Grid Test' + '\n')
 f.write('BINARY\n')
 f.write('DATASET STRUCTURED_GRID\n')
 f.write('DIMENSIONS ' + str(N) + ' ' + str(N) + ' ' + str(N) + '\n' )
@@ -99,7 +108,7 @@ f.write(Bgrid_toB.tobytes())
 
 f.write('\n')
 f.write('POINT_DATA ' + str(N*N*N) + '\n')
-f.write('SCALARS ' + var + ' float 1\n')
+f.write('SCALARS Test' + ' float 1\n')
 f.write('LOOKUP_TABLE default\n')
 
 f.write(data_toB.tobytes())
@@ -107,4 +116,6 @@ f.write(data_toB.tobytes())
 f.close()
 print("Wrote " + fname)
 
+tf = time.time()
+print('time to write binary =', tf-to)
 ###############################################################################

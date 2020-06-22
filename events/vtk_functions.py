@@ -23,9 +23,9 @@ if True:
     fname = conf["run_path_derived"] + 'vtk_functions_test.vtk'
 
     dx = 0.05*phys['R_e']
-    dy = 0.05
-    dz = 0.1
-    Rad = 0.5
+    dy = 0.05*phys['R_e']
+    dz = 0.1*phys['R_e']
+    Rad = 0.5*phys['R_e']
     xlims = [-1.1*Rad, 1.1*Rad]
     ylims = [-1.1*Rad, 1.1*Rad]
     zlims = [-1.1*Rad, 1.1*Rad]
@@ -49,13 +49,10 @@ if True:
                         [0, 1, 1]] )
 
     cust_cells = np.nan*np.empty(((Nx-1)*(Ny-1)*(Nz-1), 8))
-    test_cells = np.nan*np.empty(((Nx-1)*(Ny-1)*(Nz-1), 8))
     for k in range((Nx-1)*(Ny-1)*(Nz-1)):
         for n in range(8):
             tup = tuple(cell_inds[k,:] + shifts[n,:])
-            #vtup = tuple(cell_inds[k,:] + shifts[n,:])
             cust_cells[k,n] = np.where(np.all([ind_p_np[:,0]==tup[0],ind_p_np[:,1]==tup[1],ind_p_np[:,2]==tup[2]],axis=0))[0][0]
-            #test_cells[k,n] = np.where(np.all([p_np[:,0]==vtup[0],p_np[:,1]==vtup[1],p_np[:,2]==vtup[2]],axis=0))[0][0]
 
     print(cust_cells)
     print(cust_cells.shape)

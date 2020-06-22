@@ -1,7 +1,24 @@
 """
-only tried using python2
+pip install pyvtk
 
-looping is 5 times faster than even pyvtk running binary, so pyvtk is prohibitively slow
+runs with python2 or python3
+"""
+
+"""
+Compare writing basic structured grid using pyvtk and looping f.write
+
+adjust loop to determing wether you use loop or pyvtk
+
+
+Typical output (python2):
+    loop = True  time = 5.6
+    loop = False  time = 1.5
+Typical output (python3):
+    loop = True  time = 3.6
+    loop = False  time = 1.8
+
+Conclusion:
+    looping and writing the ascii is 4 (2) times faster than pyvtk even running binary in python 2 (3) , so pyvtk is prohibitively slow
 """
 
 # pyvtk_test3
@@ -12,7 +29,7 @@ import numpy as np
 import pyvtk
 import time
 
-loop = False
+loop = True
 
 
 a = 60
@@ -68,6 +85,7 @@ else:
             )
     vtk = pyvtk.VtkData(pyvtk.StructuredGrid([a,b,c],p_np), pointdata)
     vtk.tofile(fname,'binary')
+    #vtk.tofile(fname,'ascii')
 
 
 tf = time.time()

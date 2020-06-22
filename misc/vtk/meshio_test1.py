@@ -20,9 +20,7 @@ num points is  576000
 
 Conclusions:
     1. Writing ASCII VTK is slightly faster using custom code (1.70 vs. 2.19)
-       (but output file structure is not identical - was not able to determine
-       how to write structured grid using meshio)
-    2. Writing binary using meshio is ~2.19/.05 ~100 times faster than writing
+    2. Writing binary using meshio is ~2.19/.05 ~ 50 times faster than writing
        ASCII with meshio.
     3. Best to use meshio.vtk.write(...,binary=True) since it can be more easily
        debuged by changing binary to False
@@ -35,8 +33,8 @@ import time
 import numpy as np
 import meshio
 
-if sys.version_info.major != 2:
-    raise Exception("Python 2 is required.")
+if sys.version_info.major != 3:
+    raise Exception("Python 3 is required.")
       
 in_fname = 'mesh_test1_import.vtk'
 out_fname = 'mesh_test1_export.vtk'
@@ -81,7 +79,7 @@ fil.close()
 tf = time.time()
 print('{0:.2f}s: Write ASCII VTK with structured_grid using loop'.format(tf - to))
 
-for Try in range(5):
+def run(Try):
     if Try==1:
         to = time.time()
         mesh1 = meshio.read(
@@ -108,8 +106,6 @@ for Try in range(5):
         mesh4 = meshio.Mesh.read(in_fname, "vtk")  # same arguments as meshio.read
         tf = time.time()
         print('{0:.2f}s: Read ASCII VTK with structured grid using meshio.Mesh.read()'.format(tf - to))
-    
-for Try in range(5):
         
     # all are comparable speed except meshio.vtk.write(...,binary=False)
     
@@ -143,6 +139,8 @@ for Try in range(5):
         tf = time.time()
         print('{0:.2f}s: Write with mesh.write(..., file_format="vtk")'.format(tf - to))
 
+for i in range(4):
+    run(i+1)        # if you try to directly loop through the code in run(), the later Try's become slower
 
 if False:
     points = np.array([

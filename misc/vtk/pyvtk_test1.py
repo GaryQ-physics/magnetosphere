@@ -1,5 +1,25 @@
 """
 pip install pyvtk
+
+runs with python2 or python3
+"""
+
+"""
+Demonstrates 3 different ways of writing basic structured grid using pyvtk:
+
+adjust npscal to determing wether you use np array or python callible function for the field values
+adjust npscal to determing wether you use np array or list of tupples for the grid points
+
+Typical output (python2):
+    npscal, npscal, time(seconds)
+    True, False, 4.8
+    False, False, 5.4
+    True, True, 6.3
+    False, True, 6.9
+
+Conclusion:
+    all comparable and pretty slow
+
 """
 
 # pyvtk_test1
@@ -10,8 +30,8 @@ import numpy as np
 import pyvtk
 import time
 
-npscal = True
-npgrid = False
+npscal = False
+npgrid = True
 # fastest appears to be npscal = True , npgrid = False
 # although not much difference
 

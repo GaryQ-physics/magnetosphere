@@ -16,8 +16,8 @@ def printmetadata(f):
     
     printmetadata(conf['run_path'] + '3d__var_3_e20031120-070000-000.out.cdf')
     printmetadata(conf['run_path'] + '3d__var_3_e20031120-070000-000.out')
-    """    
-    
+    """
+
     if not os.path.exists(f):
         raise Exception("File not found: " + f)
 

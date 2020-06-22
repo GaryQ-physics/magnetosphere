@@ -9,7 +9,7 @@
 # Under Display(Geometry Representation), select Glyph
 # Click Apply
 
-# Works in Python 2 and 3
+# Works in Python 2 and 3  (NOT FOR ME!!!!!!!!!!)
 
 import numpy as np
 

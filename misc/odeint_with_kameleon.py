@@ -1,11 +1,18 @@
-# kameleon_test
+"""
+Demonstrates how kameleon can work with odeint
+
+odeint is a function in scipy.integrate which requires a callable function and then solves the differential equation associated with it
+
+a callable function that accesses kameleon can be used if we pass the kameleon and interpolator objects as constant arguments
+
+to show this we solve the differential equation for a pendulum with extra force term given by the pressure 'p' in kameleon
+"""
 
 import sys
 import os
 import numpy as np
 sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../' )
-from config_paths import config
-conf = config()
+from config import conf
 
 import _CCMC as ccmc
 from scipy.integrate import odeint
@@ -37,7 +44,7 @@ def pend(y, t, b, c, kam, interp,):
     dydt = [omega, -b*omega - c*np.sin(theta) - ex_data(kam,interp,'p',omega,omega,omega)]
     return dydt
 
-def Compute():
+def Compute(plot_force_function = False):
     # open kameleon ---------------
     kameleon = ccmc.Kameleon()
     kameleon.open(filename)
@@ -45,8 +52,8 @@ def Compute():
     interpolator = kameleon.createNewInterpolator()
     #-----------------------------
 
-    A=np.linspace(1.,2.,100)
-    S=np.zeros((100,))
+    A=np.linspace(-30.,30.,300)
+    S=np.zeros((300,))
     #print A
 
     kameleon.loadVariable('p')
@@ -60,10 +67,15 @@ def Compute():
     y0 = [np.pi - 0.1, 0.0]
     t = np.linspace(0, 10, 101)
     sol = odeint(pend, y0, t, args=(b, c, kameleon, interpolator))
-    plt.plot(t, sol[:, 0], 'b', label='theta(t)')
-    plt.plot(t, sol[:, 1], 'g', label='omega(t)')
+    if plot_force_function:
+        plt.plot(A, S, 'r', label='F(theta)')
+        plt.xlabel('theta')
+    else:
+        plt.plot(t, sol[:, 0], 'b', label='theta(t)')
+        plt.plot(t, sol[:, 1], 'g', label='omega(t)')
+        plt.xlabel('t')
+
     plt.legend(loc='best')
-    plt.xlabel('t')
     plt.grid()
     plt.show()
 
@@ -72,21 +84,6 @@ def Compute():
     print("Closed " + filename)
     #-------------------------------
 
-    return S
+    return [sol, S]
 
-
-def writevtk():
-    out_fname=conf["m_path"] + 'magnetosphere/data/' + 'test_out'+'.vtk'
-    sol=Compute()
-    f = open(out_fname,'w')
-    print('writing ' + out_fname)
-    f.write('# vtk DataFile Version 3.0\n')
-
-    for k in range(sol.size):
-        f.write('%e\n'%(sol[k]))
-
-    f.close()
-    print('closed ' + out_fname)
-
-#writevtk()
 OUT=Compute()
