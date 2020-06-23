@@ -1,28 +1,31 @@
+"""
+Demonstrate integrator with python using scipy.integrate.odeint()
+(aparently works for python 2 and 3) by drawing feild lines for anlalytic dipole
+"""
+
 # B_field_line_tracer_analytic
 
 import sys
-sys.path.append('../../../../lib/python2.7/site-packages/')
 import numpy as np
 import matplotlib.pyplot as plt
 #import scipy as sp
 from scipy.integrate import odeint
-#import solve_ivp
 
 def Bx(x,y,z):
-	M = -31000.
-	R=np.sqrt(x**2+y**2+z**2)
-	ret=M*(3*x**2 - R**2)/R**5
-	return ret
+    M = -31000.
+    R=np.sqrt(x**2+y**2+z**2)
+    ret=M*(3*x**2 - R**2)/R**5
+    return ret
 def By(x,y,z):
-	M = -31000.
-	R=np.sqrt(x**2+y**2+z**2)
-	ret=3*M*y*x/R**5
-	return ret
+    M = -31000.
+    R=np.sqrt(x**2+y**2+z**2)
+    ret=3*M*y*x/R**5
+    return ret
 def Bz(x,y,z):
-	M = -31000.
-	R=np.sqrt(x**2+y**2+z**2)
-	ret=3*M*z*x/R**5
-	return ret
+    M = -31000.
+    R=np.sqrt(x**2+y**2+z**2)
+    ret=3*M*z*x/R**5
+    return ret
 
 eps=0.0001
 #gridsize=1./50.
@@ -65,16 +68,16 @@ X[0]=X0
 Y[0]=Y0
 
 for k in range(s.size-1):
-	L=np.sqrt(Bx(X[k],Y[k],0)*Bx(X[k],Y[k],0)+By(X[k],Y[k],0)*By(X[k],Y[k],0))
-	if L>0.000001:
-		ds=eps/L
-	else:
-		ds=0
-		print("B near ZERO")
-	s[k+1] = s[k]+ds #determine parameterd
-	X[k+1] = X[k]+ds*Bx(X[k],Y[k],0) #iterate eom
-	Y[k+1] = Y[k]+ds*By(X[k],Y[k],0) #iterate eom
-	#print(X[k],Y[k],s[k])
+    L=np.sqrt(Bx(X[k],Y[k],0)*Bx(X[k],Y[k],0)+By(X[k],Y[k],0)*By(X[k],Y[k],0))
+    if L>0.000001:
+        ds=eps/L
+    else:
+        ds=0
+        print("B near ZERO")
+    s[k+1] = s[k]+ds #determine parameterd
+    X[k+1] = X[k]+ds*Bx(X[k],Y[k],0) #iterate eom
+    Y[k+1] = Y[k]+ds*By(X[k],Y[k],0) #iterate eom
+    #print(X[k],Y[k],s[k])
 
 
 # dx/dt = Bx(x,y,0)
@@ -86,25 +89,17 @@ for k in range(s.size-1):
  
 # New function
 def dUdt(U, t):
-	Ux, Uy = U
-	a=Bx(Ux,Uy,0.)
-	b=By(Ux,Uy,0.)
-	ret=[a, b]
-	return ret
+    Ux, Uy = U
+    a = Bx(Ux,Uy,0.)
+    b = By(Ux,Uy,0.)
+    L = np.sqrt(a**2 + b**2)
+    if L>0.000001:
+        return [a, b]
+    return 0.
 # New initial condition
 U0 = [X0, Y0]    # Initial condition
 
 t_even = np.linspace(0, 1.1e-8, 100)
-
-"""
-r = ode(dUdt, jac=None).set_integrator('zvode', method='bdf')
-r.set_initial_value(U0, 0)
-dt = 1000./30.
-T=0
-while r.successful() and r.t < 1000:
-	T=T+dt
-	print(r.t+dt, r.integrate(r.t+dt))
-"""
 
 sol = odeint(dUdt, U0, t_even)  #, method='RK23', t_eval=None)
 print(sol[:,0])

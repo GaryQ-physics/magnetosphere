@@ -19,6 +19,9 @@ global_y_min = -128.
 global_y_max = 128.
 global_z_min = -128.
 global_z_max = 128.
+# difference of 256 for all
+
+# using global min max and dx=dy=dz=0.1  -->  1.6777216e+10 grid points (16 billion)
 
 # run parameters
 dx = .3
@@ -28,11 +31,12 @@ dx_tail = 10.  # dx_tail not used if using bs.make_grid
 Test = False
 debug = False
 
-R_0 = 3.
+r_min = 3. # this is minimum distance for kameleon built in tracer to work
+            # and also one of #'s cited in CalcDeltaB (Lutz Rastätter, Gábor Tóth, Maria M. Kuznetsova, Antti A. Pulkkinen)
 def J_kameleon(kam, interp, X):
     Jkunits = (np.nan)*np.empty(X.shape)
     for k in range(X.shape[0]):
-        if np.dot(X[k,:], X[k,:]) >= R_0**2:
+        if np.dot(X[k,:], X[k,:]) >= r_min**2:
             Jkunits[k, 0] = ex_data(kam, interp, 'jx', X[k,0], X[k,1], X[k,2])
             Jkunits[k, 1] = ex_data(kam, interp, 'jy', X[k,0], X[k,1], X[k,2])
             Jkunits[k, 2] = ex_data(kam, interp, 'jz', X[k,0], X[k,1], X[k,2])

@@ -1,3 +1,8 @@
+"""
+Demonstrate integrator with python using scipy.integrate.solve_ivp()
+(aparently works for python 2 and 3) by drawing feild lines for anlalytic dipole
+"""
+
 # B_field_line_tracer_python3_analytic
 
 import sys

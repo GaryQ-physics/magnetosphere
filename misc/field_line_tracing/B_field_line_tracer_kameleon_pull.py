@@ -1,13 +1,16 @@
-# B_field_line_tracer
+"""
+Demonstrate original way of calling kameleon as in the included kameleon_test.py file under 
+    kameleon/bin/ccmc/examples/python/
 
-#~/magnetosphere/kameleon/bin/ccmc/examples/python$ ../../../python2 B_field_line_tracer.py
+Demonstrated by using to integrate field line with scipy.integrate.odeint
+"""
 
 import sys
-sys.path.append('../../../../lib/python2.7/site-packages/')
-import kameleon_pull as kp
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
+import kameleon_pull as kp
 
 filename='/home/gary/3d__var_3_e20031120-070000-000.out.cdf'
 
