@@ -1,3 +1,8 @@
+"""
+Demonstrate reading 2d .out datafiles using spacepy.pybats.bats
+"""
+
+
 #from spacepy import pybats as pb
 import spacepy.pybats.bats as bt
 import numpy as np

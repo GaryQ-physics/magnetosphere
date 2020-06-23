@@ -1,3 +1,14 @@
+"""
+Demonstrates the mapping of a png (in this case earth topography map) to a sphere
+    with arbitrary orientation relative to paraviews coordinate axes
+
+First run misc/vtk/rotated_sphere_write.py to make the vtk needed to import
+
+Then run this script in paraview using either:
+    in terminal: paraview5.8 --script=earth.py 
+    in paraview python shell: execfile('earth.py')
+"""
+
 import paraview.simple as pvs
 from paraview.simple import *
 
@@ -5,12 +16,12 @@ import sys
 # Based on
 # https://trac.version.fz-juelich.de/vis/wiki/Examples/Ear5Animating
 
-sys.path.append( './../' )
+sys.path.append( './../../' )
 from config import conf
 #from config_paths import config
 #conf = config()
 
-fname = '/home/gary/magnetosphere/vtk/rotated_sphere.vtk'
+fname = conf['base'] + 'test_data/rotated_sphere.vtk'
 
 #file = conf["data_path"] + "topography/world.topo.200401.3x5400x2700.png-ParaView.png"
 
@@ -63,7 +74,7 @@ renderView1.Update()
 
 
 # create a new 'Legacy VTK Reader'
-rotated_spherevtk = LegacyVTKReader(FileNames=['/home/gary/magnetosphere/vtk/rotated_sphere.vtk'])
+rotated_spherevtk = LegacyVTKReader(FileNames=[fname])
 # show data in view
 rotated_spherevtkDisplay = Show(rotated_spherevtk, renderView1)
 # trace defaults for the display properties.

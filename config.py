@@ -18,7 +18,8 @@ conf = {
         'data_path': base + 'data/',
         'run_url': 'http://mag.gmu.edu/git-data/sblake/SCARR5_GM_IO2/IO2/',
         'run_path': base + 'data/SCARR5_GM_IO2/IO2/',
-        'run_path_derived': base + 'data/SCARR5_GM_IO2-derived/'
+        'run_path_derived': base + 'data/SCARR5_GM_IO2-derived/',
+        'base': base
     }
 
 if base + 'util/' not in sys.path:

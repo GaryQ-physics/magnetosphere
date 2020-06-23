@@ -1,13 +1,17 @@
-# sphere_vtk_write
+"""
+Writes vtk needed for misc/paraview/earth.py
+
+can choose any SO3 matrix for Rot, then run
+"""
 
 import sys
 import os
 import numpy as np
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../../' )
 from config import conf
 
-fname = '/home/gary/magnetosphere/vtk/rotated_sphere.vtk'
+fname = conf['base'] + 'test_data/rotated_sphere.vtk'
 var='longitude'
 Nt = 100
 Np = 100

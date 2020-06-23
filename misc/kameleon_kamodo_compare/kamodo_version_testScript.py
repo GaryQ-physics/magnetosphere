@@ -12,12 +12,11 @@
 # Documentation for kameleon wrapper
 # https://ccmc.gsfc.nasa.gov/Kamodo/notebooks/kameleon-kamodo/
 
-if True:
+if False:
     python_path = '/Users/robertweigel/kameleon/bin/python'
     fname = '/Users/robertweigel/git/magnetosphere/data/SCARR5_GM_IO2/IO2/'
     fname = fname + '3d__var_3_e20031120-070102-000.out.cdf'
-
-if False:
+else:
     python_path = '/home/gary/magnetosphere/kameleon/bin/python'
     fname = '/home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/'
     fname = fname + '3d__var_3_e20031120-070000-000.out.cdf'
@@ -35,3 +34,5 @@ tf = time.time()
 print('{0:d} points in {1:.1f} s = {2:.1f} pts/s' \
       .format(data.shape[0], tf-to, data.shape[0]/(tf-to))) 
 # 19.5 s    
+
+# typical output: 11.5 s (gary)

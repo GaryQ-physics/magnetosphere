@@ -4,11 +4,10 @@
 # http://mag.gmu.edu/git-data/sblake/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070102-000.out.cdf
 # Edit paths
 
-if True:
+if False:
     ccmc_path = '/Users/robertweigel/kameleon/lib/python2.7/site-packages/ccmc/'
     fname = '/Users/robertweigel/git/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070102-000.out.cdf'
-
-if False:
+else:
     ccmc_path = '/home/gary/magnetosphere/kameleon/lib/python2.7/site-packages/ccmc/'
     fname = '/home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out.cdf'
 
@@ -33,5 +32,7 @@ for i in range(points.shape[0]):
 kameleon.close()
 tf = time.time()
 print('{0:d} points in {1:.1f} s = {2:.1f} pts/s' \
-      .format(data.shape[0], tf-to, data.shape[0]/(tf-to)))
-#  1.6 s
+      .format(points.shape[0], tf-to, points.shape[0]/(tf-to)))
+# 1.6 s
+
+# typical output: 1.3  (gary)

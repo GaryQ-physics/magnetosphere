@@ -2,14 +2,22 @@
 """
 Created on Sun Feb  2 09:58:51 2020
 
+Demonstrate reading the 3d .out datafiles using spacepy.pybats.bats, and then plotting with that data
+
+Works for python 2 and 3
 """
+import sys
+import os
+sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../../' )
+from config import conf
 
 import spacepy.pybats.bats as bt
 import numpy as np
 from matplotlib import pyplot as plt
     
 # read in the 3d magnetosphere
-filename = "/Users/robertweigel/git/students/gquaresi/magnetosphere/data/3d__var_3_e20031120-070000-000.out"
+filename = conf['run_path'] + "3d__var_3_e20031120-070000-000.out"
+
 data3d = bt.Bats2d(filename)
 
 # look at keys:
