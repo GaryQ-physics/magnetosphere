@@ -70,3 +70,8 @@ def probe(time, P, var=None, debug=False):
     kameleon.close()
 
     return ret
+
+def probe_vect(time, P, var, debug=False):
+    vectvar = [var + 'x', var + 'y', var + 'z']
+    dictionary = probe(time, P, var=vectvar, debug=debug)
+    return np.column_stack([dictionary[var + 'x'], dictionary[var + 'y'], dictionary[var + 'z']])

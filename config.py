@@ -30,7 +30,10 @@ if base + 'events/' not in sys.path:
 
 if base + 'vtk/' not in sys.path:
     sys.path.append(base + 'vtk/')
-    
+
+if base + 'cutplane/' not in sys.path:
+    sys.path.append(base + 'cutplane/')
+
 if kameleon not in sys.path:
     sys.path.append(kameleon)
 

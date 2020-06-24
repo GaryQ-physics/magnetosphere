@@ -1,5 +1,5 @@
 import numpy as np
-from probe import probe
+from probe import probe, probe_vect
 
 #d = probe((2003, 11, 20, 7, 0, 0), (-10, 0, 0), 'p')
 #print(d)
@@ -23,7 +23,8 @@ print(np.sqrt(jx**2 + jy**2 + jz**2))
 X = np.array([[-5, 0, 0], [-10, 0, 0]])
 jy = probe((2003, 11, 20, 7, 0, 0), X, var='jy')
 j_dict = probe((2003, 11, 20, 7, 0, 0), X, var=['jx', 'jy', 'jz'])
-j = np.column_stack([j_dict['jx'], j_dict['jy'], j_dict['jz']])
+#j = np.column_stack([j_dict['jx'], j_dict['jy'], j_dict['jz']])
+j = probe_vect((2003, 11, 20, 7, 0, 0), X, 'j')
 
 print(j_dict)
 print(X.shape)
