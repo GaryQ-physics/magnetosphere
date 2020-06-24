@@ -1,7 +1,7 @@
-# Requires Python 3.5+
+# Requires Python 3.5+, imageio, imageio-ffmpeg
 import os
 import sys
-import imageio # Also need to install imageio-ffmpeg
+import imageio
 from pathlib import Path
 
 if not sys.version_info[0] == 3 and sys.version_info[1] >= 5:
@@ -11,31 +11,40 @@ if not sys.version_info[0] == 3 and sys.version_info[1] >= 5:
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 
+# TODO: Generate list based on subdirectories (and exclude directory minmax.)
 vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
-delta = 0.1
+delta = 0.5
+plot_type = 2
+#pattern = 'type_{0:d}_delta_{1:.3f}'.format(plot_type, delta)
+pattern = '{0:.3f}'.format(delta)
 
 for var in vars:
     image_dir = conf['run_path_derived'] + "cutplanes/" + var + "/"
     image_path = Path(image_dir)
     
     print('Reading list of files in ' + image_dir)
-    images = list(image_path.glob('*' + '-' + var + '-' + '{0:.3f}'.format(delta) + '.png'))
-    images.sort()
+    file_pattern = '*' + '-' + var + '-' + pattern + ".png"
+    image_files = list(image_path.glob(file_pattern))
+    if len(image_files) == 0:
+        print('No files found that match pattern ' + file_pattern)
+        continue
+    image_files.sort()
     
-    print('Reading {0:d} files '.format(len(images)))
+    print('Reading {0:d} files '.format(len(image_files)))
     image_list = []
     k = 0
-    for file_name in images:
-        if k > 100:
-            break
-        image_list.append(imageio.imread(file_name))
-        fn = file_name.name
-        print("{0} {1:s}".format(image_list[-1].shape, fn.replace(image_dir, "")))
+    for image_file in image_files:
+        image_list.append(imageio.imread(image_file))
+        file_name = image_file.name
+        print("{0:d}/{1:d} size = {2}, {3:s}" \
+              .format(k+1, len(image_files), 
+                      image_list[-1].shape, 
+                      file_name.replace(image_dir, "")))
         k = k + 1
     
     print('Generating mp4 using {0:d} files'.format(len(image_list)))
     outfile = conf['run_path_derived'] + "cutplanes/" + \
-                    var + '-{0:.3f}'.format(delta) + '.mp4'
+                    var + pattern + '.mp4'
     print('Writing ' + outfile)
     imageio.mimwrite(outfile, image_list)
     print('Wrote ' + outfile)
