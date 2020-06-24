@@ -2,10 +2,10 @@
 Generate cut plane for each file and for each variable associate with BATSRUS
 run in conf['run_path'] specified in config.py. Files are downloaded as-needed.
 
-Use cut_plane_plot_animate.py to create .mp4 from images.
+Use cutplane_plot_demo2_animate.py to create .mp4 from images.
 
 First set of cut planes at low resolution is used to compute min/max of
-each variable. Second set is at high resolution with fixed colorbar limits
+each variable. Second set is at high resolution with fixed axes limits
 with limits determined using low resolution min/max values.
 
 For long runs, execute from command line - Spyder often freezes after 50+ files
@@ -15,11 +15,6 @@ When running in parallel wih Spyder/IPython, sometimes there is a broken pipe
 error message. Program always runs after second attempt, however. In addition,
 the disabiling of output buffering will not work (see line that starts with
 sys.stdout = ...). 
-
-TODO: Use CDF file reader to read x, y, z for each variable. Then,
-given xlims, ylims, and plane, use np.where(...) to determine actual max/min
-of variable. This will speed up first processing step signficantly as
-an interpolation is not needed.
 
 TODO: If number of cores > number of vars, parallelize by files instead of
 variables?
@@ -39,18 +34,22 @@ from config import conf
 from niceticks import niceticks
 import cutplane_plot as cp
 from util import filelist, filename2time, dlfile, time2datetime, filemeta
+from events import events
+
+event_list = events()
 
 debug         = False  # Show extra logging information
-para          = False  # Process in parallel using all CPUs
+para          = True   # Process in parallel using all CPUs
 showplot      = False  # Show plot on screen. Set to false for long runs.
                        # Does not always work in Spyder/IPython, especially when
-                       # para=True. Starting a new console fixes.
+                       # para=True. Starting a new console sometimes fixes.
+                       # TODO: Read PNG and display using PIL instead.
 plot_type     = 2
 
 # Testing options
-first_only    = False  # Do only first processing
-second_only   = False  # Execute only second processing
-test_serial   = False  # Process two files in serial
+first_only    = False  # Do only low-res first processing
+second_only   = False  # Execute only high-res second processing
+test_serial   = True  # Process two files in serial
 test_parallel = False  # Process two files in parallel
 
 vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
@@ -71,6 +70,8 @@ opts = {
 
 if first_only and second_only:
     raise ValueError("Both first_only and second_only are True. Only one may be True.")
+
+event_list[0,0:5] = [2003,11,20,7,1]
 
 if test_serial:
     para = False
@@ -103,7 +104,7 @@ def process_var(var, opts):
         dto = time2datetime(filename2time(files[0]))
         dtf = time2datetime(filename2time(files[-1]))
         dts = []
-        data = {'vx': [], 'bz': []}
+        data = {'ux': [], 'bz': []}
 
     for filename in files:
 
@@ -111,8 +112,8 @@ def process_var(var, opts):
             break
 
         filename_png = conf["run_path_derived"] + "cutplanes/" + var + "/" \
-                        + filename + '-' + var \
-                        + '-' + '{0:.3f}'.format(opts['delta']) + '.png'
+                        + '{0:s}-{1:s}-type_{2:d}_delta_{3:.3f}.png' \
+                        .format(filename, var, plot_type, opts['delta'])
 
         pkl = conf["run_path_derived"] + "cutplanes/minmax/" + var + '.pkl'
 
@@ -156,9 +157,9 @@ def process_var(var, opts):
                         axes.set_yticks(yticks)
                         axes.set_ylim([var_min, var_max])
 
-            # Not sure why this is needed. Is it due to pandas import
-            # in another hapiclient function?
-            # See https://www.gitmemory.com/issue/facebook/prophet/999/500035319
+            # Not sure why next two code lines needed. Is it due to pandas import
+            # in another hapiclient function? Issue this addresses described
+            # at https://www.gitmemory.com/issue/facebook/prophet/999/500035319
             from pandas.plotting import register_matplotlib_converters
             register_matplotlib_converters()
             
@@ -166,22 +167,27 @@ def process_var(var, opts):
             from hapiclient.plot.datetick import datetick
             from probe import probe
         
-            fig = plt.figure(figsize=(7, 9), dpi=144)
+            fig = plt.figure(figsize=(7, 9), dpi=opts['dpi'])
             axes = fig.add_axes([0.07, 0.55, 0.9, 0.4])
             info = cp.plot(times[-1], var, opts['plane'],
                              axes=axes, 
                              dx=opts['delta'], dy=opts['delta'],
                              xlims=opts['xlims'], ylims=opts['ylims'],
                              logz=True,
-                             dpi=opts['dpi'], showplot=opts['showplot'],
+                             showplot=opts['showplot'],
                              zticks=zticks,
-                             png=True, pngfile=filename_png, debug=debug)
+                             debug=debug)
             
             time = filename2time(filename)
             dts.append(time2datetime(time))
+            
+            #import pdb;pdb.set_trace()
+            # Sample upstream solar wind
+            # TODO: Generalize code to allow plotting arbitrary number
+            # of variables.
             d = probe(time, (31.5, 0, 0), ['ux', 'bz'])
 
-            data['vx'].append(d['ux'])
+            data['ux'].append(d['ux'])
             data['bz'].append(d['bz'])
 
             meta = filemeta(filename)
@@ -195,9 +201,12 @@ def process_var(var, opts):
             axes.legend([name + ' [' + units + ']'])
             datetick('x', axes=axes, debug=False)
             set_ylims('bz', axes=axes)
-
+            if np.all(times[-1][0:5] == event_list[0,0:5]):
+                ylims = axes.get_ylim()
+                axes.plot([dts[-1], dts[-1]], ylims, 'k-')
+                
             axes = fig.add_axes([0.07, 0.28, 0.9, 0.18])
-            axes.plot(dts, data['vx'])
+            axes.plot(dts, data['ux'])
             axes.grid()
             name = meta["parameters"]['ux']['plot_name']
             units = meta["parameters"]['ux']['vis_unit']
@@ -207,15 +216,22 @@ def process_var(var, opts):
             axes.axes.xaxis.set_ticklabels([])
             set_ylims('ux', axes=axes)
 
+                            
             plt.savefig(filename_png, dpi=opts['dpi']) 
             
-            if showplot:
+            if opts['showplot']:
+                # These often won't cause plot to show.
                 plt.show()
                 fig.canvas.draw()
                 fig.show()
+            else:
+                plt.close()
+
         else:
             raise ValueError("plot_type = {0:d} is not valid".format(plot_type))
 
+        # This information will be the same for all vars but will
+        # be stored in each variable's .pkl file.
         minmax['probe']['ux'][k-1] = d['ux']
         minmax['probe']['bz'][k-1] = d['bz']
 
@@ -243,12 +259,12 @@ def process_all(opts):
         num_cores = multiprocessing.cpu_count()
         if num_cores is not None and num_cores > len(vars):
             num_cores = len(vars)
-        print('Parallel processing {0:d} variables using {1:d} cores'\
+        print('Parallel processing {0:d} variable(s) using {1:d} cores'\
               .format(len(opts.keys()), num_cores))
         results = Parallel(n_jobs=num_cores)(\
                     delayed(process_var)(var, opts[var]) for var in vars)
     else:
-        print('Serial processing {0:d} variables.'.format(len(opts.keys())))
+        print('Serial processing {0:d} variable(s).'.format(len(opts.keys())))
         i = 0
         results = []
         for var in vars:
@@ -264,6 +280,7 @@ try:
 except:
     pass
 
+# Create directory for variable min/max pkl files if needed
 filename_path = conf["run_path_derived"] + "cutplanes/minmax/"
 if not os.path.exists(filename_path):
     os.makedirs(filename_path)
@@ -272,7 +289,8 @@ if not os.path.exists(filename_path):
 filename_path = conf["run_path_derived"] + "cutplanes/"
 if not os.path.exists(filename_path):
     os.makedirs(filename_path)
-print('Image files will be written to\n' + filename_path)
+print('Image files will be written to subdirectory of\n' + filename_path)
+# Create directory for each variable
 for var in vars:
     filename_path = conf["run_path_derived"] + "cutplanes/" + var
     if not os.path.exists(filename_path):
@@ -285,18 +303,23 @@ print('{0:d} files found.'.format(len(files)))
 if opts['nf'] is None:
     # Process all files
     opts['nf'] = len(files)
+else:
     print('Processing only first {0:d} files.'.format(opts['nf']))
 
-opts['delta'] = opts['delta1']
-opts['dpi'] = opts['dpi1']
 
-# To ensure thread safety. Not needed as opts should not be modified.
-Opts = {} 
+# Create options dict for each variable.
+Opts = {}
 for var in vars:
+    # .copy to ensure thread safety.
+    # Currently not needed b/c opts is not modified.
     Opts[var] = opts.copy()
 
 if not second_only:
     print('First processing.')
+    for var in vars:
+        Opts[var]['delta'] = opts['delta1']
+        Opts[var]['dpi'] = opts['dpi1']
+
     process_all(Opts)
 
 if not first_only:

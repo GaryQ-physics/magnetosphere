@@ -156,10 +156,10 @@ def fieldlines(time, mag, s_grid=None, debug=False):
 
 def unitvector(time, mag, debug=False):
 
-    # Points where field line is returned on are points a distance, 0, 0.5, 1.0
+    # Points where field line is returned on are points a distance
+    # 0, 0.5, 1.0 along the field line from the starting point.
     s_grid = np.array([0., 0.5, 1.])
-    print(s_grid)
-    print(mag)
+    # Compute (x, y, z) of points at s_grid values.
     sol = fieldlines(time, mag, s_grid=s_grid, debug=debug)
     
     # initialize vectors for defining field line cut plane
@@ -185,30 +185,28 @@ def unitvector(time, mag, debug=False):
     U3 = U3/np.linalg.norm(U3)
     U1 = np.cross(U2, U3)
 
-    # Compute centered dipole vector in GSM at given time
-    # Mdipole = cx.MAGtoGSM([0., 0., 1.], time[0:6], 'car', 'car')
-
     return [U1, U2, U3]
 
 
-def writedata(Event, debug=False):
-    """Write output of compute() to file
+def writedata(time, mlat, mlon, debug=False):
+    """Write output of unitvector() to file
     
-    Calling compute() from ParaView does not work, so write output to txt file.
+    Calling unitvector() from ParaView does not work, so write output to
+    txt file.
     """
-    #year,month,day,hours,minutes,seconds,milisec,MLONdeg,MLATdeg = Event
-    time = Event[0:7]
-    Mdipole, U1, U2, U3 = Compute(Event)
+
+    # Compute centered dipole unit vector in GSM at given time
+    Mdipole = cx.MAGtoGSM([0., 0., 1.], time[0:6], 'car', 'car')
+
+    Mdipole, U1, U2, U3 = unitvector(time)
 
     tag = '_%04d:%02d:%02dT%02d:%02d:%02d.%03d' % tuple(time)
     subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
     if not os.path.exists(conf["run_path_derived"] + subdir):
         os.mkdir(conf["run_path_derived"] + subdir)
 
-    MLON=Event[6]
-    MLAT=Event[7]
-
-    out_fname = conf["run_path_derived"] + subdir + 'cut_plane_info_%.2f_%.2f' %(MLAT, MLON) + tag + '.txt'
+    out_fname = conf["run_path_derived"] + subdir + \
+                'cut_plane_info_%.2f_%.2f' % (mlat, mlon) + tag + '.txt'
     f = open(out_fname, 'w')
     
     print('Writing ' + out_fname)

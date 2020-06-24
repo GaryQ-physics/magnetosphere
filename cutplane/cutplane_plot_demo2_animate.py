@@ -44,7 +44,7 @@ for var in vars:
     
     print('Generating mp4 using {0:d} files'.format(len(image_list)))
     outfile = conf['run_path_derived'] + "cutplanes/" + \
-                    var + pattern + '.mp4'
+                    var + "-" + pattern + '.mp4'
     print('Writing ' + outfile)
     imageio.mimwrite(outfile, image_list)
     print('Wrote ' + outfile)
