@@ -28,7 +28,7 @@ subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
 Nlong=5
 Nb = 6
 N=Nb+1+Nlong
-var='dB_EW'
+var='jy'
 
 cut_plane_name = 'cut_plane_info_%.2f_%.2f' %(Event[7], Event[6]) + tag + '.txt'
 grid_name = 'structured_grid_' + var + tag + '.000' + '.vtk'

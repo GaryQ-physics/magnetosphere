@@ -80,6 +80,7 @@ tf = time.time()
 print('{0:.2f}s: Write ASCII VTK with structured_grid using loop'.format(tf - to))
 
 def run(Try):
+    # in function so that memory is released after each try.
     if Try==1:
         to = time.time()
         mesh1 = meshio.read(
@@ -140,7 +141,7 @@ def run(Try):
         print('{0:.2f}s: Write with mesh.write(..., file_format="vtk")'.format(tf - to))
 
 for i in range(4):
-    run(i+1)        # if you try to directly loop through the code in run(), the later Try's become slower
+    run(i+1)
 
 if False:
     points = np.array([
