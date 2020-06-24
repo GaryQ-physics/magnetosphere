@@ -5,20 +5,25 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 
 
-def time2datetime(time):
+def time2datetime(t):
     import datetime as dt
-    if len(time) < 4:
+    
+    for i in range(len(t)):
+        if int(t[i]) != t[i]:
+            raise ValueError("int(t[{0:d}] != t[{0:d}] = {1:f}".format(i, t[i]))\
+            
+    if len(t) < 4:
         raise ValueError('Time list/tuple must have 3 or more elements')
-    if len(time) == 3:
-        return dt.datetime(time[0], time[1], time[2])    
-    if len(time) == 4:
-        return dt.datetime(time[0], time[1], time[2], time[3])
-    if len(time) == 5:
-        return dt.datetime(time[0], time[1], time[2], time[3], time[4])
-    if len(time) == 6:
-        return dt.datetime(time[0], time[1], time[2], time[3], time[4], time[5])
-    if len(time) == 7:
-        return dt.datetime(time[0], time[1], time[2], time[3], time[4], time[5], time[6])
+    if len(t) == 3:
+        return dt.datetime(int(t[0]), int(t[1]), int(t[2]))    
+    if len(t) == 4:
+        return dt.datetime(int(t[0]), int(t[1]), int(t[2]), int(t[3]))    
+    if len(t) == 5:
+        return dt.datetime(int(t[0]), int(t[1]), int(t[2]), int(t[3]), int(t[4]))    
+    if len(t) == 6:
+        return dt.datetime(int(t[0]), int(t[1]), int(t[2]), int(t[3]), int(t[4]), int(t[5]))    
+    if len(t) == 7:
+        return dt.datetime(int(t[0]), int(t[1]), int(t[2]), int(t[3]), int(t[4]), int(t[5]), int(t[6]))    
 
             
 def filename2time(filename):

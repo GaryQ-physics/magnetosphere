@@ -21,10 +21,7 @@ def events():
     mlt = cx.MAGtoMLT(data[:, 5], data[:, 0:5])
 
     # Swap mlat and mlon colums so in expected order (lat then long)
-    mlon = data[:, 5]
-    mlat = data[:, 6]
-    data[:, 6] = mlon
-    data[:, 5] = mlat
+    data[:, [6,5]] = data[:, [5,6]]
     
     data = np.hstack((data, np.reshape(mlt, (mlt.shape[0], 1))))
     

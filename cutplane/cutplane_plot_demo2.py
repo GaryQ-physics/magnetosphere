@@ -49,7 +49,7 @@ plot_type     = 2
 # Testing options
 first_only    = False  # Do only low-res first processing
 second_only   = False  # Execute only high-res second processing
-test_serial   = True  # Process two files in serial
+test_serial   = False  # Process two files in serial
 test_parallel = False  # Process two files in parallel
 
 vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
@@ -71,7 +71,9 @@ opts = {
 if first_only and second_only:
     raise ValueError("Both first_only and second_only are True. Only one may be True.")
 
-event_list[0,0:5] = [2003,11,20,7,1]
+(u, idx, ne) = np.unique(event_list[:, 0:5], axis=0, return_index=True, return_counts=True)
+event_list = event_list[idx, :]
+event_list = np.hstack((event_list, np.reshape(ne, (ne.size, 1))))
 
 if test_serial:
     para = False
@@ -84,7 +86,7 @@ if test_parallel:
     vars = ['p', 'jy']
     opts["nf"] = 3
     opts["showplot"] = True
-    #opts["nf"] = 50
+    #opts["nf"] = None
     #opts["showplot"] = False
     
 
@@ -96,7 +98,8 @@ def process_var(var, opts):
               'max': np.nan*np.empty(len(files)),
               'probe': {
                           'ux': np.nan*np.empty(len(files)),
-                          'bz': np.nan*np.empty(len(files))
+                          'bz': np.nan*np.empty(len(files)),
+                          'n_events': np.nan*np.empty(len(files))
                     }
               }
 
@@ -104,7 +107,7 @@ def process_var(var, opts):
         dto = time2datetime(filename2time(files[0]))
         dtf = time2datetime(filename2time(files[-1]))
         dts = []
-        data = {'ux': [], 'bz': []}
+        data = {'ux': [], 'bz': [], 'n_events': []}
 
     for filename in files:
 
@@ -120,7 +123,11 @@ def process_var(var, opts):
         zticks = opts['zticks']
         if os.path.exists(pkl):
             with open(pkl, 'rb') as handle:
+                if debug:
+                    print("Reading " + pkl)
                 minmax = pickle.load(handle)
+                if debug:
+                    print("Read " + pkl)
 
             if zticks is None:
                 var_min = np.nanmin(minmax['min'])
@@ -149,13 +156,31 @@ def process_var(var, opts):
         elif plot_type == 2:
 
             def set_ylims(p, axes=None):
-                if not np.all(np.isnan(minmax['probe'][p])):
-                    var_min = np.nanmin(minmax['probe'][p])
-                    var_max = np.nanmax(minmax['probe'][p])
-                    if var_min != var_max:
-                        yticks = niceticks(var_min, var_max, 8, debug=debug)
-                        axes.set_yticks(yticks)
-                        axes.set_ylim([var_min, var_max])
+
+                if type(p) != list:
+                    ps = [p]
+                else:
+                    ps = p
+
+                import warnings
+
+                var_mins = []
+                var_maxes = []
+                for p in ps:
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings('ignore', r'All-NaN slice encountered')
+                        var_mins.append(np.nanmin(minmax['probe'][p]))
+                        var_maxes.append(np.nanmax(minmax['probe'][p]))
+    
+                with warnings.catch_warnings():
+                    warnings.filterwarnings('ignore', r'All-NaN axis encountered')
+                    var_min = np.nanmin(var_mins)
+                    var_max = np.nanmax(var_maxes)
+
+                if var_min != var_max and not np.isnan(var_min):
+                    yticks = niceticks(var_min, var_max, 8, debug=debug)
+                    axes.set_yticks(yticks)
+                    axes.set_ylim([var_min, var_max])
 
             # Not sure why next two code lines needed. Is it due to pandas import
             # in another hapiclient function? Issue this addresses described
@@ -181,32 +206,40 @@ def process_var(var, opts):
             time = filename2time(filename)
             dts.append(time2datetime(time))
             
-            #import pdb;pdb.set_trace()
             # Sample upstream solar wind
             # TODO: Generalize code to allow plotting arbitrary number
             # of variables.
             d = probe(time, (31.5, 0, 0), ['ux', 'bz'])
 
+            #import pdb;pdb.set_trace()
+            if np.any(np.all(times[-1][0:5] == event_list[:, 0:5], axis=1)):
+                # At least on event occured at this time step.
+                d['n_events'] = event_list[k-1, -1]
+            else:
+                d['n_events'] = 0;
+
             data['ux'].append(d['ux'])
             data['bz'].append(d['bz'])
+            data['n_events'].append(d['n_events'])
 
             meta = filemeta(filename)
         
             axes = fig.add_axes([0.07, 0.1, 0.9, 0.18])
-            axes.plot(dts, data['bz'])
+            axes.plot(dts, data['bz'], 'k')
             axes.set_xlim([dto, dtf])
             axes.grid()
             name = meta["parameters"]['bz']['plot_name']
             units = meta["parameters"]['bz']['vis_unit']
-            axes.legend([name + ' [' + units + ']'])
             datetick('x', axes=axes, debug=False)
-            set_ylims('bz', axes=axes)
-            if np.all(times[-1][0:5] == event_list[0,0:5]):
-                ylims = axes.get_ylim()
-                axes.plot([dts[-1], dts[-1]], ylims, 'k-')
+            set_ylims(['bz', 'n_events'], axes=axes)
+            
+            for i in range(len(dts)):
+                axes.plot([dts[i], dts[i]], [0, data['n_events'][i]], 'b-')
+            axes.legend([name + ' [' + units + ']', '# Events'])
+
                 
             axes = fig.add_axes([0.07, 0.28, 0.9, 0.18])
-            axes.plot(dts, data['ux'])
+            axes.plot(dts, data['ux'], 'k')
             axes.grid()
             name = meta["parameters"]['ux']['plot_name']
             units = meta["parameters"]['ux']['vis_unit']
@@ -220,10 +253,7 @@ def process_var(var, opts):
             plt.savefig(filename_png, dpi=opts['dpi']) 
             
             if opts['showplot']:
-                # These often won't cause plot to show.
                 plt.show()
-                fig.canvas.draw()
-                fig.show()
             else:
                 plt.close()
 
@@ -234,6 +264,7 @@ def process_var(var, opts):
         # be stored in each variable's .pkl file.
         minmax['probe']['ux'][k-1] = d['ux']
         minmax['probe']['bz'][k-1] = d['bz']
+        minmax['probe']['n_events'][k-1] = d['n_events']
 
         minmax['min'][k-1] = info['min']
         minmax['max'][k-1] = info['max']
