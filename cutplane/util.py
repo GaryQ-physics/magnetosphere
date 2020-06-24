@@ -12,7 +12,7 @@ def time2datetime(t):
         if int(t[i]) != t[i]:
             raise ValueError("int(t[{0:d}] != t[{0:d}] = {1:f}".format(i, t[i]))\
             
-    if len(t) < 4:
+    if len(t) < 3:
         raise ValueError('Time list/tuple must have 3 or more elements')
     if len(t) == 3:
         return dt.datetime(int(t[0]), int(t[1]), int(t[2]))    
@@ -74,15 +74,15 @@ def dirlist(rootdir, **kwargs):
     return file_keep
 
 
-def filelist():
+def filelist(listtxt = 'ls-1.txt'):
 
     from urlretrieve import urlretrieve
 
     # Get list of run files
-    urlretrieve(conf['run_url'] + 'ls-1.txt', conf['run_path'] + 'ls-1.txt')
+    urlretrieve(conf['run_url'] + listtxt, conf['run_path'] + listtxt)
     
     # Read list of run files
-    ls = conf['run_path'] + 'ls-1.txt'
+    ls = conf['run_path'] + listtxt
     print('Reading ' + ls)
     with open(ls,'r') as f:
         files = f.readlines()
@@ -131,12 +131,12 @@ def filemeta(filename):
     
     import _CCMC as ccmc
 
+    if type(filename) != str:
+        filename = time2filename(filename)
+
     filename = os.path.split(filename)[1]
     
     filename = conf['run_path'] + filename
-
-    if type(filename) != str:
-        filename = time2filename(filename)
 
     # Look-up tables for units and labels. Must be extended for each
     # new simulation model.
