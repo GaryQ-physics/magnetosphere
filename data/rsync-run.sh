@@ -4,8 +4,8 @@
 #   ./rsync-run.sh USERNAME [test]
 #   where USERNAME is account name on mag.gmu.edu
 # Example:
-#   ./rsync weigel test
-#   ./rsync weigel
+#   ./rsync-run.sh weigel test
+#   ./rsync-run.sh weigel
 #
 # Alternative:
 # wget -m -nP --cut-dirs=2 http://mag.gmu.edu/git-data/sblake/
