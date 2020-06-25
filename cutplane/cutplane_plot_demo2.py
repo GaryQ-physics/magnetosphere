@@ -212,9 +212,11 @@ def process_var(var, opts):
             d = probe(time, (31.5, 0, 0), ['ux', 'bz'])
 
             #import pdb;pdb.set_trace()
-            if np.any(np.all(times[-1][0:5] == event_list[:, 0:5], axis=1)):
-                # At least on event occured at this time step.
-                d['n_events'] = event_list[k-1, -1]
+            # Index of event with matching yr, mo, day, hr
+            idx = np.all(times[-1][0:5] == event_list[:, 0:5], axis=1)
+            if np.any(idx):
+                # At least one event occured at this time step.
+                d['n_events'] = event_list[idx==True, -1]
             else:
                 d['n_events'] = 0;
 

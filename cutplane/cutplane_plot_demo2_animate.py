@@ -12,8 +12,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 
 # TODO: Generate list based on subdirectories (and exclude directory minmax.)
-#vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
-vars = ['p']
+vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
+#vars = ['p']
 delta = 0.5
 plot_type = 2
 pattern = 'type_{0:d}_delta_{1:.3f}'.format(plot_type, delta)
