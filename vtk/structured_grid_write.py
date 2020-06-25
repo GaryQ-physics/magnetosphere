@@ -8,9 +8,10 @@ from config import conf
 import _CCMC as ccmc
 from units_and_constants import phys
 import pos_sun as ps
-from cut_plane import ex_data
+#from cut_plane import ex_data
 import biot_savart as bs
 from biot_savart_demo1 import J_kunits
+from probe import probe, probe_vect
 
 rbody = 1.25 #???
 global_x_min = -224.
@@ -23,20 +24,16 @@ global_z_max = 128.
 
 # using global min max and dx=dy=dz=0.1  -->  1.6777216e+10 grid points (16 billion)
 
-# run parameters
-dx = .3
-dy = .3 # 0.2
-dz = .3
-dx_tail = 10.  # dx_tail not used if using bs.make_grid
+
 Test = False
 debug = False
 
 r_min = 3. # this is minimum distance for kameleon built in tracer to work
-            # and also one of #'s cited in CalcDeltaB (Lutz Rastätter, Gábor Tóth, Maria M. Kuznetsova, Antti A. Pulkkinen)
+           # and also one of nums cited in CalcDeltaB (Lutz Rastätter, Gábor Tóth, Maria M. Kuznetsova, Antti A. Pulkkinen)
 def J_kameleon(kam, interp, X):
     Jkunits = (np.nan)*np.empty(X.shape)
     for k in range(X.shape[0]):
-        if np.dot(X[k,:], X[k,:]) >= r_min**2:
+        if np.dot(X[k,:], X[k,:]) >= rbody**2:
             Jkunits[k, 0] = ex_data(kam, interp, 'jx', X[k,0], X[k,1], X[k,2])
             Jkunits[k, 1] = ex_data(kam, interp, 'jy', X[k,0], X[k,1], X[k,2])
             Jkunits[k, 2] = ex_data(kam, interp, 'jz', X[k,0], X[k,1], X[k,2])
@@ -46,7 +43,7 @@ def J_kameleon(kam, interp, X):
             Jkunits[k, 2] = 0.
     return Jkunits
 
-def Compute(Event, var, calcTotal=False, retTotal=False, mult=1):
+def Compute(Event, var, calcTotal=False, retTotal=False, dx = .3, dy = .3, dz = .3):
     """
     Given an event time (and location), outputs an array for a grid of GSM coordinates
         covering the magnetosphere, and a corresponding array of the physical quantity
@@ -73,35 +70,23 @@ def Compute(Event, var, calcTotal=False, retTotal=False, mult=1):
     # datafile
     filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-%03d' % tuple(time) + '.out.cdf'
 
+    '''
     # open kameleon ---------------
     kameleon = ccmc.Kameleon()
     kameleon.open(filename)
     print(filename, "Opened " + filename)
     interpolator = kameleon.createNewInterpolator()
     #-----------------------------
-
     '''
-    X = np.concatenate((np.arange(-200,-20.05,dx_tail), np.arange(-20.,15.,dx) ))
-    Nx = X.size
-    print('Nx = ',Nx)
-    Y = np.arange(-10., 10., dy)
-    Ny = Y.size
-    Z = np.arange(-10., 10., dz)
-    Nz = Z.size
 
-    B2, B3, B1 = np.meshgrid(Y, Z, X)
-    #B1, B2, B3 = np.meshgrid(X, Y, Z)
+    #X = np.concatenate((np.arange(-200,-20.05,dx_tail), np.arange(-20.,15.,dx) ))
 
-    B1 = B1.flatten(order='C')
-    B2 = B2.flatten(order='C')
-    B3 = B3.flatten(order='C')
-    Bgrid = np.column_stack((B1, B2, B3))
-    '''
+
     #tail = -200.
     #tail = -100.
     tail = -75.
 
-    ret = bs.make_grid([tail, 15.], [-15., 15.], [-15., 15.], dx/mult, dy/mult, dz/mult)
+    ret = bs.make_grid([tail, 15.], [-15., 15.], [-15., 15.], dx, dy, dz)
     Xgrid = ret[0]
     
     print('X0=',X0)
@@ -121,11 +106,13 @@ def Compute(Event, var, calcTotal=False, retTotal=False, mult=1):
         if Test:
             Jin = J_kunits(Xgrid)*(phys['muA']/phys['m']**2)
         else:
+            '''
             kameleon.loadVariable('jx')
             kameleon.loadVariable('jy')
             kameleon.loadVariable('jz')
             Jin = J_kameleon(kameleon, interpolator, Xgrid)*(phys['muA']/phys['m']**2)
-
+            '''
+            Jin = probe_vect(time, Xgrid, 'j')*(phys['muA']/phys['m']**2)
         if debug:
             print('unit_v=',unit_v)
             print('Jin=',Jin)
@@ -139,20 +126,25 @@ def Compute(Event, var, calcTotal=False, retTotal=False, mult=1):
         if debug:
             print('Aa=',Aa)
     else:
+        '''
         kameleon.loadVariable(var)
         Aa = (np.nan)*np.empty((Xgrid.shape[0], ))
         for l in range(Aa.size):
             Aa[l] = ex_data(kameleon, interpolator, var, Xgrid[l, 0], Xgrid[l, 1], Xgrid[l, 2])
+        '''
+        Aa = probe(time, Xgrid, var=var, debug=debug)
 
+    '''
     # close kameleon ---------------------
     kameleon.close()
     print("Closed " + filename)
     #-------------------------------
+    '''
 
     if calcTotal:
         total = np.sum(Aa)
         print('Test=',Test)
-        print('dx,dy,dz = ', dx/mult, dy/mult, dz/mult)
+        print('dx,dy,dz = ', dx, dy, dz)
         print('total = ', total)
         print(Xgrid.shape)
         print(Aa.shape)
