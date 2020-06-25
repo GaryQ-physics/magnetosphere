@@ -1,3 +1,9 @@
+"""
+This script reads the calculated values for the different contributions to the magnetic field that are in mag_grid____.out files
+
+"""
+
+
 import os
 import sys
 import numpy as np
@@ -32,7 +38,3 @@ def getdata(filename, MLON, MLAT, debug = True):
     i = 1
     print(headers[2+i], headers[5+i], headers[8+i], headers[11+i], headers[14+i], 'sum should equal full dB')
     print(data[k, 2+i], data[k, 5+i], data[k, 8+i], data[k, 11+i], data[k, 14+i], data[k, 5+i] + data[k, 8+i] + data[k, 11+i] + data[k, 14+i])
-
-
-getdata('mag_grid_e20031120-070000.out', 176.00, 57.50)
-getdata((2003,11,20,7,0,0), 176.00, 57.50)
