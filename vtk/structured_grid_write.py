@@ -1,3 +1,4 @@
+# coding=utf-8
 import sys
 import os
 import numpy as np
@@ -11,7 +12,7 @@ import pos_sun as ps
 #from cut_plane import ex_data
 import biot_savart as bs
 from biot_savart_demo1 import J_kunits
-from probe import probe, probe_vect
+from probe import probe
 
 rbody = 1.25 #???
 global_x_min = -224.
@@ -43,7 +44,7 @@ def J_kameleon(kam, interp, X):
             Jkunits[k, 2] = 0.
     return Jkunits
 
-def Compute(Event, var, calcTotal=False, retTotal=False, dx = .3, dy = .3, dz = .3):
+def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
     """
     Given an event time (and location), outputs an array for a grid of GSM coordinates
         covering the magnetosphere, and a corresponding array of the physical quantity
@@ -84,7 +85,7 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx = .3, dy = .3, dz = 
 
     #tail = -200.
     #tail = -100.
-    tail = -75.
+    tail = -150.
 
     ret = bs.make_grid([tail, 15.], [-15., 15.], [-15., 15.], dx, dy, dz)
     Xgrid = ret[0]
@@ -112,7 +113,7 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx = .3, dy = .3, dz = 
             kameleon.loadVariable('jz')
             Jin = J_kameleon(kameleon, interpolator, Xgrid)*(phys['muA']/phys['m']**2)
             '''
-            Jin = probe_vect(time, Xgrid, 'j')*(phys['muA']/phys['m']**2)
+            Jin = probe(time, Xgrid, ['jx','jy','jz'])*(phys['muA']/phys['m']**2)
         if debug:
             print('unit_v=',unit_v)
             print('Jin=',Jin)
@@ -152,12 +153,13 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx = .3, dy = .3, dz = 
             return total
     return [Aa, Xgrid, ret[1], ret[2], ret[3]]
 
-def writevtk(Event, var, calcTotal=False, binary=False):
-    Aa, Bb, Nx, Ny, Nz = Compute(Event, var, calcTotal=calcTotal)
+def writevtk(Event, var, calcTotal=False, binary=False, dx=.3, dy=.3, dz=.3, fname=None):
+    Aa, Bb, Nx, Ny, Nz = Compute(Event, var, calcTotal=calcTotal, dx=dx, dy=dy, dz=dz)
     time = Event[0:7]
     tag = '_%04d:%02d:%02dT%02d:%02d:%02d.%03d' % tuple(time)
     subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
-    fname = conf["run_path_derived"] + subdir + 'structured_grid_' + var + tag + '.vtk'
+    if fname == None:
+        fname = conf["run_path_derived"] + subdir + 'structured_grid_' + var + tag + '.vtk'
     if not os.path.exists(conf["run_path_derived"] + subdir):
         os.mkdir(conf["run_path_derived"] + subdir)
 
