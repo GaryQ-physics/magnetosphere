@@ -8,9 +8,10 @@ import numpy as np
 from util import time2filename, filemeta
 import _CCMC as ccmc
 
-def probe(time, P, var=None, debug=False):
+def probe(time, P, var=None, return_dict=False, debug=False):
+
     P = np.array(P)
-    if P.shape == (3,):
+    if P.shape == (3, ):
         P = np.array([P])
 
     if type(time) == str:
@@ -20,13 +21,10 @@ def probe(time, P, var=None, debug=False):
 
     if not os.path.exists(filename):
         raise ValueError('Not found: ' + filename)
-        return
 
     meta = filemeta(filename)
     kameleon = ccmc.Kameleon()
-
     kameleon.open(filename)
-
     interpolator = kameleon.createNewInterpolator()
 
     ret = {}
