@@ -185,3 +185,9 @@ def MAGtoMLT(pos, time):
         delta = delta + 2.*np.pi
     MLT = 12. + delta*24./(2.*np.pi)
     return MLT
+
+def runtest():
+    time = [2003, 11, 20, 7, 0, 0]
+    v_GEO = [1.,64.2008,-149.4937]
+    v_GSM = ps.GEOtoGSM(v_GEO, time, 'sph', 'car')
+    v_MAG = ps.GSMtoMAG(v_GSM, time, 'car','sph')
