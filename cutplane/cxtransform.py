@@ -10,38 +10,6 @@ import spacepy.coordinates as sc
 from spacepy.time import Ticktock
 
 
-
-
-def MAGtoGSM(v_MAG, time, ctype_in, ctype_out):
-    
-    in_type = type(v_MAG)    
-    v_MAG = np.array(v_MAG)
-    cvals = sc.Coords(v_MAG, 'MAG', ctype_in)
-    cvals.ticks = Ticktock(tstr(time), 'ISO')
-    newcoord = cvals.convert('GSM', ctype_out)
-    v_GSM = newcoord.data[0,:]
-    
-    if in_type == np.ndarray:
-        return v_GSM
-    else:
-        return v_GSM.tolist()
-
-
-def GSMtoMAG(v_GSM, time, ctype_in, ctype_out):
-    """Convert from GSM to MAG coordinates using SpacePy library"""
-
-    in_type = type(v_GSM)
-    v_GSM = np.array(v_GSM)
-    cvals = sc.Coords(v_GSM, 'GSM', ctype_in)
-    cvals.ticks = Ticktock(tstr(time), 'ISO')
-    newcoord = cvals.convert('MAG', ctype_out)
-    v_MAG = newcoord.data[0,:]
-    
-    if in_type == np.ndarray:
-        return v_MAG
-    else:
-        return v_MAG.tolist()
-
 def tstr(time):
     """Create ISO 8601 date/time string given array of integers
     
@@ -57,7 +25,7 @@ def tstr(time):
     if len(time.shape) > 1:
         ret = []
         for i in range(time.shape[0]):
-            ret.append(tstr(time[i]))
+            ret.append(tstr(time[i,:]))
         return ret
     
     time = list(time)
@@ -149,11 +117,11 @@ def transform(v, time, csys_in, csys_out, ctype_in=None, ctype_out=None):
     t = np.array(time)
 
     if len(t.shape) > 1 and len(v.shape) > 1:
-        if t.shape[1] != v.shape[1]:
-            raise ValueError("")
-    if len(t.shape) > 1:
+        if t.shape[0] != v.shape[0]:
+            raise ValueError("t and v cannot be different lengths")
+    if len(v.shape) == 1 and len(t.shape) > 1:
         v = numpy.matlib.repmat(v, t.shape[0], 1)
-    if len(t.shape) == 1:
+    if len(t.shape) == 1 and len(v.shape) > 1:
         t = numpy.matlib.repmat(t, v.shape[0], 1)
 
     cvals = sc.Coords(v, csys_in, ctype_in)
@@ -161,38 +129,30 @@ def transform(v, time, csys_in, csys_out, ctype_in=None, ctype_out=None):
     cvals.ticks = Ticktock(tstr(t), 'ISO')
     newcoord = cvals.convert(csys_out, ctype_out)
 
-    if in_type == np.ndarray:
-        return newcoord.data
-    else:
-        return newcoord.data.tolist()
+    ret = newcoord.data
+    if len(t.shape) == 1 and len(v.shape) == 1:
+        ret = newcoord.data[0, :]
 
-    
+    if in_type == np.ndarray:
+        return ret
+    else:
+        return ret.tolist()
+
+
+def MAGtoGSM(v_MAG, time, ctype_in, ctype_out):
+    return transform(v_MAG, time, 'MAG', 'GSM', ctype_in=ctype_in, ctype_out=ctype_out)
+
+def GSMtoMAG(v_GSM, time, ctype_in, ctype_out):
+    return transform(v_GSM, time, 'GSM', 'MAG', ctype_in=ctype_in, ctype_out=ctype_out)
+
 def GEOtoGSM(v_GEO, time, ctype_in, ctype_out):
-    """Transform from GEO to GSM coordinates using SpacePy library
-    
-    """
+    return transform(v_GEO, time, 'GEO', 'GSM', ctype_in=ctype_in, ctype_out=ctype_out)
 
-    # return transform(v, time, 'GEO', 'GSM', ctype_in, ctype_out)
-    
-    in_type = type(v_GEO)
+def GEOtoMAG(v_GEO, time, ctype_in, ctype_out):
+    return transform(v_GEO, time, 'GEO', 'MAG', ctype_in=ctype_in, ctype_out=ctype_out)
 
-    v_GEO = np.array(v_GEO)
-    cvals = sc.Coords(v_GEO, 'GEO', ctype_in)
-    
-    if v_GEO.shape == (3, ):
-        cvals.ticks = Ticktock(tstr(time), 'ISO')
-        newcoord = cvals.convert('GSM', ctype_out)
-        v_GSM = newcoord.data[0, :]        
-    else:
-        # Create as many ticks as there are points in v_GEO
-        cvals.ticks = Ticktock([tstr(time)]*v_GEO.shape[0], 'ISO')
-        newcoord = cvals.convert('GSM', ctype_out)
-        v_GSM = newcoord.data
-
-    if in_type == np.ndarray:
-        return v_GSM
-    else:
-        return v_GSM.tolist()
+def MAGtoGEO(v_MAG, time, ctype_in, ctype_out):
+    return transform(v_MAG, time, 'MAG', 'GEO', ctype_in=ctype_in, ctype_out=ctype_out)
 
 
 def StoC(r, theta, phi):
@@ -242,7 +202,7 @@ def UTtoHMS(UT, **kwargs):
     return [hours, minutes, seconds]
 
 
-def MAGtoMLT(pos, time):
+def MAGtoMLT(pos, time, onlyMLON = False, debug=False):
     """Compute magnetic local time given a UT and MAG position or longitude
 
     Uses equation 93 in https://arxiv.org/abs/1611.10321
@@ -250,7 +210,7 @@ def MAGtoMLT(pos, time):
     Usage: 
     ------
     import cxtransform as cx
-    mlt = cx.MAGtoMLT(MAGlong, time)
+    mlt = cx.MAGtoMLT(MAGlong, time, onlyMLON = True)
     mlt = cx.MAGtoMLT([MAGx, MAGy, MAGz], time)
 
     Returns:
@@ -264,31 +224,70 @@ def MAGtoMLT(pos, time):
     print(mlt)
 
 """
+    
+    pos = np.array(pos)
+    time = np.array(time)
+    if not isinstance(pos, float):
+        pos = np.array(pos)
 
+    if onlyMLON:
+        phi = pos*np.pi/180.
+    else:
+        if pos.shape == (3,):
+            phi = np.arctan2(pos[1], pos[0])
+        else:
+            phi = np.arctan2(pos[:, 1], pos[:, 0])
+
+    ''' should be equivalent to:
     if isinstance(pos, float):
-        phi = pos*np.pi/180
+        phi = pos*np.pi/180.  # not needed, this is overwritten
         pos = [pos]
     else:
-        phi = np.arctan2(pos[1], pos[0])
+        phi = np.arctan2(pos[1], pos[0]) # not needed, this is overwritten
 
     pos = np.array(pos)
     time = np.array(time)
+
     if isinstance(pos[0], np.ndarray):
         phi = np.arctan2(pos[:, 1], pos[:, 0])
     else:
-        phi = pos*np.pi/180
+        phi = pos*np.pi/180.
+    ##################
+    # potential conflict when pos.shape == (3,):
+    #    is it three MAGlongitude values or one MAGcartesian point 
+    ##################
+    '''
+
+
+    if debug:
+        print('phi =' + str(phi))
 
     subsol_pt = transform(np.array([1, 0, 0]), time, 'GSM', 'MAG')
+
     #import pdb;pdb.set_trace()
-    phi_cds = np.arctan2(subsol_pt[:, 1], subsol_pt[:, 0])
-        
-    delta = phi - phi_cds
-    
+    if len(subsol_pt.shape) == 1:
+        phi_cds = np.arctan2(subsol_pt[1], subsol_pt[0])
+    else:
+        phi_cds = np.arctan2(subsol_pt[:, 1], subsol_pt[:, 0])
+
+    if debug:
+        print('phi_cds =' + str(phi_cds))
+
+    delta = phi - phi_cds # note np.array([a1, a2, ...])+b == np.array([a1+b, a2+b, ...])
+
+    if debug:
+        print('delta =' + str(delta))
+
+    if isinstance(delta,float):
+        delta = np.array([delta])
+
     idx = np.where(delta > np.pi)
     delta[idx] = delta[idx] - 2.*np.pi
-
     idx = np.where(delta <= -np.pi)
     delta[idx] = delta[idx] + 2.*np.pi
+
+    if delta.size == 1:
+        delta = delta[0]
 
     MLT = 12. + delta*24./(2.*np.pi)
     return MLT
