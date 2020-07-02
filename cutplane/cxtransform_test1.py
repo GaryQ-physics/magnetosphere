@@ -1,5 +1,3 @@
-# tester_for_ps
-
 import os
 import sys
 import numpy as np

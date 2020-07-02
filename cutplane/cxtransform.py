@@ -25,7 +25,7 @@ def tstr(time):
     if len(time.shape) > 1:
         ret = []
         for i in range(time.shape[0]):
-            ret.append(tstr(time[i]))   #????????????????
+            ret.append(tstr(time[i,:]))
         return ret
     
     time = list(time)
@@ -117,7 +117,7 @@ def transform(v, time, csys_in, csys_out, ctype_in=None, ctype_out=None):
     t = np.array(time)
 
     if len(t.shape) > 1 and len(v.shape) > 1:
-        if t.shape[1] != v.shape[1]:
+        if t.shape[0] != v.shape[0]:
             raise ValueError("t and v cannot be different lengths")
     if len(v.shape) == 1 and len(t.shape) > 1:
         v = numpy.matlib.repmat(v, t.shape[0], 1)
