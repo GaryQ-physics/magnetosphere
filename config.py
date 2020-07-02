@@ -8,7 +8,7 @@ if os.path.exists('/Users/weigel/'):
     base = '/Users/weigel/git/magnetosphere/'
     kameleon = '/Users/weigel/kameleon/lib/python2.7/site-packages/'
 elif os.path.exists('/home/weigel/'):
-    base = '/home/weigel/git/students/GaryQ-physics/magnetosphere/'
+    base = '/home/weigel/git/magnetosphere/'
     kameleon = '/home/weigel/kameleon/lib/python2.7/site-packages/'
 else:
     base = '/home/gary/magnetosphere/'

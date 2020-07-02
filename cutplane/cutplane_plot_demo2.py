@@ -49,7 +49,7 @@ plot_type     = 2
 # Testing options
 first_only    = False  # Do only low-res first processing
 second_only   = False  # Execute only high-res second processing
-test_serial   = False  # Process two files in serial
+test_serial   = True   # Process two files in serial
 test_parallel = False  # Process two files in parallel
 
 vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
@@ -78,7 +78,7 @@ event_list = np.hstack((event_list, np.reshape(ne, (ne.size, 1))))
 if test_serial:
     para = False
     vars = ['p']
-    opts["nf"] = 10
+    opts["nf"] = 3
     opts["showplot"] = True
 
 if test_parallel:

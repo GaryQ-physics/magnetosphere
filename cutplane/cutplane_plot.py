@@ -6,6 +6,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 
 from cutplane import data2d, unitvector, fieldlines
+import util
 
 def set_colorbar(ax, pcm, zticks, Nbt, title=None, logz=False):
     import matplotlib.pyplot as plt        
@@ -80,13 +81,12 @@ def plot(time, parameter, arg3,
     import matplotlib
     if not showplot:
         matplotlib.use("Agg", warn=False)
-    # This import statement must follow the .use call above.
-    
-
     if axes is None:
+        # This import statement must follow the .use call above.
         import matplotlib.pyplot as plt
 
     # Set monospace font for changing text
+    # TODO: Use with ... to set these.
     matplotlib.rc('font', family='serif')
     matplotlib.rcParams['mathtext.fontset'] = 'dejavuserif'
     
@@ -129,13 +129,16 @@ def plot(time, parameter, arg3,
 
     U3 = np.cross(U1, U2)
  
-    filename = '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-%03d' % tuple(time)
+    filename = util.time2filename(time)
 
     if pngfile is None:
-        filename_out = conf["run_path_derived"] + filename + '.png'
+        outdir = conf['run_path_derived'] + "cutplanes/"
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+        filename_out = filename.replace(conf['run_path'], outdir) + '.png'
     else:
         filename_out = pngfile
-        
+
     x_1d = np.arange(xlims[0], xlims[1] + dx, dx)
     y_1d = np.arange(ylims[0], ylims[1] + dy, dy)
     X, Y = np.meshgrid(x_1d, y_1d) # grid of points on the cut plane
@@ -144,7 +147,19 @@ def plot(time, parameter, arg3,
         print("Interpolating {0:s} onto {1:d}x{2:d} grid" \
               .format(parameter,len(x_1d),len(y_1d)))
 
-    Z = data2d(time, parameter, X, Y, [U1, U2, U3], debug=False)
+    if type(arg3) == str:
+        ext = "-" + parameter + '_plane_' + arg3 + '-dx_' + str(dx) + '-dy_' + str(dy) + '.npy'
+        cachedir = conf['run_path_derived'] + "cutplanes/cache/" + parameter + "/"
+        if not os.path.exists(cachedir):
+            os.makedirs(cachedir)
+        npfile = filename.replace(conf['run_path'], cachedir) + ext
+        if os.path.exists(npfile):
+            print("Reading " + npfile)
+            Z = np.load(npfile)
+        else:
+            Z = data2d(time, parameter, X, Y, [U1, U2, U3], debug=False)
+            print("Saving " + npfile)
+            np.save(npfile, Z)
 
     if field_lines is not None:
         linesU = []
@@ -157,41 +172,10 @@ def plot(time, parameter, arg3,
                 lineU[k, 2] = np.dot(line[k, :], U3)
             linesU.append(lineU)
 
-    # Method used to obtain units for each parameter in dict below
-    # parameter_unit = kameleon.getVisUnit(parameter)
+    meta = util.filemeta(filename)
 
-    units = {
-                'bx': 'nT',
-                'by': 'nT',
-                'bz': 'nT',
-                'ux': 'km/s',
-                'uy': 'km/s',
-                'uz': 'km/s',
-                'jx': '$\\mu$A/m$^2$',
-                'jy': '$\\mu$A/m$^2$',
-                'jz': '$\\mu$A/m$^2$',
-                'rho': 'amu/cm$^3$',
-                'p': 'nPa',
-                'e': 'mV/m'
-             }
-
-    labels = {
-                'bx': 'B_x',
-                'by': 'B_y',
-                'bz': 'B_z',
-                'ux': 'U_x',
-                'uy': 'U_y',
-                'uz': 'U_z',
-                'jx': 'J_x',
-                'jy': 'J_y',
-                'jz': 'J_z',
-                'rho': '\\rho',
-                'p': 'p',
-                'e': 'e'
-             }
-             
-    parameter_unit = units[parameter] 
-    parameter_label = "$" + labels[parameter] + "$"
+    parameter_unit = meta["parameters"][parameter]['plot_unit']
+    parameter_label = meta["parameters"][parameter]['plot_name']
     
     if axes is None:
         fig = plt.figure(figsize=(7, 6), dpi=dpi, tight_layout=False)
@@ -199,7 +183,8 @@ def plot(time, parameter, arg3,
         axes_given = False
     else:
         axes_given = True
-        # TODO: Warn if png=True
+        if png:
+            print("png=True ignored because axes was given as keyword argument.")
         png = False
         showplot = False
 
@@ -212,20 +197,13 @@ def plot(time, parameter, arg3,
         zlims = None
         print('Ignoring zlims b/c zticks given.')
 
-    if zlims is not None:
-        boundaries = niceticks(zlims[0], zlims[1], 10)
-    elif zticks is not None:
-        boundaries = zticks
-    else:
-        boundaries = niceticks(np.min(Z.flatten()), np.max(Z.flatten()), 10)
-    
-    #import pdb;pdb.set_trace()
-    
-    if zticks is None:
-        zticks = boundaries
+    if zticks is None and zlims is None:
+        zticks = niceticks(np.min(Z.flatten()), np.max(Z.flatten()), 10)
+    elif zticks is None and zlims is not None: 
+        zticks = niceticks(zlims[0], zlims[1], 10)              
 
-    Nbt = 4 # Approximate number of colors between ticks
-    cmap = matplotlib.pyplot.get_cmap('viridis', Nbt*(len(boundaries)-1))
+    Nbt = 4 # Approximate number of colors between ticks for linear scale
+    cmap = matplotlib.pyplot.get_cmap('viridis', Nbt*(len(zticks)-1))
 
     axes.set(xlabel=xlabel)
     axes.set(ylabel=ylabel)
@@ -233,14 +211,12 @@ def plot(time, parameter, arg3,
     axes.set_xlim(xlims[0], xlims[1])
     axes.set_ylim(ylims[0], ylims[1])
 
-    #import pdb;pdb.set_trace()
     if logz:
         import matplotlib.colors as colors
-        norm = colors.SymLogNorm(linthresh=0.01, vmin=zticks[0], vmax=zticks[-1])
-        pcm = axes.pcolormesh(X, Y, Z,  norm=norm, cmap=cmap, vmin=boundaries[0], vmax=boundaries[-1])
+        norm = colors.SymLogNorm(linthresh=0.001, vmin=zticks[0], vmax=zticks[-1])
+        pcm = axes.pcolormesh(X, Y, Z, norm=norm, cmap=cmap, vmin=zticks[0], vmax=zticks[-1])
     else:
-        pcm = axes.pcolormesh(X, Y, Z, cmap=cmap, vmin=boundaries[0], vmax=boundaries[-1])
-        
+        pcm = axes.pcolormesh(X, Y, Z, cmap=cmap, vmin=zticks[0], vmax=zticks[-1])
 
     set_colorbar(axes, pcm, zticks, Nbt,
                  title=parameter_label + ' [' + parameter_unit + ']',
@@ -250,15 +226,12 @@ def plot(time, parameter, arg3,
         for lineU in linesU:
             axes.plot(lineU[:, 0], lineU[:, 1], 'red', lw = 1)
 
-    if axes_given and png:
-        print("png=True ignored because axes was given as keyword argument.")
-
     if axes_given == False:
         if png:
             if debug:
                 print('Writing ' + filename_out)
             plt.savefig(filename_out, dpi=dpi) # bbox_inches='tight')
-            if debug:
+            if debug or pngfile is None:
                 print('Wrote ' + filename_out)
     
         if showplot:

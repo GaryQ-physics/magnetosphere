@@ -13,7 +13,7 @@ mag = cx.GSMtoMAG([-1, 0, 0.7], time, 'car', 'sph')
 #print(Mdipole)
 
 
-cp.plot(time, 'p', 'xz', dx=0.5, dy=0.5, xlims=[-30, 30], ylims=[-20, 20])
+cp.plot(time, 'p', 'xz', logz=True, dx=0.5, dy=0.5, xlims=[-30, 30], ylims=[-20, 20])
 #cp.plot(time, 'p', mag, field_lines=field_lines, dx=0.5, dy=0.5, xlims=[-30, 30], ylims=[-20, 20])
 #cp.plot(time, 'p', 'xz', field_lines=mag, dx=0.5, dy=0.5, xlims=[-30, 30], ylims=[-20, 20])
 #cp.plot(time, 'p', [[1, 0, 0], [0, 0, 1]], field_lines=mag, dx=0.5, dy=0.5, xlims=[-30, 30], ylims=[-20, 20])

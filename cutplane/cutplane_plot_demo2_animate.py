@@ -14,7 +14,7 @@ from config import conf
 # TODO: Generate list based on subdirectories (and exclude directory minmax.)
 vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
 #vars = ['p']
-delta = 0.5
+delta = 0.1
 plot_type = 2
 pattern = 'type_{0:d}_delta_{1:.3f}'.format(plot_type, delta)
 #pattern = '{0:.3f}'.format(delta)
