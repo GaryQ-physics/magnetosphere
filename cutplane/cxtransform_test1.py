@@ -63,11 +63,11 @@ for d in data:
     if syst == 'car':
         pos = d[6:9]
         v = cx.MAGtoGSM(pos, time, 'car', 'car')
-        MLT = cx.MAGtoMLT(pos, time)
+        MLT = cx.MAGtoMLT(pos, time, csys='car')
     elif syst == 'sph':
         r, MLON, MLAT = d[6:9]
         v = cx.MAGtoGSM([r, MLAT, MLON], time, 'sph', 'car')
-        MLT = cx.MAGtoMLT(MLON, time, onlyMLON = True)
+        MLT = cx.MAGtoMLT(MLON, time)
     else:
         print('INVALID COORDINATE TYPE. Use "car" or "sph"')
     UT = time[3] + time[4]/60.+ time[5]/3600.

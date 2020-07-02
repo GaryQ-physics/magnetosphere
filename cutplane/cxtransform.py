@@ -202,7 +202,7 @@ def UTtoHMS(UT, **kwargs):
     return [hours, minutes, seconds]
 
 
-def MAGtoMLT(pos, time, onlyMLON = False, debug=False):
+def MAGtoMLT(pos, time, csys='sph', debug=False):
     """Compute magnetic local time given a UT and MAG position or longitude
 
     Uses equation 93 in https://arxiv.org/abs/1611.10321
@@ -210,54 +210,46 @@ def MAGtoMLT(pos, time, onlyMLON = False, debug=False):
     Usage: 
     ------
     import cxtransform as cx
-    mlt = cx.MAGtoMLT(MAGlong, time, onlyMLON = True)
-    mlt = cx.MAGtoMLT([MAGx, MAGy, MAGz], time)
+    mlt = cx.MAGtoMLT(MAGlong, time)
+    mlt = cx.MAGtoMLT([MAGlong1, Mlong2, ...], time)
+
+    mlt = cx.MAGtoMLT([MAGx, MAGy, MAGz], time, csys='car')
+    mlt = cx.MAGtoMLT([[MAGx1, MAGy1, MAGz1],...], time, csys='car')
 
     Returns:
     --------
-    mlt: float
+    mlt: float or array-like
 
-    Example:
+    Examples:
     --------
     import cxtransform as cx
-    mlt = cx.MAGtoMLT(0., [2000, 1, 1, 0, 0, 0])
-    print(mlt)
 
+    mlt = cx.MAGtoMLT(0., [2000, 1, 1, 0, 0, 0])
+    print(mlt) # 18.869936573301775
+
+    mlt = cx.MAGtoMLT([0., 0.], [2000, 1, 1, 0, 0, 0])
+    print(mlt) # [18.86993657 18.86993657]
+
+    mlt = cx.MAGtoMLT([-1., 0., 0.], [2000, 1, 1, 0, 0, 0], csys='car')
+    print(mlt) # 6.869936573301775
+
+    mlt = cx.MAGtoMLT([[-1., 0., 0.],[-1., 0., 0.]], [2000, 1, 1, 0, 0, 0], csys='car')
+    print(mlt) # [6.86993657 6.86993657]
 """
     
+    assert(csys == 'car' or csys == 'sph')
     pos = np.array(pos)
     time = np.array(time)
     if not isinstance(pos, float):
         pos = np.array(pos)
 
-    if onlyMLON:
+    if csys == 'sph':
         phi = pos*np.pi/180.
     else:
-        if pos.shape == (3,):
+        if pos.shape == (3, ):
             phi = np.arctan2(pos[1], pos[0])
         else:
             phi = np.arctan2(pos[:, 1], pos[:, 0])
-
-    ''' should be equivalent to:
-    if isinstance(pos, float):
-        phi = pos*np.pi/180.  # not needed, this is overwritten
-        pos = [pos]
-    else:
-        phi = np.arctan2(pos[1], pos[0]) # not needed, this is overwritten
-
-    pos = np.array(pos)
-    time = np.array(time)
-
-    if isinstance(pos[0], np.ndarray):
-        phi = np.arctan2(pos[:, 1], pos[:, 0])
-    else:
-        phi = pos*np.pi/180.
-    ##################
-    # potential conflict when pos.shape == (3,):
-    #    is it three MAGlongitude values or one MAGcartesian point 
-    ##################
-    '''
-
 
     if debug:
         print('phi =' + str(phi))
