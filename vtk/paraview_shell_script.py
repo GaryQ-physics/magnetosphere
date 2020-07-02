@@ -1,51 +1,51 @@
 # paraview_shell_script
 
-###copy to shell
-'''
-execfile('paraview_shell_script.py')
-'''
-###
-
-#fieldFile_path = m_path + 'magnetosphere/vtk/kameleon_field_paraview.vtk'
+"""
+Usage:
+    Start Paraview from this directroy and in Paraview Python shell, enter
+        execfile('paraview_shell_script.py')
+    or on command line enter
+        ./paraview --script=paraview_shell_script.py
+"""
 
 import sys
 import os
 import numpy as np
-#print os.path.dirname(os.path.abspath(__file__)) + '/../'
-#sys.path.append( os.path.dirname(os.path.abspath(_file_)) + '/../' )
+
 sys.path.append( './../' )  # for some reason the other way wont work in paraview
 from config import conf
-#import pos_sun as ps
-#import paraview.simple as pvs
-from paraview.simple import *  #needed for paraview 5.8
 
+from paraview.simple import *  # needed for paraview 5.8+
 
 Event = [2003, 11, 20, 7, 0, 0, 176.00, 57.50]
 time = Event[0:6]
 tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
 subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
 
-Nlong=5
+Nlong = 5
 Nb = 6
-N=Nb+1+Nlong
-var='jy'
+N = Nb+1+Nlong
+var = 'dB'
 
-cut_plane_name = 'cut_plane_info_%.2f_%.2f' %(Event[7], Event[6]) + tag + '.txt'
+cut_plane_name = 'cut_plane_info_%.2f_%.2f' % (Event[7], Event[6]) + tag + '.txt'
 grid_name = 'structured_grid_' + var + tag + '.000' + '.vtk'
-earth_name = 'earth' + tag + '.vtk'
 
+#------------------------------------------------------------------------------
+# Show Earth
+filePNG = conf["data_path"] + "topography/world.topo.2004{0:02d}.3x5400x2700.png".format(Event[1])
+fileVTK = conf["run_path_derived"] + subdir + 'earth' + tag + '.vtk'
 
-#-----------------
-#file = conf["data_path"] + "topography/world.topo.200401.3x5400x2700.png-ParaView.png"
-file = conf["data_path"] + "topography/world.topo.2004{0:02d}.3x5400x2700.png".format(Event[1])
+# TODO: Check that files exist; if not call program that creates them
 
 # get active view
 renderView1 = GetActiveViewOrCreate('RenderView')
 
 # create a new 'Legacy VTK Reader'
-rotated_spherevtk = LegacyVTKReader(FileNames=[conf["run_path_derived"] + subdir + earth_name])
+rotated_spherevtk = LegacyVTKReader(FileNames=[fileVTK])
+
 # show data in view
 rotated_spherevtkDisplay = Show(rotated_spherevtk, renderView1)
+
 # trace defaults for the display properties.
 rotated_spherevtkDisplay.Representation = 'Surface'
 rotated_spherevtkDisplay.ColorArrayName = [None, '']
@@ -60,198 +60,201 @@ rotated_spherevtkDisplay.PolarAxes = 'PolarAxesRepresentation'
 rotated_spherevtkDisplay.ScalarOpacityUnitDistance = 0.15493986305312726
 
 texProxy = servermanager.CreateProxy("textures", "ImageTexture")
-texProxy.GetProperty("FileName").SetElement(0, file)
+texProxy.GetProperty("FileName").SetElement(0, filePNG)
 texProxy.UpdateVTKObjects()
 rotated_spherevtkDisplay.Texture = texProxy
 
 Render()
-#--------------
+#------------------------------------------------------------------------------
 
+#------------------------------------------------------------------------------
+# Plot cut planes
+fileVTK = conf["run_path_derived"] + subdir + grid_name
 
-f = open(conf["run_path_derived"] + subdir + cut_plane_name,'r')
+# Read cut plane unit vectors
+f = open(conf["run_path_derived"] + subdir + cut_plane_name, 'r')
 
 # get string of the 1st line of data (Mdipole components)
 Mdipole_string = f.readline()
 # get list of components from string  
 Mdipole = [float(i) for i in Mdipole_string.split()]
 # make array
-Mdipole=np.array(Mdipole)
+Mdipole = np.array(Mdipole)
 
-#next line is U1, ect
+# next line is U1, ect
 U1_string = f.readline()
 U1 = [float(i) for i in U1_string.split()]
-U1=np.array(U1)
+U1 = np.array(U1)
 U2_string = f.readline()
 U2 = [float(i) for i in U2_string.split()]
-U2=np.array(U2)
+U2 = np.array(U2)
 U3_string = f.readline()
 U3 = [float(i) for i in U3_string.split()]
-U3=np.array(U3)
+U3 = np.array(U3)
 
-# create a new 'Legacy VTK Reader'
-structured_gridvtk = LegacyVTKReader(FileNames=[conf["run_path_derived"] + subdir + grid_name])
-
-# get active view
-renderView1 = GetActiveViewOrCreate('RenderView')
-# uncomment following to set a specific view size
-# renderView1.ViewSize = [932, 802]
-
-# show data in view
-structured_gridvtkDisplay = Show(structured_gridvtk, renderView1)
-# trace defaults for the display properties.
-structured_gridvtkDisplay.Representation = 'Outline'
-structured_gridvtkDisplay.ColorArrayName = ['POINTS', '']
-structured_gridvtkDisplay.OSPRayScaleArray = var
-structured_gridvtkDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
-structured_gridvtkDisplay.SelectOrientationVectors = 'None'
-structured_gridvtkDisplay.ScaleFactor = 21.0
-structured_gridvtkDisplay.SelectScaleArray = var
-structured_gridvtkDisplay.GlyphType = 'Arrow'
-structured_gridvtkDisplay.GlyphTableIndexArray = var
-structured_gridvtkDisplay.DataAxesGrid = 'GridAxesRepresentation'
-structured_gridvtkDisplay.PolarAxes = 'PolarAxesRepresentation'
-structured_gridvtkDisplay.ScalarOpacityUnitDistance = 5.766431907004487
-
-# reset view to fit data
-renderView1.ResetCamera()
-
-# change representation type
-structured_gridvtkDisplay.SetRepresentationType('Points')
-
-# create a new 'Slice'
-slice1 = Slice(Input=structured_gridvtk)
-slice1.SliceType = 'Plane'
-slice1.SliceOffsetValues = [0.0]
-
-# init the 'Plane' selected for 'SliceType'
-slice1.SliceType.Origin = [-95.0, 0.0, 0.0]
-slice1.SliceType.Normal = [0.0, 1.0, 0.0]
-
-# get color transfer function/color map for var
-point_scalarsLUT = GetColorTransferFunction(var)
-
-# show data in view
-slice1Display = Show(slice1, renderView1)
-# trace defaults for the display properties.
-slice1Display.Representation = 'Surface'
-slice1Display.ColorArrayName = ['POINTS', var]
-slice1Display.LookupTable = point_scalarsLUT
-slice1Display.OSPRayScaleArray = var
-slice1Display.OSPRayScaleFunction = 'PiecewiseFunction'
-slice1Display.SelectOrientationVectors = 'None'
-slice1Display.ScaleFactor = 2.0
-slice1Display.SelectScaleArray = var
-slice1Display.GlyphType = 'Arrow'
-slice1Display.GlyphTableIndexArray = var
-slice1Display.DataAxesGrid = 'GridAxesRepresentation'
-slice1Display.PolarAxes = 'PolarAxesRepresentation'
-
-# show color bar/color legend
-slice1Display.SetScalarBarVisibility(renderView1, True)
-
-
-# create a new 'Slice'
-slice2 = Slice(Input=structured_gridvtk)
-slice2.SliceType = 'Plane'
-slice2.SliceOffsetValues = [0.0]
-
-# init the 'Plane' selected for 'SliceType'
-slice2.SliceType.Origin = [-95.0, 0.0, 0.0]
-slice2.SliceType.Normal = [0.,0.,1.]
-
-# get color transfer function/color map for var
-point_scalarsLUT = GetColorTransferFunction(var)
-
-# show data in view
-slice2Display = Show(slice2, renderView1)
-# trace defaults for the display properties.
-slice2Display.Representation = 'Surface'
-slice2Display.ColorArrayName = ['POINTS', var]
-slice2Display.LookupTable = point_scalarsLUT
-slice2Display.OSPRayScaleArray = var
-slice2Display.OSPRayScaleFunction = 'PiecewiseFunction'
-slice2Display.SelectOrientationVectors = 'None'
-slice2Display.ScaleFactor = 2.0
-slice2Display.SelectScaleArray = var
-slice2Display.GlyphType = 'Arrow'
-slice2Display.GlyphTableIndexArray = var
-slice2Display.DataAxesGrid = 'GridAxesRepresentation'
-slice2Display.PolarAxes = 'PolarAxesRepresentation'
-
-# show color bar/color legend
-slice2Display.SetScalarBarVisibility(renderView1, True)
-
-
-
-# create a new 'Slice'
-slice3 = Slice(Input=structured_gridvtk)
-slice3.SliceType = 'Plane'
-slice3.SliceOffsetValues = [0.0]
-
-# init the 'Plane' selected for 'SliceType'
-slice3.SliceType.Origin = [0.0, 0.0, 0.0]
-slice3.SliceType.Normal = [1.,0.,0.]
-
-# get color transfer function/color map for var
-point_scalarsLUT = GetColorTransferFunction(var)
-
-# show data in view
-slice3Display = Show(slice3, renderView1)
-# trace defaults for the display properties.
-slice3Display.Representation = 'Surface'
-slice3Display.ColorArrayName = ['POINTS', var]
-slice3Display.LookupTable = point_scalarsLUT
-slice3Display.OSPRayScaleArray = var
-slice3Display.OSPRayScaleFunction = 'PiecewiseFunction'
-slice3Display.SelectOrientationVectors = 'None'
-slice3Display.ScaleFactor = 2.0
-slice3Display.SelectScaleArray = var
-slice3Display.GlyphType = 'Arrow'
-slice3Display.GlyphTableIndexArray = var
-slice3Display.DataAxesGrid = 'GridAxesRepresentation'
-slice3Display.PolarAxes = 'PolarAxesRepresentation'
-
-# show color bar/color legend
-slice3Display.SetScalarBarVisibility(renderView1, True)
-
-
-
-# create a new 'Slice'
-slice4 = Slice(Input=structured_gridvtk)
-slice4.SliceType = 'Plane'
-slice4.SliceOffsetValues = [0.0]
-
-# init the 'Plane' selected for 'SliceType'
-slice4.SliceType.Origin = [0.0, 0.0, 0.0]
-slice4.SliceType.Normal = U3
-
-# get color transfer function/color map for var
-point_scalarsLUT = GetColorTransferFunction(var)
-
-# show data in view
-slice4Display = Show(slice4, renderView1)
-# trace defaults for the display properties.
-slice4Display.Representation = 'Surface'
-slice4Display.ColorArrayName = ['POINTS', var]
-slice4Display.LookupTable = point_scalarsLUT
-slice4Display.OSPRayScaleArray = var
-slice4Display.OSPRayScaleFunction = 'PiecewiseFunction'
-slice4Display.SelectOrientationVectors = 'None'
-slice4Display.ScaleFactor = 2.0
-slice4Display.SelectScaleArray = var
-slice4Display.GlyphType = 'Arrow'
-slice4Display.GlyphTableIndexArray = var
-slice4Display.DataAxesGrid = 'GridAxesRepresentation'
-slice4Display.PolarAxes = 'PolarAxesRepresentation'
-
-# show color bar/color legend
-slice4Display.SetScalarBarVisibility(renderView1, True)
-
-
-# hide data in view
-Hide(structured_gridvtk, renderView1)
-
-
+if True:
+    
+    # create a new 'Legacy VTK Reader'
+    structured_gridvtk = LegacyVTKReader(FileNames=[fileVTK])
+    
+    # get active view
+    renderView1 = GetActiveViewOrCreate('RenderView')
+    # uncomment following to set a specific view size
+    # renderView1.ViewSize = [932, 802]
+    
+    # show data in view
+    structured_gridvtkDisplay = Show(structured_gridvtk, renderView1)
+    
+    # trace defaults for the display properties.
+    structured_gridvtkDisplay.Representation = 'Outline'
+    structured_gridvtkDisplay.ColorArrayName = ['POINTS', '']
+    structured_gridvtkDisplay.OSPRayScaleArray = var
+    structured_gridvtkDisplay.OSPRayScaleFunction = 'PiecewiseFunction'
+    structured_gridvtkDisplay.SelectOrientationVectors = 'None'
+    structured_gridvtkDisplay.ScaleFactor = 21.0
+    structured_gridvtkDisplay.SelectScaleArray = var
+    structured_gridvtkDisplay.GlyphType = 'Arrow'
+    structured_gridvtkDisplay.GlyphTableIndexArray = var
+    structured_gridvtkDisplay.DataAxesGrid = 'GridAxesRepresentation'
+    structured_gridvtkDisplay.PolarAxes = 'PolarAxesRepresentation'
+    structured_gridvtkDisplay.ScalarOpacityUnitDistance = 5.766431907004487
+    
+    # reset view to fit data
+    renderView1.ResetCamera()
+    
+    # change representation type
+    structured_gridvtkDisplay.SetRepresentationType('Points')
+    
+    # create a new 'Slice'
+    slice1 = Slice(Input=structured_gridvtk)
+    slice1.SliceType = 'Plane'
+    slice1.SliceOffsetValues = [0.0]
+    
+    # init the 'Plane' selected for 'SliceType'
+    slice1.SliceType.Origin = [-95.0, 0.0, 0.0]
+    slice1.SliceType.Normal = [0.0, 1.0, 0.0]
+    
+    # get color transfer function/color map for var
+    point_scalarsLUT = GetColorTransferFunction(var)
+    
+    # show data in view
+    slice1Display = Show(slice1, renderView1)
+    
+    # trace defaults for the display properties.
+    slice1Display.Representation = 'Surface'
+    slice1Display.ColorArrayName = ['POINTS', var]
+    slice1Display.LookupTable = point_scalarsLUT
+    slice1Display.OSPRayScaleArray = var
+    slice1Display.OSPRayScaleFunction = 'PiecewiseFunction'
+    slice1Display.SelectOrientationVectors = 'None'
+    slice1Display.ScaleFactor = 2.0
+    slice1Display.SelectScaleArray = var
+    slice1Display.GlyphType = 'Arrow'
+    slice1Display.GlyphTableIndexArray = var
+    slice1Display.DataAxesGrid = 'GridAxesRepresentation'
+    slice1Display.PolarAxes = 'PolarAxesRepresentation'
+    
+    # show color bar/color legend
+    slice1Display.SetScalarBarVisibility(renderView1, True)
+    
+    # create a new 'Slice'
+    slice2 = Slice(Input=structured_gridvtk)
+    slice2.SliceType = 'Plane'
+    slice2.SliceOffsetValues = [0.0]
+    
+    # init the 'Plane' selected for 'SliceType'
+    slice2.SliceType.Origin = [-95.0, 0.0, 0.0]
+    slice2.SliceType.Normal = [0.,0.,1.]
+    
+    # get color transfer function/color map for var
+    point_scalarsLUT = GetColorTransferFunction(var)
+    
+    # show data in view
+    slice2Display = Show(slice2, renderView1)
+    # trace defaults for the display properties.
+    slice2Display.Representation = 'Surface'
+    slice2Display.ColorArrayName = ['POINTS', var]
+    slice2Display.LookupTable = point_scalarsLUT
+    slice2Display.OSPRayScaleArray = var
+    slice2Display.OSPRayScaleFunction = 'PiecewiseFunction'
+    slice2Display.SelectOrientationVectors = 'None'
+    slice2Display.ScaleFactor = 2.0
+    slice2Display.SelectScaleArray = var
+    slice2Display.GlyphType = 'Arrow'
+    slice2Display.GlyphTableIndexArray = var
+    slice2Display.DataAxesGrid = 'GridAxesRepresentation'
+    slice2Display.PolarAxes = 'PolarAxesRepresentation'
+    
+    # show color bar/color legend
+    slice2Display.SetScalarBarVisibility(renderView1, True)
+    
+    # create a new 'Slice'
+    slice3 = Slice(Input=structured_gridvtk)
+    slice3.SliceType = 'Plane'
+    slice3.SliceOffsetValues = [0.0]
+    
+    # init the 'Plane' selected for 'SliceType'
+    slice3.SliceType.Origin = [0.0, 0.0, 0.0]
+    slice3.SliceType.Normal = [1.,0.,0.]
+    
+    # get color transfer function/color map for var
+    point_scalarsLUT = GetColorTransferFunction(var)
+    
+    # show data in view
+    slice3Display = Show(slice3, renderView1)
+    
+    # trace defaults for the display properties.
+    slice3Display.Representation = 'Surface'
+    slice3Display.ColorArrayName = ['POINTS', var]
+    slice3Display.LookupTable = point_scalarsLUT
+    slice3Display.OSPRayScaleArray = var
+    slice3Display.OSPRayScaleFunction = 'PiecewiseFunction'
+    slice3Display.SelectOrientationVectors = 'None'
+    slice3Display.ScaleFactor = 2.0
+    slice3Display.SelectScaleArray = var
+    slice3Display.GlyphType = 'Arrow'
+    slice3Display.GlyphTableIndexArray = var
+    slice3Display.DataAxesGrid = 'GridAxesRepresentation'
+    slice3Display.PolarAxes = 'PolarAxesRepresentation'
+    
+    # show color bar/color legend
+    slice3Display.SetScalarBarVisibility(renderView1, True)
+    
+    # create a new 'Slice'
+    slice4 = Slice(Input=structured_gridvtk)
+    slice4.SliceType = 'Plane'
+    slice4.SliceOffsetValues = [0.0]
+    
+    # init the 'Plane' selected for 'SliceType'
+    slice4.SliceType.Origin = [0.0, 0.0, 0.0]
+    slice4.SliceType.Normal = U3
+    
+    # get color transfer function/color map for var
+    point_scalarsLUT = GetColorTransferFunction(var)
+    
+    # show data in view
+    slice4Display = Show(slice4, renderView1)
+    
+    # trace defaults for the display properties.
+    slice4Display.Representation = 'Surface'
+    slice4Display.ColorArrayName = ['POINTS', var]
+    slice4Display.LookupTable = point_scalarsLUT
+    slice4Display.OSPRayScaleArray = var
+    slice4Display.OSPRayScaleFunction = 'PiecewiseFunction'
+    slice4Display.SelectOrientationVectors = 'None'
+    slice4Display.ScaleFactor = 2.0
+    slice4Display.SelectScaleArray = var
+    slice4Display.GlyphType = 'Arrow'
+    slice4Display.GlyphTableIndexArray = var
+    slice4Display.DataAxesGrid = 'GridAxesRepresentation'
+    slice4Display.PolarAxes = 'PolarAxesRepresentation'
+    
+    # show color bar/color legend
+    slice4Display.SetScalarBarVisibility(renderView1, True)
+    
+    
+    # hide data in view
+    Hide(structured_gridvtk, renderView1)
 
 h = 15.
 #------------------
@@ -318,13 +321,6 @@ for i in range(int(h)-1):
     # change solid color
     sphDisplay.DiffuseColor = [1.0, 0.0, 0.0]
 
-
-
-
-
-
-
-
 #------------------
 # y axis
 #------------------
@@ -388,11 +384,6 @@ for i in range(int(h)-1):
 
     # change solid color
     sphDisplay.DiffuseColor = [1.0, 1.0, 0.5]
-
-
-
-
-
 
 
 #------------------
@@ -460,12 +451,6 @@ for i in range(int(h)-1):
     sphDisplay.DiffuseColor = [0.0, 1.0, 0.0]
 
 
-
-
-
-
-
-
 deg=np.pi/180.
 Mx,My,Mz = Mdipole
 alpha = np.arccos(np.sqrt(Mx**2+My**2))
@@ -508,7 +493,7 @@ coneMDisplay.DiffuseColor = [0.0, 0., 1.]
 files = os.listdir(conf["run_path_derived"] + subdir)
 for f in files:
     # create a new 'Legacy VTK Reader'
-    if 'line' in f:
+    if 'line' in f and not 'J_' in f:
         field_linevtk = LegacyVTKReader(FileNames=[conf["run_path_derived"] + subdir + f])
         # show data in view
         field_linevtkDisplay = Show(field_linevtk, renderView1)

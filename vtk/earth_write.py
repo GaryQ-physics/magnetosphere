@@ -69,4 +69,3 @@ def writevtk(Event, Nt=100, Np=100):
 
     f.close()
     print("Wrote " + fname)
-

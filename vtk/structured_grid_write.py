@@ -85,9 +85,9 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
 
     #tail = -200.
     #tail = -100.
-    tail = -150.
+    tail = -20.
 
-    ret = bs.make_grid([tail, 15.], [-15., 15.], [-15., 15.], dx, dy, dz)
+    ret = bs.make_grid([tail, 15.], [-30., 30.], [-30., 30.], dx, dy, dz)
     Xgrid = ret[0]
     
     print('X0=',X0)
@@ -101,7 +101,7 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
             if '_EW' in var:
                 unit_v = a2
             if '_NS' in var:
-                unit_v = a1
+                unit_v = a1                
         unit_v = np.repeat([unit_v], Xgrid.shape[0], axis=0)
 
         if Test:
@@ -123,7 +123,11 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
             Aa = Jin
         else:
             deltaBnT = bs.deltaB('dB', X0, Xgrid, Jin, V_char = dx*dy*dz) #/nT
-            Aa = np.einsum('ij,ij->i', deltaBnT, unit_v) #https://stackoverflow.com/questions/15616742/vectorized-way-of-calculating-row-wise-dot-product-two-matrices-with-scipy
+            if var == 'dB':
+                Aa = np.sqrt(np.sum(deltaBnT**2, axis=1))
+            else:
+                # https://stackoverflow.com/questions/15616742/vectorized-way-of-calculating-row-wise-dot-product-two-matrices-with-scipy
+                Aa = np.einsum('ij,ij->i', deltaBnT, unit_v) 
         if debug:
             print('Aa=',Aa)
     else:

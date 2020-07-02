@@ -93,7 +93,7 @@ def dXds(X, s, sign):
 def Compute(Event, Nb, use_grid=True):
     #Event = [year, month, day, hours, minutes, seconds, miliseconds, MLONdeg, MLATdeg]
     time = Event[0:7]
-    MLON = Event[7]
+    MLON = 270 # Event[7]
     MLAT = Event[8]
     T = tuple(time)
 

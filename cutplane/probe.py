@@ -9,6 +9,7 @@ from util import time2filename, filemeta
 import _CCMC as ccmc
 
 def probe(time, P, var=None, debug=False, dictionary=False):
+
     P = np.array(P)
     if P.shape == (3, ):
         P = np.array([P])
@@ -25,7 +26,6 @@ def probe(time, P, var=None, debug=False, dictionary=False):
     kameleon.open(filename)
     interpolator = kameleon.createNewInterpolator()
 
-    
     if var is None:
         meta = filemeta(filename)
         # Get data for all parameters, store in dictionary
@@ -38,7 +38,6 @@ def probe(time, P, var=None, debug=False, dictionary=False):
             if arr.size == 1:
                 arr = arr[0]
             ret[key] = arr
-
 
     elif type(var) == str:
         kameleon.loadVariable(var)

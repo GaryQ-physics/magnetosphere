@@ -1,8 +1,8 @@
 PARAVIEW=paraview
 if ! [ -x "$(command -v paraview)" ]; then
-   PARAVIEW=/Applications/ParaView-5.4.1.app/Contents/MacOS/paraview
+   PARAVIEW=/Applications/ParaView-5.8.0.app/Contents/MacOS/paraview
 fi
-if ! [ -x "$(command -v paraview)" ]; then
+if ! [ -x "$(command -v $PARAVIEW)" ]; then
    echo "Paraview not found"
    exit 1
 fi
