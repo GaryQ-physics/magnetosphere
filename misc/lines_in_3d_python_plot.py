@@ -15,7 +15,8 @@ print(os.environ['PYTHONPATH'].split(os.pathsep))
 
 
 fig = plt.figure()
-ax = plt.axes(projection='3d') #https://jakevdp.github.io/PythonDataScienceHandbook/04.12-three-dimensional-plotting.html
+# https://jakevdp.github.io/PythonDataScienceHandbook/04.12-three-dimensional-plotting.html
+ax = plt.axes(projection='3d') 
 
 sol0 = np.array([[0,0,0],[1,1,1],[2,2,2],[3,3,3]])
 sol1 = np.array([[0,0,0],[-1,1,1],[-2,2,2],[-3,3,3]])

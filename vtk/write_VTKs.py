@@ -4,8 +4,7 @@ import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from config_paths import config
-conf = config()
+from config import conf
 
 import B_field_lines_write
 import J_field_lines_write
@@ -23,8 +22,19 @@ filename = conf["run_path"] + '3d__var_3_e' \
 
 #structured_grid_write.writevtk(Event, 'J', calcTotal=True)
 #ret = structured_grid_write.Compute(Event, 'dB_EW', calcTotal=True)
-structured_grid_write.writevtk(Event, 'dB_EW', binary=True, calcTotal=True)
+#structured_grid_write.writevtk(Event, 'dB_EW', binary=True, calcTotal=True)
 
+#structured_grid_write.writevtk(Event, 'p', dx=1., dy=1., dz=1., fname='/tmp/testvtk.vtk')
+
+#J_field_lines_write.writevtk(Event)
+cut_plane.writedata(Event)
+B_field_lines_write.writevtk(Event)
+longitude_lines_write.writevtk(Event) #need ad
+#J_vector_field_write.writevtk(Event)
+earth_write.writevtk(Event) #need ad
+#structured_grid_write.writevtk(Event, 'dB', binary=True, dx=0.2, dy=0.2, dz=0.2)
+#structured_grid_write.writevtk(Event, 'jy', dx=0.2, dy=0.2, dz=0.2)
+#structured_grid_write.writevtk(Event, 'dB_EW', calcTotal=True)
 
 if False:
     #J_field_lines_write.writevtk(Event)

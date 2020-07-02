@@ -8,9 +8,10 @@ import numpy as np
 from util import time2filename, filemeta
 import _CCMC as ccmc
 
-def probe(time, P, var=None, debug=False):
+def probe(time, P, var=None, debug=False, dictionary=False):
+
     P = np.array(P)
-    if P.shape == (3,):
+    if P.shape == (3, ):
         P = np.array([P])
 
     if type(time) == str:
@@ -20,18 +21,15 @@ def probe(time, P, var=None, debug=False):
 
     if not os.path.exists(filename):
         raise ValueError('Not found: ' + filename)
-        return
 
-    meta = filemeta(filename)
     kameleon = ccmc.Kameleon()
-
     kameleon.open(filename)
-
     interpolator = kameleon.createNewInterpolator()
 
-    ret = {}
     if var is None:
-        # Get data for all parameters
+        meta = filemeta(filename)
+        # Get data for all parameters, store in dictionary
+        ret = {}
         for key in meta['parameters']:
             kameleon.loadVariable(key)
             arr = np.nan*np.empty((P.shape[0],))
@@ -40,7 +38,6 @@ def probe(time, P, var=None, debug=False):
             if arr.size == 1:
                 arr = arr[0]
             ret[key] = arr
-
 
     elif type(var) == str:
         kameleon.loadVariable(var)
@@ -53,7 +50,11 @@ def probe(time, P, var=None, debug=False):
     else:
         if type(var) != list and type(var) != tuple:
             raise ValueError('var must be None, str, list, or tuple')
-    
+        if dictionary:
+            ret = {}
+        else:
+            ret = np.nan*np.empty((P.shape[0], len(var)))
+        i = 0
         for v in var:
             if type(v) != str:
                 raise ValueError('var must be a str, or a list/tuple of strs')              
@@ -64,14 +65,13 @@ def probe(time, P, var=None, debug=False):
                 arr[k] = interpolator.interpolate(v, P[k,0], P[k,1], P[k,2])
             if arr.size == 1:
                 arr = arr[0]
-            ret[v] = arr
+            if dictionary:
+                ret[v] = arr
+            else:
+                ret[:,i] = arr
+                i = i + 1
 
 
     kameleon.close()
 
     return ret
-
-def probe_vect(time, P, var, debug=False):
-    vectvar = [var + 'x', var + 'y', var + 'z']
-    dictionary = probe(time, P, var=vectvar, debug=debug)
-    return np.column_stack([dictionary[var + 'x'], dictionary[var + 'y'], dictionary[var + 'z']])

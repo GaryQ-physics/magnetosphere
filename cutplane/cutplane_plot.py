@@ -8,6 +8,7 @@ from config import conf
 from cutplane import data2d, unitvector, fieldlines
 import util
 
+
 def set_colorbar(ax, pcm, zticks, Nbt, title=None, logz=False):
     import matplotlib.pyplot as plt        
     from mpl_toolkits.axes_grid1 import make_axes_locatable

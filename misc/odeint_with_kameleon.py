@@ -1,11 +1,12 @@
 """
-Demonstrates how kameleon can work with odeint
+Initial experiment to have Kameleon can work with odeint
 
-odeint is a function in scipy.integrate which requires a callable function and then solves the differential equation associated with it
-
-a callable function that accesses kameleon can be used if we pass the kameleon and interpolator objects as constant arguments
-
-to show this we solve the differential equation for a pendulum with extra force term given by the pressure 'p' in kameleon
+odeint is a function in scipy.integrate which requires a callable function
+and then solves the differential equation associated with it. A callable
+function that accesses kameleon can be used if we pass the kameleon and 
+interpolator methods as arguments. To demonstrate this, we solve the
+differential equation for a pendulum with extra force term given by the
+pressure 'p' in kameleon.
 """
 
 import sys
@@ -26,22 +27,23 @@ hours = 7
 minutes = 0
 seconds = 0
 
-filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % (year,month,day,hours,minutes,seconds) + '.out.cdf'
-
+filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-000' % \
+            (year,month,day,hours,minutes,seconds) + '.out.cdf'
 
 
 def ex_data(kam,interp,variable, x,y,z):
     # Get data from file, interpolate to point
     #kam.loadVariable(variable)
     data = interp.interpolate(variable, x, y, z)
-    if( x**2 + y**2 + z**2 >=1.):
+    if( x**2 + y**2 + z**2 >= 1.):
         return data
     else:
         return 0.
 
 def pend(y, t, b, c, kam, interp,):
     theta, omega = y
-    dydt = [omega, -b*omega - c*np.sin(theta) - ex_data(kam,interp,'p',omega,omega,omega)]
+    dydt = [omega, -b*omega - c*np.sin(theta) - \
+                ex_data(kam, interp, 'p', omega, omega,omega)]
     return dydt
 
 def Compute(plot_force_function = False):

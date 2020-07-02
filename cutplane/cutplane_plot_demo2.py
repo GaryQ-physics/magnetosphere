@@ -209,7 +209,7 @@ def process_var(var, opts):
             # Sample upstream solar wind
             # TODO: Generalize code to allow plotting arbitrary number
             # of variables.
-            d = probe(time, (31.5, 0, 0), ['ux', 'bz'])
+            d = probe(time, (31.5, 0, 0), ['ux', 'bz'], dictionary=True)
 
             #import pdb;pdb.set_trace()
             # Index of event with matching yr, mo, day, hr

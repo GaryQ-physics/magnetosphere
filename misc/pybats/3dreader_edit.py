@@ -2,7 +2,8 @@
 """
 Created on Sun Feb  2 09:58:51 2020
 
-Demonstrate reading the 3d .out datafiles using spacepy.pybats.bats, and then plotting with that data
+Demonstrate reading the 3d .out datafiles using spacepy.pybats.bats, and then 
+plotting with that data
 
 Works for python 2 and 3
 """
@@ -45,3 +46,10 @@ plt.xlim([-50, 50])
 plt.ylim([-50, 50])
 
 plt.show()
+
+plt.figure()
+I = np.logical_and(z == 0.03125, y == 0.03125)
+plt.plot(x[I], data3d['jy'][I], '.')
+plt.xlim([0,3])
+plt.grid()
+
