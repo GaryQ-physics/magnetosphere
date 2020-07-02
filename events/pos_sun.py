@@ -16,7 +16,7 @@ def tstr(time):
         # TODO: Throw error
         pass
     
-    if len(time) > 6:
+    if len(time) >= 6:
         time = time[0:6]
     else:
         pad = 6 - len(time)
