@@ -18,7 +18,7 @@ def events():
 
     data = np.genfromtxt(infile, skip_header=1)    
 
-    mlt = cx.MAGtoMLT(data[:, 5], data[:, 0:5])
+    mlt = cx.MAGtoMLT(data[:, 5], data[:, 0:5], onlyMLON=True)
 
     # Swap mlat and mlon colums so in expected order (lat then long)
     data[:, [6,5]] = data[:, [5,6]]

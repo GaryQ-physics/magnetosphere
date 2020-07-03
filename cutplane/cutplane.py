@@ -6,39 +6,33 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 
 from scipy.integrate import odeint
-import _CCMC as ccmc
 import cxtransform as cx
+from scipy.interpolate import RegularGridInterpolator
 
-from util import time2filename
+from util import time2filename, maketag
+from probe import probe
+
+
+xlims = [-100., 15.]
+ylims = [-10., 10.]
+zlims = [-15., 15.]
+dx = 0.3
+dy = 0.3
+dz = 0.3
 
 
 def data2d(time, parameter, X, Y, U, debug=False):
 
-    filename = time2filename(time)
-
-    kameleon = ccmc.Kameleon()
-    if debug:
-        print("Opening " + filename)
-    kameleon.open(filename)
-    if debug:
-        print("Opened " + filename)
-    interpolator = kameleon.createNewInterpolator()
-
     Z = np.zeros(X.shape)
-    for i in range(X.shape[0]): # note this is y_1d.size (NOT x)
-        for j in range(X.shape[1]): 
-            # grid of the corresponding values of variable. To be color plotted
-            Z[i, j] = data_in_U(kameleon, interpolator, parameter,
-                                X[i, j], Y[i, j], U)
 
-    kameleon.close()
-    if debug:
-        print("Closed " + filename + "\n")
+    # grid of the corresponding values of variable. To be color plotted
+    Z = data_in_U(time, parameter,
+                        X.flatten(), Y.flatten(), U)
 
-    return Z
+    return Z.reshape(X.shape)
 
 
-def data_in_U(kam, interp, variable, u, v, U):
+def data_in_U(time, variable, u, v, U):
     """Data in U coordinates"""
     
     def norm(x):
@@ -48,77 +42,70 @@ def data_in_U(kam, interp, variable, u, v, U):
     U1 = U[0]
     U2 = U[1]
     U3 = U[2]
-    
-    x, y, z = u*U1 + v*U2
-    B = np.array([ex_data(kam, interp, 'bx', x, y, z), 
-                  ex_data(kam, interp, 'by', x, y, z), 
-                  ex_data(kam, interp, 'bz', x, y, z)])
-    if variable == 'bu1':
-        return np.dot(B, U1)
-    if variable == 'bu2':
-        return np.dot(B, U2)
-    if variable == 'bu3':
-        return np.dot(B, U3)
+    if isinstance(u, float):
+        X = u*U1 + v*U2
     else:
-
-        return ex_data(kam, interp, variable, x, y, z)
-
-
-def ex_data(kam, interp, variable, x, y, z):
-    """Load data from file, interpolate to point"""
-    if (x**2 + y**2 + z**2 < 1.):
-        return 0
-    kam.loadVariable(variable)
-    data = interp.interpolate(variable, x, y, z)
-    return data
-
-
-def dXds(X, s, kam, interp, var):
-    """Derivative function for field line ODE
-
-    dx/ds = Fx(x,y,z)/Fm
-    dy/ds = Fy(x,y,z)/Fm
-    dz/ds = Fz(x,y,z)/Fm
+        X = np.einsum('i,j->ij', u, U1) + np.einsum('i,j->ij', v, U2)
     
-    X = [x, y, z]
-    F = [Fx, Fy, Fz]
-    Fm = sqrt(Fx**2 + Fy**2 + Fz**2)
-    s = arclength
 
-    F is magnetic field for          var = 'b'
-    F is current density field for   var = 'j'
-    """
-
-    # run parameters
-    sign = -1  # changes sign of magnetic field used to trace the field lines
-        
-    B = np.array([ex_data(kam, interp, var + 'x', X[0], X[1], X[2]), 
-                  ex_data(kam, interp, var + 'y', X[0], X[1], X[2]), 
-                  ex_data(kam, interp, var + 'z', X[0], X[1], X[2])])
-    Bm = np.sqrt(np.dot(B, B))
-    if 1e-9 < Bm < 1e+7:
-        return (sign/Bm)*B
+    if 'b' in variable:
+        B = probe(time, X, var=['bx', 'by', 'bz'])
+        if variable == 'bu1':
+            return np.dot(B, U1)
+        if variable == 'bu2':
+            return np.dot(B, U2)
+        if variable == 'bu3':
+            return np.dot(B, U3)
     else:
-        return [0., 0., 0.] # TODO: Return np.nan?
+        return probe(time, X, var=variable)
+
+def dXds(X, s, sign, Bx_interp, By_interp, Bz_interp):
+
+    if xlims[0]<X[0]<xlims[1] and ylims[0]<X[1]<ylims[1] and zlims[0]<X[2]<zlims[1]:
+        #print('IN')
+        B = np.array([Bx_interp(X)[0], By_interp(X)[0], Bz_interp(X)[0]])
+        Bm = np.linalg.norm(B)
+        if 1e-9 < Bm < 1e+7:
+            return (sign/Bm)*B
+    return [0., 0., 0.]
 
 
-def fieldlines(time, mag, s_grid=None, debug=False):
+def fieldlines(time, mag, s_grid=None, debug=False, runOnce = False):
 
     # Trace 3-D field line
     # TODO: Consider using
     # https://github.com/spacepy/spacepy/blob/master/spacepy/pybats/trace2d.py
+    
+    
+    # make grid and interpolator on grid using probe ###################
+    no_origin = xlims[0] > 0. or xlims[1] < 0. or ylims[0] > 0. or ylims[1] < 0. or zlims[0] > 0. or zlims[1] < 0.
+    if no_origin:
+        print('WARNING: grid does not contain origin')
+        X = np.arange(xlims[0], xlims[1]+dx, dx)
+        Y = np.arange(ylims[0], ylims[1]+dy, dy)
+        Z = np.arange(zlims[0], zlims[1]+dz, dz)
+    else:
+        X = np.concatenate([ -np.flip(np.delete(np.arange(0., -xlims[0]+dx, dx), 0), 0) , np.arange(0., xlims[1]+dx, dx) ])
+        Y = np.concatenate([ -np.flip(np.delete(np.arange(0., -ylims[0]+dy, dy), 0), 0) , np.arange(0., ylims[1]+dy, dy) ])
+        Z = np.concatenate([ -np.flip(np.delete(np.arange(0., -zlims[0]+dz, dz), 0), 0) , np.arange(0., zlims[1]+dz, dz) ])
+    Nx = X.size
+    Ny = Y.size
+    Nz = Z.size
+    
+    
+    G2, G1, G3 = np.meshgrid(Y, X, Z) # different than in make_grid
+    P = np.column_stack( (G1.flatten(), G2.flatten(), G3.flatten()) )
+    Bx = probe(time, P, var='bx').reshape(Nx, Ny, Nz)
+    By = probe(time, P, var='by').reshape(Nx, Ny, Nz)
+    Bz = probe(time, P, var='bz').reshape(Nx, Ny, Nz)
 
-    filename = conf["run_path"] + '3d__var_3_e' \
-                + '%04d%02d%02d-%02d%02d%02d-%03d' % tuple(time) + '.out.cdf'
-
-    if debug:
-        print(filename, "Opening " + filename)
-    kameleon = ccmc.Kameleon()
-    kameleon.open(filename)
-    if debug:
-        print(filename, "Opened " + filename)
-    interpolator = kameleon.createNewInterpolator()
-
+    # https://stackoverflow.com/questions/21836067/interpolate-3d-volume-with-numpy-and-or-scipy
+    Bx_interp = RegularGridInterpolator((X,Y,Z), Bx)
+    By_interp = RegularGridInterpolator((X,Y,Z), By)
+    Bz_interp = RegularGridInterpolator((X,Y,Z), Bz)
+    ####################################################################
+  
+    
     if s_grid is None:
         s_grid = np.arange(0., 200., 0.1)
     # Trace field line for a total length of smax, and check if stop conditions
@@ -128,8 +115,10 @@ def fieldlines(time, mag, s_grid=None, debug=False):
     done = False
     solns = np.empty((0, 3)) # Combined solutions
     X0 = cx.MAGtoGSM(mag, time[0:6], 'sph', 'car')
+    i = 0
     while not done:
-        soln = odeint(dXds, X0, s_grid, args=(kameleon, interpolator, 'b'))
+        if debug: print('i = ' + str(i))
+        soln = odeint(dXds, X0, s_grid, args=(-1, Bx_interp, By_interp, Bz_interp))
         R = soln[:, 0]**2+soln[:, 1]**2 + soln[:, 2]**2
         # define condition on the field line points
         # Find first location where soln steps out-of-bounds
@@ -138,9 +127,13 @@ def fieldlines(time, mag, s_grid=None, debug=False):
         tr = (R >= 1) & (soln[:,0] > -30.) & (np.abs(soln[:, 2]) < 20.)
         # Indices where stop conditions satisfied
         tr_out = np.where(tr == False)
+        if debug: print(tr)
         if tr_out[0].size > 0:
             # Stop condition found at least once. Use solution up to that point.s
             solns = np.vstack((solns, soln[0:tr_out[0][0] + 1, :]))
+            done = True
+        elif runOnce:
+            solns = np.vstack((solns, soln))   # return soln faster?
             done = True
         else:
             # New initial condition is stop point.
@@ -148,9 +141,8 @@ def fieldlines(time, mag, s_grid=None, debug=False):
             # Append solution but exclude last value, which is the
             # new initial condition.
             solns = np.vstack((solns, soln[0:-1, :]))
-    
-    kameleon.close()
-    
+        i = i + 1
+        
     return solns
 
 
@@ -160,8 +152,8 @@ def unitvector(time, mag, debug=False):
     # 0, 0.5, 1.0 along the field line from the starting point.
     s_grid = np.array([0., 0.5, 1.])
     # Compute (x, y, z) of points at s_grid values.
-    sol = fieldlines(time, mag, s_grid=s_grid, debug=debug)
-    
+    sol = fieldlines(time, mag, s_grid=s_grid, debug=debug, runOnce = True)
+    print(sol.shape)
     # initialize vectors for defining field line cut plane
     v1 = (np.nan)*np.empty((3, ))
     v2 = (np.nan)*np.empty((3, ))
@@ -197,16 +189,14 @@ def writedata(time, mlat, mlon, debug=False):
 
     # Compute centered dipole unit vector in GSM at given time
     Mdipole = cx.MAGtoGSM([0., 0., 1.], time[0:6], 'car', 'car')
+    U1, U2, U3 = unitvector(time, np.array([1., mlat, mlon]))
 
-    Mdipole, U1, U2, U3 = unitvector(time)
-
-    tag = '_%04d:%02d:%02dT%02d:%02d:%02d.%03d' % tuple(time)
     subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
     if not os.path.exists(conf["run_path_derived"] + subdir):
         os.mkdir(conf["run_path_derived"] + subdir)
 
     out_fname = conf["run_path_derived"] + subdir + \
-                'cut_plane_info_%.2f_%.2f' % (mlat, mlon) + tag + '.txt'
+                'cut_plane_info_%.2f_%.2f' % (mlat, mlon) + maketag(time) + '.txt'
     f = open(out_fname, 'w')
     
     print('Writing ' + out_fname)
