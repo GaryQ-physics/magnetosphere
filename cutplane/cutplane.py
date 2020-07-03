@@ -71,6 +71,32 @@ def dXds(X, s, sign, Bx_interp, By_interp, Bz_interp):
 
 
 def fieldlines(time, mag, s_grid=None, debug=False, runOnce = False):
+    mag = np.array(mag)
+    if len(mag.shape) == 1:
+        mag = [mag]
+    """
+
+    Parameters
+    ----------
+    time : list 
+        or other type that is accepted by probe (cannot be 2d array)
+    mag : numpy.array or list
+        (Nx3) spherical mag coordinates of N points, which are the start points
+        for N field lines
+    s_grid : TYPE, optional
+        DESCRIPTION. The default is np.arange(0., 200., 0.1)
+    debug : TYPE, optional, boolean
+        DESCRIPTION. The default is False.
+    runOnce : TYPE, optional, boolean
+        Only integrates field lines for one s_grid amount, instead of 
+        continuing until line goes out of bounds. The default is False.
+
+    Returns
+    -------
+    ret : list of N arrays
+        DESCRIPTION: the N field lines 
+
+    """
 
     # Trace 3-D field line
     # TODO: Consider using
@@ -112,38 +138,42 @@ def fieldlines(time, mag, s_grid=None, debug=False, runOnce = False):
     # satified. If not satified, trace for another total length of smax.
     # Note that Python 3 version of integration library has stop function
     # that can be passed so this won't be needed.
-    done = False
-    solns = np.empty((0, 3)) # Combined solutions
-    X0 = cx.MAGtoGSM(mag, time[0:6], 'sph', 'car')
-    i = 0
-    while not done:
-        if debug: print('i = ' + str(i))
-        soln = odeint(dXds, X0, s_grid, args=(-1, Bx_interp, By_interp, Bz_interp))
-        R = soln[:, 0]**2+soln[:, 1]**2 + soln[:, 2]**2
-        # define condition on the field line points
-        # Find first location where soln steps out-of-bounds
-        #tr = np.where( False == (R >= 1) & (soln[:,0] > -30.) & (np.abs(soln[:, 2]) < 20.) )        
-        # Boolean array.
-        tr = (R >= 1) & (soln[:,0] > -30.) & (np.abs(soln[:, 2]) < 20.)
-        # Indices where stop conditions satisfied
-        tr_out = np.where(tr == False)
-        if debug: print(tr)
-        if tr_out[0].size > 0:
-            # Stop condition found at least once. Use solution up to that point.s
-            solns = np.vstack((solns, soln[0:tr_out[0][0] + 1, :]))
-            done = True
-        elif runOnce:
-            solns = np.vstack((solns, soln))   # return soln faster?
-            done = True
-        else:
-            # New initial condition is stop point.
-            X0 = soln[-1, :]
-            # Append solution but exclude last value, which is the
-            # new initial condition.
-            solns = np.vstack((solns, soln[0:-1, :]))
-        i = i + 1
-        
-    return solns
+
+    IC = cx.MAGtoGSM(mag, time[0:6], 'sph', 'car')
+    ret = []
+    for X0 in IC:
+        done = False
+        solns = np.empty((0, 3)) # Combined solutions
+        i = 0
+        while not done:
+            if debug: print('i = ' + str(i))
+            soln = odeint(dXds, X0, s_grid, args=(-1, Bx_interp, By_interp, Bz_interp))
+            R = soln[:, 0]**2+soln[:, 1]**2 + soln[:, 2]**2
+            # define condition on the field line points
+            # Find first location where soln steps out-of-bounds
+            #tr = np.where( False == (R >= 1) & (soln[:,0] > -30.) & (np.abs(soln[:, 2]) < 20.) )        
+            # Boolean array.
+            tr = (R >= 1) & (soln[:,0] > -30.) & (np.abs(soln[:, 2]) < 20.)
+            # Indices where stop conditions satisfied
+            tr_out = np.where(tr == False)
+            if debug: print(tr)
+            if tr_out[0].size > 0:
+                # Stop condition found at least once. Use solution up to that point.s
+                solns = np.vstack((solns, soln[0:tr_out[0][0] + 1, :]))
+                done = True
+            elif runOnce:
+                solns = np.vstack((solns, soln))   # return soln faster?
+                done = True
+            else:
+                # New initial condition is stop point.
+                X0 = soln[-1, :]
+                # Append solution but exclude last value, which is the
+                # new initial condition.
+                solns = np.vstack((solns, soln[0:-1, :]))
+            i = i + 1
+        ret.append(solns)
+            
+    return ret
 
 
 def unitvector(time, mag, debug=False):
@@ -152,33 +182,34 @@ def unitvector(time, mag, debug=False):
     # 0, 0.5, 1.0 along the field line from the starting point.
     s_grid = np.array([0., 0.5, 1.])
     # Compute (x, y, z) of points at s_grid values.
-    sol = fieldlines(time, mag, s_grid=s_grid, debug=debug, runOnce = True)
-    print(sol.shape)
-    # initialize vectors for defining field line cut plane
-    v1 = (np.nan)*np.empty((3, ))
-    v2 = (np.nan)*np.empty((3, ))
-    v3 = (np.nan)*np.empty((3, ))
-    U1 = (np.nan)*np.empty((3, ))
-    U2 = (np.nan)*np.empty((3, ))
-    U3 = (np.nan)*np.empty((3, ))
+    sols = fieldlines(time, mag, s_grid=s_grid, debug=debug, runOnce = True)
+    ret = []
+    for sol in sols
+        if debug: print(sol.shape)
+        # initialize vectors for defining field line cut plane
+        v1 = (np.nan)*np.empty((3, ))
+        v2 = (np.nan)*np.empty((3, ))
+        v3 = (np.nan)*np.empty((3, ))
+        U1 = (np.nan)*np.empty((3, ))
+        U2 = (np.nan)*np.empty((3, ))
+        U3 = (np.nan)*np.empty((3, ))
 
-    # Three vectors in from origin to point on field line.
-    v1 = sol[0, :]
-    v2 = sol[2, :]
-    v3 = sol[1, :]
+        # Three vectors in from origin to point on field line.
+        v1 = sol[0, :]
+        v2 = sol[2, :]
+        v3 = sol[1, :]
 
-    # Define cut plane coordinates based on field line 
-    # (U3 is normal to the plane)
-    U2 = (v1 - v2)/np.linalg.norm(v1-v2)
-    U3 = np.cross(v3 - v1, U2)
+        # Define cut plane coordinates based on field line 
+        # (U3 is normal to the plane)
+        U2 = (v1 - v2)/np.linalg.norm(v1-v2)
+        U3 = np.cross(v3 - v1, U2)
 
-    if np.linalg.norm(U3) < 1e-3:
-        print("WARNING: close to straight line")
-    U3 = U3/np.linalg.norm(U3)
-    U1 = np.cross(U2, U3)
-
-    return [U1, U2, U3]
-
+        if np.linalg.norm(U3) < 1e-3:
+            print("WARNING: close to straight line")
+        U3 = U3/np.linalg.norm(U3)
+        U1 = np.cross(U2, U3)
+        ret.append([U1, U2, U3])
+    return ret
 
 def writedata(time, mlat, mlon, debug=False):
     """Write output of unitvector() to file
@@ -189,7 +220,7 @@ def writedata(time, mlat, mlon, debug=False):
 
     # Compute centered dipole unit vector in GSM at given time
     Mdipole = cx.MAGtoGSM([0., 0., 1.], time[0:6], 'car', 'car')
-    U1, U2, U3 = unitvector(time, np.array([1., mlat, mlon]))
+    U1, U2, U3 = unitvector(time, np.array([1., mlat, mlon]))[0]
 
     subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
     if not os.path.exists(conf["run_path_derived"] + subdir):

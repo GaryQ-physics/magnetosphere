@@ -22,7 +22,7 @@ cp.plot(time, 'p', 'xz', logz=True, dx=0.5, dy=0.5, xlims=[-30, 30], ylims=[-20,
 #cp.plot(time, 'p', mag, dx=0.5, dy=0.5, xlims=[-30, 30], ylims=[-20, 20])
 
 if True:
-    dtheta = 0.5 # takes a while with 0.1 with probe method
+    dtheta = 0.1
     import numpy as np
     angles = (np.pi/2.)*np.arange(-1, 1+dtheta, dtheta)
     

@@ -164,10 +164,20 @@ def plot(time, parameter, arg3,
 
     if field_lines is not None:
         linesU = []
+        '''
         for field_line in field_lines:
             line = fieldlines(time, field_line)
             lineU = np.empty(line.shape)
             for k in range(line.shape[0]):
+                lineU[k, 0] = np.dot(line[k, :], U1)
+                lineU[k, 1] = np.dot(line[k, :], U2)
+                lineU[k, 2] = np.dot(line[k, :], U3)
+            linesU.append(lineU)
+        '''
+        lines = fieldlines(time, field_lines)
+        for line in lines:
+            lineU = np.empty(line.shape)
+            for k in range(line.shape[0]):  # TO DO: vectorize this loop
                 lineU[k, 0] = np.dot(line[k, :], U1)
                 lineU[k, 1] = np.dot(line[k, :], U2)
                 lineU[k, 2] = np.dot(line[k, :], U3)
