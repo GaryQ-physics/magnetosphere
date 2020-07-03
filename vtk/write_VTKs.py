@@ -10,11 +10,17 @@ import B_field_lines_write
 import J_field_lines_write
 import structured_grid_write
 import cut_plane
+import cutplane
 import longitude_lines_write
 import earth_write
+from events import events
 
 line_list = [2003, 11, 20, 7, 0, 176.00, 57.50]
-time = line_list[0:5] + [0, 0.]
+mlat = line_list[6]
+mlon = line_list[5]
+time_orig = line_list[0:5]
+
+time = time_orig + [0, 0.]
 Event = time + line_list[5:7]
 T = tuple(time)
 filename = conf["run_path"] + '3d__var_3_e' \
@@ -27,14 +33,29 @@ filename = conf["run_path"] + '3d__var_3_e' \
 #structured_grid_write.writevtk(Event, 'p', dx=1., dy=1., dz=1., fname='/tmp/testvtk.vtk')
 
 #J_field_lines_write.writevtk(Event)
+
 cut_plane.writedata(Event)
-B_field_lines_write.writevtk(Event)
-longitude_lines_write.writevtk(Event) #need ad
+#cutplane.writedata(time, mlat, mlon)
+
+#B_field_lines_write.writevtk(Event)
+#longitude_lines_write.writevtk(Event) #need ad
 #J_vector_field_write.writevtk(Event)
-earth_write.writevtk(Event) #need ad
+#earth_write.writevtk(Event) #need ad
 #structured_grid_write.writevtk(Event, 'dB', binary=True, dx=0.2, dy=0.2, dz=0.2)
 #structured_grid_write.writevtk(Event, 'jy', dx=0.2, dy=0.2, dz=0.2)
 #structured_grid_write.writevtk(Event, 'dB_EW', calcTotal=True)
+
+data = events()
+
+N = 1
+for i in range(N):
+    time = data[i,0:5]
+    mlat = data[5]
+    mlon = data[6]
+    Event = data[i,:]
+
+
+
 
 if False:
     #J_field_lines_write.writevtk(Event)

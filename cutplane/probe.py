@@ -70,7 +70,9 @@ def probe(time, P, var=None, debug=False, dictionary=False):
             else:
                 ret[:,i] = arr
                 i = i + 1
-
+        if not dictionary:
+            if P.shape[0] == 1:
+                ret = ret.flatten()
 
     kameleon.close()
 

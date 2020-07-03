@@ -5,6 +5,27 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 
 
+def maketag(time):
+    """Create date/time string of the convention to tag files with given array of integers
+    
+    tstr((2000, 1, 1, 2)) # 2000:01:01T02:00:00
+    tstr((2000, 1, 1, 2, 3)) # 2000:01:01T02:03:00
+    tstr((2000, 1, 1, 2, 3, 4)) # 2000:01:01T02:03:04
+    tstr((2000, 1, 1, 2, 3, 4, 567)) # 2000:01:01T02:03:04.567
+    """
+    
+    time = list(time)
+    # TODO: Check that time is valid
+    if len(time) < 4 or len(time)>7:
+        # TODO: Throw error
+        pass
+    else:
+        pad = 7 - len(time)
+        time = time + pad*[0]
+    
+    return '_%04d:%02d:%02dT%02d:%02d:%02d.%03d' % tuple(time)
+
+
 def time2datetime(t):
     import datetime as dt
     
