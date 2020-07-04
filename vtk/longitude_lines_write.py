@@ -6,10 +6,9 @@ import numpy as np
 
 sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
-import pos_sun as ps
-import cut_plane
 
-import _CCMC as ccmc
+from util import maketag
+import cxtransform as cx
 
 # run parameters
 #Nlong = 5
@@ -17,19 +16,15 @@ import _CCMC as ccmc
 sign = -1  # changes sign of magnetic field used to trace the field lines
 debug = True
 
-# units
-deg = (np.pi/180.)
-amin = deg/60.
-hr = 1.
-minn = hr/60.
-s = minn/60.
 
 def writevtk(Event, lon_array=[0., 10., -10., 20., -20.]):
-    #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
-    time = Event[0:6]
-    tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
 
-    #solns_restr = Compute(Event, Nb)
+    if isinstance(Event[0],list):
+        time = Event[1]
+    else:
+        time = Event[0:5]
+
+    tag = maketag(time)
     subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
     if not os.path.exists(conf["run_path_derived"] + subdir):
         os.mkdir(ret['run_path_derived'])
@@ -37,7 +32,7 @@ def writevtk(Event, lon_array=[0., 10., -10., 20., -20.]):
         out_fname = conf["run_path_derived"] + subdir + 'GEO_longitude_line_%.2f.vtk' %(lon,)
         lat = np.linspace(-90,90,100)
         a = np.column_stack([np.ones(100, ), lat, lon*np.ones(100, )])
-        sol = ps.GEOtoGSM(a, time, 'sph', 'car')
+        sol = cx.GEOtoGSM(a, time, 'sph', 'car')
         if debug:
             print('Writing ' + out_fname)
         f = open(out_fname, 'w')

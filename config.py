@@ -28,6 +28,9 @@ if base + 'util/' not in sys.path:
 if base + 'events/' not in sys.path:
     sys.path.append(base + 'events/')
 
+if base + 'physics/' not in sys.path:
+    sys.path.append(base + 'physics/')
+
 if base + 'vtk/' not in sys.path:
     sys.path.append(base + 'vtk/')
 

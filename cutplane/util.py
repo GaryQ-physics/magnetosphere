@@ -4,6 +4,21 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 
+    
+def t_format(time, length=7):
+    time = list(time)
+    # TODO: Check that time is valid
+    if len(time) < 4:
+        # TODO: Throw error
+        pass
+    
+    if len(time) > length:
+        time = time[0:length]
+    else:
+        pad = length - len(time)
+        time = time + pad*[0]
+    return tuple(time)
+
 
 def maketag(time):
     """Create date/time string of the convention to tag files with given array of integers
@@ -14,16 +29,7 @@ def maketag(time):
     tstr((2000, 1, 1, 2, 3, 4, 567)) # 2000:01:01T02:03:04.567
     """
     
-    time = list(time)
-    # TODO: Check that time is valid
-    if len(time) < 4 or len(time)>7:
-        # TODO: Throw error
-        pass
-    else:
-        pad = 7 - len(time)
-        time = time + pad*[0]
-    
-    return '_%04d:%02d:%02dT%02d:%02d:%02d.%03d' % tuple(time)
+    return '_%04d:%02d:%02dT%02d:%02d:%02d.%03d' % t_format(time, length=7)
 
 
 def time2datetime(t):
@@ -59,12 +65,8 @@ def filename2time(filename):
 
 def time2filename(time):
 
-    if len(time) == 6:
-        time = list(time)
-        time.append(0)
-
     filename = conf["run_path"] + '3d__var_3_e' \
-        + '%04d%02d%02d-%02d%02d%02d-%03d' % tuple(time) + '.out.cdf'
+        + '%04d%02d%02d-%02d%02d%02d-%03d' % t_format(time, length=7) + '.out.cdf'
         
     return filename
 

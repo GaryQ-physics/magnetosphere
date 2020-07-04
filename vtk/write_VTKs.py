@@ -2,19 +2,24 @@
 
 import os
 import sys
+import numpy as np
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 
-import B_field_lines_write
-import J_field_lines_write
+print 'c0'
+import b_field_lines_write
+print 'c1'
 import structured_grid_write
-import cut_plane
+print 'c2'
 import cutplane
+print 'c3'
 import longitude_lines_write
+import j_field_lines_write
 import earth_write
 from events import events
 
+'''
 line_list = [2003, 11, 20, 7, 0, 176.00, 57.50]
 mlat = line_list[6]
 mlon = line_list[5]
@@ -25,7 +30,6 @@ Event = time + line_list[5:7]
 T = tuple(time)
 filename = conf["run_path"] + '3d__var_3_e' \
             + '%04d%02d%02d-%02d%02d%02d-%03d' % T + '.out.cdf'
-
 #structured_grid_write.writevtk(Event, 'J', calcTotal=True)
 #ret = structured_grid_write.Compute(Event, 'dB_EW', calcTotal=True)
 #structured_grid_write.writevtk(Event, 'dB_EW', binary=True, calcTotal=True)
@@ -34,7 +38,7 @@ filename = conf["run_path"] + '3d__var_3_e' \
 
 #J_field_lines_write.writevtk(Event)
 
-cut_plane.writedata(Event)
+#cut_plane.writedata(Event)
 #cutplane.writedata(time, mlat, mlon)
 
 #B_field_lines_write.writevtk(Event)
@@ -44,17 +48,33 @@ cut_plane.writedata(Event)
 #structured_grid_write.writevtk(Event, 'dB', binary=True, dx=0.2, dy=0.2, dz=0.2)
 #structured_grid_write.writevtk(Event, 'jy', dx=0.2, dy=0.2, dz=0.2)
 #structured_grid_write.writevtk(Event, 'dB_EW', calcTotal=True)
+'''
 
-data = events()
+line_list = [2003, 11, 20, 7, 0, 176.00, 57.50]
+
+data = np.array([[2003, 11, 20, 7, 0, 57.50, 176.00]])
+#data = events()
+
+print('data.shape = ' + str(data.shape))
+
+import time as tm
+to = tm.time()
 
 N = 1
 for i in range(N):
-    time = data[i,0:5]
-    mlat = data[5]
-    mlon = data[6]
-    Event = data[i,:]
+    time = data[i, 0:5]
+    mlat = data[i, 5]
+    mlon = data[i, 6]
+    Event = data[i, :]
+    print Event
+    structured_grid_write.writevtk(Event, 'p')
+    longitude_lines_write.writevtk(Event)
+    earth_write.writevtk(Event)
+    b_field_lines_write.writevtk(Event)
+    #j_field_lines_write.writevtk(Event)
 
-
+tf = tm.time()
+print('run time = ' + str(tf-to))
 
 
 if False:

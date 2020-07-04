@@ -70,7 +70,7 @@ def dXds(X, s, sign, Bx_interp, By_interp, Bz_interp):
     return [0., 0., 0.]
 
 
-def fieldlines(time, mag, s_grid=None, debug=False, runOnce = False):
+def fieldlines(time, mag, s_grid=None, debug=False, max_iterations=100, fieldvar='b'):
     mag = np.array(mag)
     if len(mag.shape) == 1:
         mag = [mag]
@@ -87,9 +87,9 @@ def fieldlines(time, mag, s_grid=None, debug=False, runOnce = False):
         DESCRIPTION. The default is np.arange(0., 200., 0.1)
     debug : TYPE, optional, boolean
         DESCRIPTION. The default is False.
-    runOnce : TYPE, optional, boolean
-        Only integrates field lines for one s_grid amount, instead of 
-        continuing until line goes out of bounds. The default is False.
+    max_iterations : TYPE, optional, int
+        stops integration after max_iterations amount, even if
+        line goes out of bounds. The default is 100
 
     Returns
     -------
@@ -121,14 +121,14 @@ def fieldlines(time, mag, s_grid=None, debug=False, runOnce = False):
     
     G2, G1, G3 = np.meshgrid(Y, X, Z) # different than in make_grid
     P = np.column_stack( (G1.flatten(), G2.flatten(), G3.flatten()) )
-    Bx = probe(time, P, var='bx').reshape(Nx, Ny, Nz)
-    By = probe(time, P, var='by').reshape(Nx, Ny, Nz)
-    Bz = probe(time, P, var='bz').reshape(Nx, Ny, Nz)
+    Fx = probe(time, P, var=fieldvar+'x').reshape(Nx, Ny, Nz)
+    Fy = probe(time, P, var=fieldvar+'y').reshape(Nx, Ny, Nz)
+    Fz = probe(time, P, var=fieldvar+'z').reshape(Nx, Ny, Nz)
 
     # https://stackoverflow.com/questions/21836067/interpolate-3d-volume-with-numpy-and-or-scipy
-    Bx_interp = RegularGridInterpolator((X,Y,Z), Bx)
-    By_interp = RegularGridInterpolator((X,Y,Z), By)
-    Bz_interp = RegularGridInterpolator((X,Y,Z), Bz)
+    Fx_interp = RegularGridInterpolator((X,Y,Z), Fx)
+    Fy_interp = RegularGridInterpolator((X,Y,Z), Fy)
+    Fz_interp = RegularGridInterpolator((X,Y,Z), Fz)
     ####################################################################
   
     
@@ -141,28 +141,38 @@ def fieldlines(time, mag, s_grid=None, debug=False, runOnce = False):
 
     IC = cx.MAGtoGSM(mag, time[0:6], 'sph', 'car')
     ret = []
+    linenum = 0
     for X0 in IC:
+        if debug:
+            print('linenum = ' + str(linenum))
         done = False
         solns = np.empty((0, 3)) # Combined solutions
         i = 0
         while not done:
-            if debug: print('i = ' + str(i))
-            soln = odeint(dXds, X0, s_grid, args=(-1, Bx_interp, By_interp, Bz_interp))
+            if debug:
+                print('i = ' + str(i))
+            soln = odeint(dXds, X0, s_grid, args=(-1, Fx_interp, Fy_interp, Fz_interp))
             R = soln[:, 0]**2+soln[:, 1]**2 + soln[:, 2]**2
             # define condition on the field line points
             # Find first location where soln steps out-of-bounds
             #tr = np.where( False == (R >= 1) & (soln[:,0] > -30.) & (np.abs(soln[:, 2]) < 20.) )        
             # Boolean array.
+
+
             tr = (R >= 1) & (soln[:,0] > -30.) & (np.abs(soln[:, 2]) < 20.)
+            # RuntimeWarning: invalid value encountered in greater_equal
+
+
             # Indices where stop conditions satisfied
             tr_out = np.where(tr == False)
-            if debug: print(tr)
+            if debug:
+                print(tr)
             if tr_out[0].size > 0:
                 # Stop condition found at least once. Use solution up to that point.s
                 solns = np.vstack((solns, soln[0:tr_out[0][0] + 1, :]))
                 done = True
-            elif runOnce:
-                solns = np.vstack((solns, soln))   # return soln faster?
+            elif max_iterations == i + 1:
+                solns = np.vstack((solns, soln))   # return soln   faster?
                 done = True
             else:
                 # New initial condition is stop point.
@@ -172,6 +182,7 @@ def fieldlines(time, mag, s_grid=None, debug=False, runOnce = False):
                 solns = np.vstack((solns, soln[0:-1, :]))
             i = i + 1
         ret.append(solns)
+        linenum += 1
             
     return ret
 
@@ -182,9 +193,9 @@ def unitvector(time, mag, debug=False):
     # 0, 0.5, 1.0 along the field line from the starting point.
     s_grid = np.array([0., 0.5, 1.])
     # Compute (x, y, z) of points at s_grid values.
-    sols = fieldlines(time, mag, s_grid=s_grid, debug=debug, runOnce = True)
+    sols = fieldlines(time, mag, s_grid=s_grid, debug=debug, max_iterations=1)
     ret = []
-    for sol in sols
+    for sol in sols:
         if debug: print(sol.shape)
         # initialize vectors for defining field line cut plane
         v1 = (np.nan)*np.empty((3, ))

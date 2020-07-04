@@ -8,11 +8,13 @@ from config import conf
 
 import _CCMC as ccmc
 from units_and_constants import phys
-import pos_sun as ps
-#from cut_plane import ex_data
 import biot_savart as bs
 from biot_savart_demo1 import J_kunits
 from probe import probe
+from util import time2filename, maketag
+import cxtransform as cx
+
+
 
 rbody = 1.25 #???
 global_x_min = -224.
@@ -30,22 +32,15 @@ Test = False
 debug = False
 
 r_min = 3. # this is minimum distance for kameleon built in tracer to work
-           # and also one of nums cited in CalcDeltaB (Lutz Rastätter, Gábor Tóth, Maria M. Kuznetsova, Antti A. Pulkkinen)
-def J_kameleon(kam, interp, X):
-    Jkunits = (np.nan)*np.empty(X.shape)
-    for k in range(X.shape[0]):
-        if np.dot(X[k,:], X[k,:]) >= rbody**2:
-            Jkunits[k, 0] = ex_data(kam, interp, 'jx', X[k,0], X[k,1], X[k,2])
-            Jkunits[k, 1] = ex_data(kam, interp, 'jy', X[k,0], X[k,1], X[k,2])
-            Jkunits[k, 2] = ex_data(kam, interp, 'jz', X[k,0], X[k,1], X[k,2])
-        else:
-            Jkunits[k, 0] = 0.
-            Jkunits[k, 1] = 0.
-            Jkunits[k, 2] = 0.
-    return Jkunits
+           # and also one of nums cited in CalcDeltaB (Lutz Rastatter, Gabor Toth, Maria M. Kuznetsova, Antti A. Pulkkinen)
 
 def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
     """
+    Either:
+        Event = [year, month, day, hours, minutes, MLAT, MLON]    (MLAT and MLON in degrees)
+    or:
+        Event = [[r, MLAT, MLON], time_list]
+
     Given an event time (and location), outputs an array for a grid of GSM coordinates
         covering the magnetosphere, and a corresponding array of the physical quantity
         var at those grid points.
@@ -56,33 +51,25 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
     var can be one of the following strings: 'J', 'dB_EW', 'dB_NS', 'bx', 'by', 'bz', 'jx', 'jy', 'jz', 'p', 'rho'
     """
 
-    #Event = [year, month, day, hours, minutes, seconds, miliseconds, MLONdeg, MLATdeg]
-    time = Event[0:7]
-    MLON = Event[7]
-    MLAT = Event[8]
+    if isinstance(Event[0],list):
+        mag = np.array(Event[0])
+        time = Event[1]
+    else:
+        time = Event[0:5]
+        mag = np.array([1., Event[5], Event[6]])
 
     if Test:
         X0 = np.array([0., 0.75, 0.])
         Npole = np.array([0., 0., 1.])
     else:
-        X0 = ps.MAGtoGSM([1., MLAT, MLON], time[0:6], 'sph', 'car')
-        Npole = ps.GEOtoGSM([0., 0., 1.], time[0:6], 'car', 'car')
+        X0 = cx.MAGtoGSM(mag, time, 'sph', 'car')
+        Npole = cx.GEOtoGSM([0., 0., 1.], time, 'car', 'car')
 
     # datafile
-    filename = conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-%03d' % tuple(time) + '.out.cdf'
-
-    '''
-    # open kameleon ---------------
-    kameleon = ccmc.Kameleon()
-    kameleon.open(filename)
-    print(filename, "Opened " + filename)
-    interpolator = kameleon.createNewInterpolator()
-    #-----------------------------
-    '''
+    filename = time2filename(time)
+    #conf["run_path"] + '3d__var_3_e' + '%04d%02d%02d-%02d%02d%02d-%03d' % tuple(time) + '.out.cdf'
 
     #X = np.concatenate((np.arange(-200,-20.05,dx_tail), np.arange(-20.,15.,dx) ))
-
-
     #tail = -200.
     #tail = -100.
     tail = -20.
@@ -107,12 +94,6 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
         if Test:
             Jin = J_kunits(Xgrid)*(phys['muA']/phys['m']**2)
         else:
-            '''
-            kameleon.loadVariable('jx')
-            kameleon.loadVariable('jy')
-            kameleon.loadVariable('jz')
-            Jin = J_kameleon(kameleon, interpolator, Xgrid)*(phys['muA']/phys['m']**2)
-            '''
             Jin = probe(time, Xgrid, ['jx','jy','jz'])*(phys['muA']/phys['m']**2)
         if debug:
             print('unit_v=',unit_v)
@@ -131,20 +112,7 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
         if debug:
             print('Aa=',Aa)
     else:
-        '''
-        kameleon.loadVariable(var)
-        Aa = (np.nan)*np.empty((Xgrid.shape[0], ))
-        for l in range(Aa.size):
-            Aa[l] = ex_data(kameleon, interpolator, var, Xgrid[l, 0], Xgrid[l, 1], Xgrid[l, 2])
-        '''
         Aa = probe(time, Xgrid, var=var, debug=debug)
-
-    '''
-    # close kameleon ---------------------
-    kameleon.close()
-    print("Closed " + filename)
-    #-------------------------------
-    '''
 
     if calcTotal:
         total = np.sum(Aa)
@@ -157,15 +125,24 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
             return total
     return [Aa, Xgrid, ret[1], ret[2], ret[3]]
 
-def writevtk(Event, var, calcTotal=False, binary=False, dx=.3, dy=.3, dz=.3, fname=None):
+def writevtk(Event, var, calcTotal=False, binary=True, dx=.3, dy=.3, dz=.3, fname=None):
     Aa, Bb, Nx, Ny, Nz = Compute(Event, var, calcTotal=calcTotal, dx=dx, dy=dy, dz=dz)
-    time = Event[0:7]
-    tag = '_%04d:%02d:%02dT%02d:%02d:%02d.%03d' % tuple(time)
+
+    if isinstance(Event[0],list):
+        time = Event[1]
+    else:
+        time = Event[0:5]
+
+    #tag = '_%04d:%02d:%02dT%02d:%02d:%02d.%03d' % tuple(time)
+    tag = maketag(time)
     subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
-    if fname == None:
-        fname = conf["run_path_derived"] + subdir + 'structured_grid_' + var + tag + '.vtk'
+
     if not os.path.exists(conf["run_path_derived"] + subdir):
         os.mkdir(conf["run_path_derived"] + subdir)
+
+    if fname == None:
+        fname = conf["run_path_derived"] + subdir + 'structured_grid_' + var + tag + '.vtk'
+
 
     if debug:
         print('also Nx = ',Nx)
