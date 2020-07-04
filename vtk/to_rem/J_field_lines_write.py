@@ -180,3 +180,72 @@ def writevtk(Event):
         f.close()
         if debug:
             print('Wrote ' + out_fname)
+
+
+
+'''
+global_x_min = -224.
+global_x_max = 32.
+global_y_min = -128.
+global_y_max = 128.
+global_z_min = -128.
+global_z_max = 128.
+
+# run parameters
+#Nlong = 5
+#Nb = 6
+sign = -1  # changes sign of magnetic field used to trace the field lines
+debug = False
+
+xlims = [-100., 15.]
+ylims = [-10., 10.]
+zlims = [-15., 15.]
+dx = 0.3
+dy = 0.3
+dz = 0.3
+
+Grid = bs.make_grid(xlims, ylims, zlims, dx, dy, dz)[0]
+no_origin = xlims[0] > 0. or xlims[1] < 0. or ylims[0] > 0. or ylims[1] < 0. or zlims[0] > 0. or zlims[1] < 0.
+if no_origin:
+    print('WARNING: grid does not contain origin')
+    X = np.arange(xlims[0], xlims[1]+dx, dx)
+    Y = np.arange(ylims[0], ylims[1]+dy, dy)
+    Z = np.arange(zlims[0], zlims[1]+dz, dz)
+else:
+    X = np.concatenate([ -np.flip(np.delete(np.arange(0., -xlims[0]+dx, dx), 0), 0) , np.arange(0., xlims[1]+dx, dx) ])
+    Y = np.concatenate([ -np.flip(np.delete(np.arange(0., -ylims[0]+dy, dy), 0), 0) , np.arange(0., ylims[1]+dy, dy) ])
+    Z = np.concatenate([ -np.flip(np.delete(np.arange(0., -zlims[0]+dz, dz), 0), 0) , np.arange(0., zlims[1]+dz, dz) ])
+Nx = X.size
+Ny = Y.size
+Nz = Z.size
+
+filename = conf['run_path'] + '3d__var_3_e20031120-070000-000.out.cdf'
+kameleon = ccmc.Kameleon()
+if debug:
+    print("Opening " + filename)
+kameleon.open(filename)
+if debug:
+    print("Opened " + filename)
+interpolator = kameleon.createNewInterpolator()
+# https://stackoverflow.com/questions/21836067/interpolate-3d-volume-with-numpy-and-or-scipy
+Bx = np.nan*np.empty((Nx,Ny,Nz))
+By = np.nan*np.empty((Nx,Ny,Nz))
+Bz = np.nan*np.empty((Nx,Ny,Nz))
+kameleon.loadVariable('bx')
+kameleon.loadVariable('by')
+kameleon.loadVariable('bz')
+for i in range(Nx):
+    for j in range(Ny):
+        for k in range(Nz):
+            Bx[i,j,k] = interpolator.interpolate('bx', X[i], Y[j], Z[k])
+            By[i,j,k] = interpolator.interpolate('by', X[i], Y[j], Z[k])
+            Bz[i,j,k] = interpolator.interpolate('bz', X[i], Y[j], Z[k])
+kameleon.close()
+if debug:
+    print("Closed " + filename)
+
+Bx_interp = RegularGridInterpolator((X,Y,Z), Bx)
+By_interp = RegularGridInterpolator((X,Y,Z), By)
+Bz_interp = RegularGridInterpolator((X,Y,Z), Bz)
+'''
+

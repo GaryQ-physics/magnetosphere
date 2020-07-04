@@ -1,19 +1,11 @@
-# earth_write
-
 import sys
 import os
 import numpy as np
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
-import pos_sun as ps
 
-# units
-deg = (np.pi/180.)
-amin = deg/60.
-hr = 1.
-minn = hr/60.
-s = minn/60.
+import cxtransform as cx
 
 
 
@@ -47,10 +39,7 @@ def writevtk(Event, Nt=100, Np=100):
     z = R*np.cos(B2)
     XYZ = np.column_stack((x, y, z))
 
-    XYZr = (np.nan)*np.empty(XYZ.shape)
-    #for l in range(B1.size):
-    #XYZr[l, :] = ps.GEOtoGSM(XYZ[l, :], time, 'car', 'car')
-    XYZr = ps.GEOtoGSM(XYZ, time, 'car', 'car')
+    XYZr = cx.GEOtoGSM(XYZ, time, 'car', 'car')
 
     print("Writing " + fname)
     f = open(fname,'w')
