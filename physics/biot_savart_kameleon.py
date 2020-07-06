@@ -45,6 +45,90 @@ Typical outputs:
     time to process all slices (not including suming up) = 2348.29029 sec
     Btot_EW = -8.14956342968862
 
+N = 65
+fullVolume = False
+slices = 33
+points in slice = 289
+total points = 9537
+X[0], X[-1], dx = -96.000000, 32.000000, 4.000000
+Y[0], Y[-1], dy = -32.000000, 32.000000, 4.000000
+Z[0], Z[-1], dz = -32.000000, 32.000000, 4.000000
+para = False
+time to process all slices (not including suming up) = 0.20150 min
+Btot = 
+[ -3.81502299   9.8473954  -40.06357733]
+Btot_norm = 41.43206276763158
+
+N = 129
+fullVolume = False
+slices = 65
+points in slice = 1089
+total points = 70785
+X[0], X[-1], dx = -96.000000, 32.000000, 2.000000
+Y[0], Y[-1], dy = -32.000000, 32.000000, 2.000000
+Z[0], Z[-1], dz = -32.000000, 32.000000, 2.000000
+para = True
+time to process all slices (not including suming up) = 0.15039 min
+Btot = 
+[-2.3255107  -1.41573583 -7.77186095]
+Btot_norm = 8.234933548023848
+
+N = 129
+fullVolume = True
+slices = 129
+points in slice = 16641
+total points = 2146689
+X[0], X[-1], dx = -224.000000, 32.000000, 2.000000
+Y[0], Y[-1], dy = -128.000000, 128.000000, 2.000000
+Z[0], Z[-1], dz = -128.000000, 128.000000, 2.000000
+para = True
+time to process all slices (not including suming up) = 0.42586 min
+Btot = 
+[-2.31410359 -1.34009783 -7.8129071 ]
+Btot_norm = 8.257872300049227
+
+N = 257
+fullVolume = False
+slices = 129
+points in slice = 4225
+total points = 545025
+X[0], X[-1], dx = -96.000000, 32.000000, 1.000000
+Y[0], Y[-1], dy = -32.000000, 32.000000, 1.000000
+Z[0], Z[-1], dz = -32.000000, 32.000000, 1.000000
+para = True
+time to process all slices (not including suming up) = 0.28954 min
+Btot = 
+[-4.93034021  0.05562719  0.85745892]
+Btot_norm = 5.00465630920011
+
+N = 257
+fullVolume = True
+slices = 257
+points in slice = 66049
+total points = 16974593
+X[0], X[-1], dx = -224.000000, 32.000000, 1.000000
+Y[0], Y[-1], dy = -128.000000, 128.000000, 1.000000
+Z[0], Z[-1], dz = -128.000000, 128.000000, 1.000000
+para = True
+time to process all slices (not including suming up) = 1.63295 min
+Btot = 
+[-4.92360583  0.13197522  0.81855364]
+Btot_norm = 4.992929186467655
+
+N = 2561
+fullVolume = False
+slices = 1281
+points in slice = 410881
+total points = 526338561
+X[0], X[-1], dx = -96.000000, 32.000000, 0.100000
+Y[0], Y[-1], dy = -32.000000, 32.000000, 0.100000
+Z[0], Z[-1], dz = -32.000000, 32.000000, 0.100000
+para = True
+time to process all slices (not including suming up) = 39.38515 min
+Btot = 
+[-3.13902583  3.25972791 -3.59094972]
+Btot_norm = 5.77704328474687
+
 """
 
 import os
@@ -55,19 +139,21 @@ from config import conf
 
 import numpy as np
 import biot_savart as bs
-import pos_sun as ps
+import cxtransform as cx
 from units_and_constants import phys
-#from util import time2filename, filemeta
 from probe import probe
 
 
-line_list = [2003, 11, 20, 7, 0, 176.00, 57.50]
-time = line_list[0:5] + [0, 0.]
-Event = time + line_list[5:7]
-MLON = Event[5]
-MLAT = Event[6]
+data = np.array([[2003, 11, 20, 7, 0, 57.50, 176.00]])
+#data = events()
 
-Test = False
+time = data[0, 0:5]
+mlat = data[0, 5]
+mlon = data[0, 6]
+Event = data[0, :]
+
+
+#Test = False
 para = True
 fullVolume = False
 
@@ -81,7 +167,7 @@ global_z_max = 128.
 # difference of 256 for all
 diff = 256.
 
-#n = 128 # for testing
+#n = 256 # for testing
 n = 2560
 N = n + 1 # for testing
 
@@ -107,12 +193,12 @@ Gy, Gz = np.meshgrid(Y,Z)
 Gy = Gy.flatten(order='C')
 Gz = Gz.flatten(order='C')
 
-if Test:
-    X0 = np.array([0., 0.75, 0.])
-    Npole = np.array([0., 0., 1.])
-else:
-    X0 = ps.MAGtoGSM([1., MLAT, MLON], time[0:6], 'sph', 'car')
-    Npole = ps.GEOtoGSM([0., 0., 1.], time[0:6], 'car', 'car')
+#if Test:
+#    x0 = np.array([0., 0.75, 0.])
+    #Npole = np.array([0., 0., 1.])
+
+x0 = cx.MAGtoGSM([1., mlat, mlon], time, 'sph', 'car')
+#Npole = cx.GEOtoGSM([0., 0., 1.], time, 'car', 'car')
 
 def dBslice(i, debug=False):
     Grid = np.column_stack([X[i]*np.ones(Gy.shape), Gy, Gz])
@@ -122,29 +208,10 @@ def dBslice(i, debug=False):
         print(Grid.shape)
         print(J.shape)
 
-    return bs.B_EW(X0, Grid, J, Npole, dx*dy*dz)
+    deltaB = bs.deltaB('deltaB', x0, Grid, J, V_char = dx*dy*dz)
+    return deltaB
+    #return bs.B_EW(X0, Grid, J, Npole, dx*dy*dz)
 
-'''
-if para:
-    from joblib import Parallel, delayed
-    import multiprocessing
-    num_cores = multiprocessing.cpu_count()
-    if num_cores is not None and num_cores > len(vars):
-        num_cores = len(vars)
-    print('Parallel processing {0:d} variable(s) using {1:d} cores'\
-          .format(len(opts.keys()), num_cores))
-    results = Parallel(n_jobs=num_cores)(\
-                delayed(process_var)(var, opts[var]) for var in vars)
-else:
-    print('Serial processing {0:d} variable(s).'.format(len(opts.keys())))
-    i = 0
-    results = []
-    for var in vars:
-        results.append(process_var(var, opts[var]))
-        i = i + 1
-
-return results
-'''
 
 import time as t_module
 to = t_module.time()
@@ -157,14 +224,15 @@ if para:
         num_cores = X.size
     print('Parallel processing {0:d} slices(s) using {1:d} cores'\
           .format(X.size, num_cores))
-    dB_EW = Parallel(n_jobs=num_cores)(delayed(dBslice)(j) for j in range(X.size))
-    dB_EW = np.array(dB_EW) # was list
+    B_slices = Parallel(n_jobs=num_cores)(delayed(dBslice)(j) for j in range(X.size))
+    B_slices = np.array(B_slices) # was list of (3,) numpy arrays
 else:
-    dB_EW = np.nan*np.empty(X.shape)
+    B_slices = np.nan*np.empty((X.size, 3))
     for j in range(X.size):
-        dB_EW[j] = dBslice(j)
+        B_slices[j,:] = dBslice(j)
 
 tf = t_module.time()
+#print(B_slices.shape)
 
 print('N = ' + str(N))
 print('fullVolume = ' + str(fullVolume))
@@ -175,10 +243,10 @@ print('X[0], X[-1], dx = {0:f}, {1:f}, {2:f}'.format(X[0], X[-1], dx))
 print('Y[0], Y[-1], dy = {0:f}, {1:f}, {2:f}'.format(Y[0], Y[-1], dy))
 print('Z[0], Z[-1], dz = {0:f}, {1:f}, {2:f}'.format(Z[0], Z[-1], dz))
 print('para = ' + str(para))
-print('time to process all slices (not including suming up) = {0:.5f} sec'\
-        .format(tf-to))
+print('time to process all slices (not including suming up) = {0:.5f} min'\
+        .format((tf-to)/60.))
 
-Btot_EW = np.sum(dB_EW)
+Btot = np.sum(B_slices, axis=0)
 
-#print(dB_EW.shape)
-print('Btot_EW = ' + str(Btot_EW))
+print('Btot = \n' + str(Btot))
+print('Btot_norm = ' + str(np.linalg.norm(Btot)))
