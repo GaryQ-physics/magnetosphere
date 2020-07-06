@@ -33,7 +33,7 @@ def getdata(filename, debug=True):
 
     return [data, headers]
 
-def analyzedata(filename, MLON, MLAT, debug=True):
+def analyzedata(filename, MLAT, MLON, debug=True):
     data, headers = getdata(filename, debug=debug)
 
     print(headers)
@@ -43,8 +43,9 @@ def analyzedata(filename, MLON, MLAT, debug=True):
     k = np.where(Tr==True)[0][0]
     print(k)
     print(data[k, 0],data[k, 1])
-    for i in range(2): # i=0 <-> north , i=1 <-> east
+    for i in range(3): # i=0 <-> north , i=1 <-> east , i=3 <-> down
         print(headers[2+i], headers[5+i], headers[8+i], headers[11+i], headers[14+i], 'sum should equal full dB')
         print(data[k, 2+i], data[k, 5+i], data[k, 8+i], data[k, 11+i], data[k, 14+i], data[k, 5+i] + data[k, 8+i] + data[k, 11+i] + data[k, 14+i])
-    dB_norm_Mhd = np.sqrt(data[k, 5+0]**2 + data[k, 5+1]**2)
+    dB_norm_Mhd = np.sqrt(data[k, 5+0]**2 + data[k, 5+1]**2 + data[k, 5+2]**2)
+    print(headers[5+0] + '  ' + headers[5+1] + '  '+  headers[5+2])
     print('dB_norm_Mhd = ' + str(dB_norm_Mhd))
