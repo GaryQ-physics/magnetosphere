@@ -4,27 +4,27 @@ import numpy as np
 from units_and_constants import phys
 
 
-def deltaB(variable, X0, X, J, V_char = 1.):
+def deltaB(variable, x0, X, J, V_char = 1.):
     X=np.array(X)
     if X.shape == (3,):
         X=np.array([X])
 
-    X0=np.array(X0)
+    x0=np.array(x0)
     
 
-    X0 = np.repeat([X0], X.shape[0], axis=0)
+    X0 = np.repeat([x0], X.shape[0], axis=0)
     R = X0 - X
 
     Rcubed = (R[:,0]**2 + R[:,1]**2 + R[:,2]**2)**1.5
     divRcubed = 1./Rcubed
 
-    dBnT = V_char*(phys['mu0']/(4*np.pi))*( np.cross(J, R)*divRcubed[:,np.newaxis] ) #https://stackoverflow.com/questions/5795700/multiply-numpy-array-of-scalars-by-array-of-vectors
+    dB = V_char*(phys['mu0']/(4*np.pi))*( np.cross(J, R)*divRcubed[:,np.newaxis] ) #https://stackoverflow.com/questions/5795700/multiply-numpy-array-of-scalars-by-array-of-vectors
     if(variable=='dB'):
-        return dBnT
+        return dB
 
-    deltaBnT = np.sum(dBnT, axis=0)
+    deltaB = np.sum(dB, axis=0)
     if(variable=='deltaB'):
-        return deltaBnT
+        return deltaB
 
     '''
     if(variable=='deltaB_mag'):

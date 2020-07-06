@@ -103,12 +103,12 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
         if var=='J':
             Aa = Jin
         else:
-            deltaBnT = bs.deltaB('dB', X0, Xgrid, Jin, V_char = dx*dy*dz) #/nT
+            dB = bs.deltaB('dB', X0, Xgrid, Jin, V_char = dx*dy*dz) #/nT
             if var == 'dB':
-                Aa = np.sqrt(np.sum(deltaBnT**2, axis=1))
+                Aa = np.sqrt(np.sum(dB**2, axis=1))
             else:
                 # https://stackoverflow.com/questions/15616742/vectorized-way-of-calculating-row-wise-dot-product-two-matrices-with-scipy
-                Aa = np.einsum('ij,ij->i', deltaBnT, unit_v) 
+                Aa = np.einsum('ij,ij->i', dB, unit_v) 
         if debug:
             print('Aa=',Aa)
     else:
