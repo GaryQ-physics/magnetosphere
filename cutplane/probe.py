@@ -5,13 +5,13 @@ import numpy as np
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 
-sys.path.append(conf['base'] + 'kameleonV-0.1.0/')
+sys.path.append(conf['base'] + 'kameleonV-0.2.3/')
 #import kameleonV
 
 from util import time2filename, filemeta
 #import _CCMC as ccmc
 
-def probe(time, P, var=None, debug=False, dictionary=False, usekV=True):
+def probe(time, P, var=None, debug=False, dictionary=False, usekV=False):
     ###################
     if usekV:
         import kameleonV

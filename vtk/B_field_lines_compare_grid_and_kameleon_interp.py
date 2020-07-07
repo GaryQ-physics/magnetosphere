@@ -7,7 +7,7 @@ from scipy.integrate import odeint
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
-import _CCMC as ccmc
+#import _CCMC as ccmc
 
 import pos_sun as ps
 import b_field_lines_write as bfl

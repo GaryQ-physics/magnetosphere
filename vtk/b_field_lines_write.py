@@ -16,7 +16,6 @@ import cxtransform as cx
 
 from scipy.interpolate import RegularGridInterpolator
 from scipy.integrate import odeint
-import _CCMC as ccmc
 
 
 def Compute(Event, Nb, debug=False):
