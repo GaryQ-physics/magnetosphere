@@ -9,7 +9,7 @@ import numpy as np
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
-from urlretrieve import urlretrieve
+from util import urlretrieve
 
 
 def time2mag_grid_file(time):
