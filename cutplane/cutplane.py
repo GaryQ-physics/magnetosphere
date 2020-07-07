@@ -9,7 +9,7 @@ from scipy.integrate import odeint
 import cxtransform as cx
 from scipy.interpolate import RegularGridInterpolator
 
-from util import time2filename, maketag
+from util import maketag
 from probe import probe
 
 
@@ -70,11 +70,8 @@ def dXds(X, s, sign, Bx_interp, By_interp, Bz_interp):
     return [0., 0., 0.]
 
 
-def fieldlines(time, mag, s_grid=None, debug=False, max_iterations=100, fieldvar='b'):
-    mag = np.array(mag)
-    if len(mag.shape) == 1:
-        mag = [mag]
-    """
+def fieldlines(time, mag, fieldvar='b', s_grid=None, max_iterations=100, debug=False):
+    """Trace field lines from start points
 
     Parameters
     ----------
@@ -94,9 +91,13 @@ def fieldlines(time, mag, s_grid=None, debug=False, max_iterations=100, fieldvar
     Returns
     -------
     ret : list of N arrays
-        DESCRIPTION: the N field lines 
+        N field lines 
 
     """
+
+    mag = np.array(mag)
+    if len(mag.shape) == 1:
+        mag = [mag]
 
     # Trace 3-D field line
     # TODO: Consider using
@@ -133,7 +134,7 @@ def fieldlines(time, mag, s_grid=None, debug=False, max_iterations=100, fieldvar
   
     
     if s_grid is None:
-        s_grid = np.arange(0., 200., 0.1)
+        s_grid = np.arange(0., 10., 0.1)
     # Trace field line for a total length of smax, and check if stop conditions
     # satified. If not satified, trace for another total length of smax.
     # Note that Python 3 version of integration library has stop function
@@ -221,6 +222,7 @@ def unitvector(time, mag, debug=False):
         U1 = np.cross(U2, U3)
         ret.append([U1, U2, U3])
     return ret
+
 
 def writedata(time, mlat, mlon, debug=False):
     """Write output of unitvector() to file

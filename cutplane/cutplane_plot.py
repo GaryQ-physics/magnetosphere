@@ -144,12 +144,14 @@ def plot(time, parameter, arg3,
     y_1d = np.arange(ylims[0], ylims[1] + dy, dy)
     X, Y = np.meshgrid(x_1d, y_1d) # grid of points on the cut plane
 
-    if debug:
-        print("Interpolating {0:s} onto {1:d}x{2:d} grid" \
-              .format(parameter,len(x_1d),len(y_1d)))
 
     if type(arg3) == str:
-        ext = "-" + parameter + '_plane_' + arg3 + '-dx_' + str(dx) + '-dy_' + str(dy) + '.npy'
+        ext = "-" + parameter + '_plane_' + arg3 \
+                + '-dx_' + str(dx) \
+                + '-dy_' + str(dy) \
+                + '-xlims' + str(xlims[0]) + ',' + str(xlims[1]) \
+                + '-ylims' + str(ylims[0]) + ',' + str(ylims[1]) \
+                + '.npy'
         cachedir = conf['run_path_derived'] + "cutplanes/cache/" + parameter + "/"
         if not os.path.exists(cachedir):
             os.makedirs(cachedir)
@@ -157,10 +159,15 @@ def plot(time, parameter, arg3,
         if os.path.exists(npfile):
             print("Reading " + npfile)
             Z = np.load(npfile)
+            print("Read " + npfile)
         else:
-            Z = data2d(time, parameter, X, Y, [U1, U2, U3], debug=False)
-            print("Saving " + npfile)
+            if debug:
+                print("Interpolating {0:s} onto {1:d}x{2:d} grid" \
+                      .format(parameter,len(x_1d),len(y_1d)))
+            Z = data2d(time, parameter, X, Y, [U1, U2, U3], debug=debug)
+            print("Writing " + npfile)
             np.save(npfile, Z)
+            print("Wrote " + npfile)
 
     if field_lines is not None:
         linesU = []
