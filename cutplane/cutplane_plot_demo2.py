@@ -39,17 +39,17 @@ from events import events
 event_list = events()
 
 debug         = False  # Show extra logging information
-para          = True   # Process in parallel using all CPUs
+para          = False  # Process in parallel using all CPUs
 showplot      = False  # Show plot on screen. Set to false for long runs.
                        # Does not always work in Spyder/IPython, especially when
                        # para=True. Starting a new console sometimes fixes.
                        # TODO: Read PNG and display using PIL instead.
-plot_type     = 2
+plot_type     = 1
 
 # Testing options
 first_only    = False  # Do only low-res first processing
 second_only   = False  # Execute only high-res second processing
-test_serial   = True   # Process two files in serial
+test_serial   = True  # Process two files in serial
 test_parallel = False  # Process two files in parallel
 
 vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
@@ -78,7 +78,7 @@ event_list = np.hstack((event_list, np.reshape(ne, (ne.size, 1))))
 if test_serial:
     para = False
     vars = ['p']
-    opts["nf"] = 3
+    opts["nf"] = 2
     opts["showplot"] = True
 
 if test_parallel:
@@ -151,7 +151,7 @@ def process_var(var, opts):
                              dx=opts['delta'], dy=opts['delta'],
                              xlims=opts['xlims'], ylims=opts['ylims'],
                              dpi=opts['dpi'], showplot=opts['showplot'],
-                             zticks=zticks,
+                             zticks=zticks, logz=True,
                              png=True, pngfile=filename_png, debug=debug)
         elif plot_type == 2:
 
@@ -185,8 +185,11 @@ def process_var(var, opts):
             # Not sure why next two code lines needed. Is it due to pandas import
             # in another hapiclient function? Issue this addresses described
             # at https://www.gitmemory.com/issue/facebook/prophet/999/500035319
-            from pandas.plotting import register_matplotlib_converters
-            register_matplotlib_converters()
+            #from pandas.plotting import register_matplotlib_converters
+            #register_matplotlib_converters()
+            
+            if len(dts) < 1:
+                continue
             
             from matplotlib import pyplot as plt
             from hapiclient.plot.datetick import datetick
@@ -264,9 +267,11 @@ def process_var(var, opts):
 
         # This information will be the same for all vars but will
         # be stored in each variable's .pkl file.
-        minmax['probe']['ux'][k-1] = d['ux']
-        minmax['probe']['bz'][k-1] = d['bz']
-        minmax['probe']['n_events'][k-1] = d['n_events']
+
+        if plot_type == 2:
+            minmax['probe']['ux'][k-1] = d['ux']
+            minmax['probe']['bz'][k-1] = d['bz']
+            minmax['probe']['n_events'][k-1] = d['n_events']
 
         minmax['min'][k-1] = info['min']
         minmax['max'][k-1] = info['max']
