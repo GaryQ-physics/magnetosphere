@@ -74,15 +74,15 @@ def time2filename(time):
 def dirlist(rootdir, **kwargs):
     """Recursive file list constrained by regular expression
     
-    file_list(rootdir)
-    file_list(rootdir, regex=regex)
+    dirlist(rootdir)
+    dirlist(rootdir, regex=regex)
 
     Example:
     -------
     
-    from file_list import file_list
-    fl = file_list('.', regex='\.py$') # Find files ending in .py
-    print(fl)
+    from util import dirlist
+    dl = dirlist('.', regex='\.py$') # Find files ending in .py
+    print(dl)
     
     """
     import re
@@ -99,8 +99,6 @@ def dirlist(rootdir, **kwargs):
 
 
 def filelist(listtxt = 'ls-1.txt'):
-
-    from urlretrieve import urlretrieve
 
     # Get list of run files
     urlretrieve(conf['run_url'] + listtxt, conf['run_path'] + listtxt)
