@@ -28,8 +28,10 @@ v = cx.MAGtoGSM(pos, time, 'car', 'car')
 MLT = cx.MAGtoMLT(pos, time, csys='car')
 
 for i in range(data_car.shape[0]):
-    print( str(v[i,:]) + ' : ' + str(cx.MAGtoGSM(pos[i,:], time[i,:], 'car', 'car')) + ' : ' + str(ps.MAGtoGSM(pos[i,:], time[i,:], 'car', 'car')) )
-    print( str(MLT[i]) + ' : ' + str(cx.MAGtoMLT(pos[i,:], time[i,:], csys='car')) + ' : ' + str(ps.MAGtoMLT(pos[i,:], time[i,:])) )
+    print( str(v[i,:]) + ' : ' + str(cx.MAGtoGSM(pos[i,:], time[i,:], 'car', 'car')) \
+          + ' : ' + str(ps.MAGtoGSM(pos[i,:], time[i,:], 'car', 'car')) )
+    print( str(MLT[i]) + ' : ' + str(cx.MAGtoMLT(pos[i,:], time[i,:], csys='car')) \
+          + ' : ' + str(ps.MAGtoMLT(pos[i,:], time[i,:])) )
 
 
 time = np.array(data_sph[:,0:6], dtype=float)
@@ -39,6 +41,7 @@ v = cx.MAGtoGSM(pos, time, 'sph', 'car')
 MLT = cx.MAGtoMLT(pos[:,1], time, onlyMLON=True)
 
 for i in range(data_sph.shape[0]):
-    print( str(v[i,:]) + ' : ' + str(cx.MAGtoGSM(pos[i,:], time[i,:], 'sph', 'car')) + ' : ' + str(ps.MAGtoGSM(pos[i,:], time[i,:], 'sph', 'car')) )
-    print( str(MLT[i]) + ' : ' + str(cx.MAGtoMLT(pos[i,1], time[i,:], csys='car')) + ' : ' + str(ps.MAGtoMLT(pos[i,1], time[i,:], csys='car')) )
-
+    print( str(v[i,:]) + ' : ' + str(cx.MAGtoGSM(pos[i,:], time[i,:], 'sph', 'car')) \
+          + ' : ' + str(ps.MAGtoGSM(pos[i,:], time[i,:], 'sph', 'car')) )
+    print( str(MLT[i]) + ' : ' + str(cx.MAGtoMLT(pos[i,1], time[i,:], csys='car')) \
+          + ' : ' + str(ps.MAGtoMLT(pos[i,1], time[i,:], csys='car')) )
