@@ -6,7 +6,6 @@ import numpy as np
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 
-import _CCMC as ccmc
 from units_and_constants import phys
 import biot_savart as bs
 from biot_savart_demo1 import J_kunits

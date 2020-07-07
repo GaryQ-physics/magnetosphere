@@ -75,6 +75,8 @@ for i in range(N):
 
 tf = tm.time()
 print('run time = ' + str(tf-to))
+#run time = 45.9153749943  with usekV=True
+#run time = 60.5226249695  with usekV=False
 
 
 if False:

@@ -1,14 +1,23 @@
 import os
 import sys
+import numpy as np
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 
-import numpy as np
-from util import time2filename, filemeta
-import _CCMC as ccmc
+sys.path.append(conf['base'] + 'kameleonV-0.2.3/')
+#import kameleonV
 
-def probe(time, P, var=None, debug=False, dictionary=False):
+from util import time2filename, filemeta
+#import _CCMC as ccmc
+
+def probe(time, P, var=None, debug=False, dictionary=False, usekV=False):
+    ###################
+    if usekV:
+        import kameleonV
+    else:
+        import _CCMC as ccmc 
+    ###################
 
     P = np.array(P)
     if P.shape == (3, ):
@@ -22,28 +31,35 @@ def probe(time, P, var=None, debug=False, dictionary=False):
     if not os.path.exists(filename):
         raise ValueError('Not found: ' + filename)
 
-    kameleon = ccmc.Kameleon()
-    kameleon.open(filename)
-    interpolator = kameleon.createNewInterpolator()
+    if not usekV:
+        kameleon = ccmc.Kameleon()
+        kameleon.open(filename)
+        interpolator = kameleon.createNewInterpolator()
 
     if var is None:
         meta = filemeta(filename)
         # Get data for all parameters, store in dictionary
         ret = {}
         for key in meta['parameters']:
-            kameleon.loadVariable(key)
-            arr = np.nan*np.empty((P.shape[0],))
-            for k in range(P.shape[0]):
-                arr[k] = interpolator.interpolate(key, P[k,0], P[k,1], P[k,2])
+            if usekV:
+                arr = kameleonV.interpolate(filename, P[:,0], P[:,1], P[:,2], key)
+            else:
+                kameleon.loadVariable(key)
+                arr = np.nan*np.empty((P.shape[0],))
+                for k in range(P.shape[0]):
+                    arr[k] = interpolator.interpolate(key, P[k,0], P[k,1], P[k,2])
             if arr.size == 1:
                 arr = arr[0]
             ret[key] = arr
 
     elif type(var) == str:
-        kameleon.loadVariable(var)
-        ret = np.nan*np.empty((P.shape[0],))
-        for k in range(P.shape[0]):
-            ret[k] = interpolator.interpolate(var, P[k,0], P[k,1], P[k,2])
+        if usekV:
+            ret = kameleonV.interpolate(filename, P[:,0], P[:,1], P[:,2], var)
+        else:
+            kameleon.loadVariable(var)
+            ret = np.nan*np.empty((P.shape[0],))
+            for k in range(P.shape[0]):
+                ret[k] = interpolator.interpolate(var, P[k,0], P[k,1], P[k,2])
         if ret.size == 1:
             ret = ret[0]
 
@@ -58,11 +74,13 @@ def probe(time, P, var=None, debug=False, dictionary=False):
         for v in var:
             if type(v) != str:
                 raise ValueError('var must be a str, or a list/tuple of strs')              
-
-            kameleon.loadVariable(v)
-            arr = np.nan*np.empty((P.shape[0],))
-            for k in range(P.shape[0]):
-                arr[k] = interpolator.interpolate(v, P[k,0], P[k,1], P[k,2])
+            if usekV:
+                arr = kameleonV.interpolate(filename, P[:,0], P[:,1], P[:,2], v)
+            else:
+                kameleon.loadVariable(v)
+                arr = np.nan*np.empty((P.shape[0],))
+                for k in range(P.shape[0]):
+                    arr[k] = interpolator.interpolate(v, P[k,0], P[k,1], P[k,2])
             if arr.size == 1:
                 arr = arr[0]
             if dictionary:
@@ -74,6 +92,7 @@ def probe(time, P, var=None, debug=False, dictionary=False):
             if P.shape[0] == 1:
                 ret = ret.flatten()
 
-    kameleon.close()
+    if not usekV:
+        kameleon.close()
 
     return ret
