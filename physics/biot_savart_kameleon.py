@@ -124,7 +124,7 @@ X[0], X[-1], dx = -96.000000, 32.000000, 0.100000
 Y[0], Y[-1], dy = -32.000000, 32.000000, 0.100000
 Z[0], Z[-1], dz = -32.000000, 32.000000, 0.100000
 para = True
-time to process all slices (not including suming up) = 39.38515 min
+time to process all slices (not including suming up) = 39.38515 min (26.29395 min with usekV)
 Btot = 
 [-3.13902583  3.25972791 -3.59094972]
 Btot_norm = 5.77704328474687
