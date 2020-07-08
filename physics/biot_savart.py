@@ -41,29 +41,34 @@ def deltaB(variable, x0, X, J, V_char = 1.):
     '''
     return np.nan
 
-def B_EW(X0, X, J, Npole, dV_grid):
+def B_EW(x0, X, J, Npole, dV_grid):
     Npole=np.array(Npole)
 
-    a2 = np.cross(Npole, X0)
-    a1 = np.cross(X0, a2)
+    a2 = np.cross(Npole, x0)
+    a1 = np.cross(x0, a2)
     a1 = a1/np.linalg.norm(a1)
     a2 = a2/np.linalg.norm(a2)
-
-    deltaBnT = deltaB('deltaB', X0, X, J, V_char=dV_grid)/phys['nT']
+    print(list(a2))
+    deltaBnT = deltaB('deltaB', x0, X, J, V_char=dV_grid)/phys['nT']
     return np.dot(deltaBnT,a2)
 
 def make_grid(xlims, ylims, zlims, dx, dy, dz):
-    no_origin = xlims[0] > 0. or xlims[1] < 0. or ylims[0] > 0. or ylims[1] < 0. or zlims[0] > 0. or zlims[1] < 0.
-    if no_origin:
-        print('WARNING: grid does not contain origin')
-        X = np.arange(xlims[0], xlims[1]+dx, dx)
-        Y = np.arange(ylims[0], ylims[1]+dy, dy)
-        Z = np.arange(zlims[0], zlims[1]+dz, dz)
+    if len(xlims) == 2:
+        no_origin = xlims[0] > 0. or xlims[1] < 0. or ylims[0] > 0. or ylims[1] < 0. or zlims[0] > 0. or zlims[1] < 0.
+        if no_origin:
+            print('WARNING: grid does not contain origin')
+            X = np.arange(xlims[0], xlims[1]+dx, dx)
+            Y = np.arange(ylims[0], ylims[1]+dy, dy)
+            Z = np.arange(zlims[0], zlims[1]+dz, dz)
+        else:
+            # need flip(a,0) for python 2.7.17 whereas flip(a,0) or flip(a) works in 2.7.18 and 3.7.4
+            X = np.concatenate([ -np.flip(np.delete(np.arange(0., -xlims[0]+dx, dx), 0), 0) , np.arange(0., xlims[1]+dx, dx) ])
+            Y = np.concatenate([ -np.flip(np.delete(np.arange(0., -ylims[0]+dy, dy), 0), 0) , np.arange(0., ylims[1]+dy, dy) ])
+            Z = np.concatenate([ -np.flip(np.delete(np.arange(0., -zlims[0]+dz, dz), 0), 0) , np.arange(0., zlims[1]+dz, dz) ])
     else:
-        # need flip(a,0) for python 2.7.17 whereas flip(a,0) or flip(a) works in 2.7.18 and 3.7.4
-        X = np.concatenate([ -np.flip(np.delete(np.arange(0., -xlims[0]+dx, dx), 0), 0) , np.arange(0., xlims[1]+dx, dx) ])
-        Y = np.concatenate([ -np.flip(np.delete(np.arange(0., -ylims[0]+dy, dy), 0), 0) , np.arange(0., ylims[1]+dy, dy) ])
-        Z = np.concatenate([ -np.flip(np.delete(np.arange(0., -zlims[0]+dz, dz), 0), 0) , np.arange(0., zlims[1]+dz, dz) ])
+        X = np.array(xlims)
+        Y = np.array(ylims)
+        Z = np.array(zlims)
     Nx = X.size
     Ny = Y.size
     Nz = Z.size
