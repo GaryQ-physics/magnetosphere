@@ -167,8 +167,8 @@ global_z_max = 128.
 # difference of 256 for all
 diff = 256.
 
-#n = 256 # for testing
-n = 2560
+n = 128 # for testing
+#n = 2560
 N = n + 1 # for testing
 
 
@@ -198,6 +198,7 @@ Gz = Gz.flatten(order='C')
     #Npole = np.array([0., 0., 1.])
 
 x0 = cx.MAGtoGSM([1., mlat, mlon], time, 'sph', 'car')
+print(x0)
 #Npole = cx.GEOtoGSM([0., 0., 1.], time, 'car', 'car')
 
 def dBslice(i, debug=False):
@@ -250,3 +251,5 @@ Btot = np.sum(B_slices, axis=0)
 
 print('Btot = \n' + str(Btot))
 print('Btot_norm = ' + str(np.linalg.norm(Btot)))
+
+#print(B_slices)
