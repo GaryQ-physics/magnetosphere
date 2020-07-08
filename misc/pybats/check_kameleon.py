@@ -9,11 +9,18 @@ from config import conf
 Compare Kameleon-computed interpolation values at grid points derived from
 original data file (read using PyBats module in SpacePy). Differences are
 zero except at outer boundary of high-resolution grid where the differences
-are ~100 times smaller than np.finfo(np.float32).eps. (The PyBats file reader
-returns data of type float32). The differences are likely explained by casting
+are ~10000 times smaller than np.finfo(np.float32).eps and ~100000 times
+larger than np.finfo(np.float64).eps. (The PyBats file reader returns data 
+of type float32). The differences are likely explained by casting
 (the Kamelon library takes input of float64 and returns float64). However,
 the fact that differences occur only on the outer edge is suspicious as is
 the fact that the differences are not on the order of np.finfo(np.float32).eps.
+
+Note:
+    np.finfo(np.float32).eps == 1.1920929e-07
+
+    np.finfo(np.float64).eps == 2.220446049250313e-16
+    np.finfo(float).eps      == 2.220446049250313e-16
 """
 
 import spacepy.pybats.bats as bats
@@ -33,7 +40,7 @@ jx = data3d['jx']
 jy = data3d['jy']
 jz = data3d['jz']
 
-x = np.array(x, dtype=float)
+x = np.array(x, dtype=float)  #passing to probe() does not work unless specify dtype
 y = np.array(y, dtype=float)
 z = np.array(z, dtype=float)
 jx = np.array(jx, dtype=float)
@@ -61,13 +68,12 @@ jx_ = jx[Tr]
 jy_ = jy[Tr]
 jz_ = jz[Tr]
 
-J_un = np.column_stack([jx_, jy_, jz_])
 X = np.column_stack([x_, y_, z_])
 
 from probe import probe
 J_kameleon = probe(time, X, var=['jx', 'jy', 'jz'], usekV=False)
 
-print(J_un.shape)
+print(jx_.shape)
 print(J_kameleon.shape)
 
 tru = np.all([jx_ == J_kameleon[:,0],
@@ -95,7 +101,7 @@ plt.savefig('check_kameleon1.png', dpi=96*3)
 plt.figure(dpi=96*3)
 plt.plot((jx_ - J_kameleon[:,0])/np.finfo(np.float32).eps)
 plt.xlabel('index')
-plt.title('($j_x$ actual - $j_x$ kameleon)/np.finfo(single).eps')
+plt.title('($j_x$ actual - $j_x$ kameleon)/np.finfo(np.float32).eps')
 plt.show()
 plt.savefig('check_kameleon2.png', dpi=96*3)
 
