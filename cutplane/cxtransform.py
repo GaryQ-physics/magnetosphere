@@ -9,27 +9,7 @@ from config import conf
 import spacepy.coordinates as sc
 from spacepy.time import Ticktock
 
-from util import t_format
-
-def tstr(time):
-    """Create ISO 8601 date/time string given array of integers
-    
-    tstr((2000, 1, 1)) # 2000-01-01T00:00:00
-    tstr((2000, 1, 1, 2)) # 2000-01-01T02:00:00
-    tstr((2000, 1, 1, 2, 3)) # 2000-01-01T02:03:00
-    tstr((2000, 1, 1, 2, 3, 4)) # 2000-01-01T02:03:04
-    """
-    
-    # TODO: Use datetime function for formatting
-    
-    time = np.array(time)
-    if len(time.shape) > 1:
-        ret = []
-        for i in range(time.shape[0]):
-            ret.append(tstr(time[i,:]))
-        return ret
-
-    return '%04d-%02d-%02dT%02d:%02d:%02d' % t_format(time, length=6)
+from util import tpad
 
 
 def transform(v, time, csys_in, csys_out, ctype_in=None, ctype_out=None):
@@ -115,7 +95,9 @@ def transform(v, time, csys_in, csys_out, ctype_in=None, ctype_out=None):
 
     cvals = sc.Coords(v, csys_in, ctype_in)
     
-    cvals.ticks = Ticktock(tstr(t), 'ISO')
+    t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % tpad(time, length=6)
+
+    cvals.ticks = Ticktock(t_str, 'ISO')
     newcoord = cvals.convert(csys_out, ctype_out)
 
     ret = newcoord.data

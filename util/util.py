@@ -5,22 +5,23 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 
     
-def t_format(time, length=7):
-    time = list(time)
+def tpad(time, length=7):
+
     # TODO: Check that time is valid
-    if len(time) < 4:
-        # TODO: Throw error
-        pass
+    time = list(time)
+
+    assert(len(time) > 2)
     
     if len(time) > length:
         time = time[0:length]
     else:
         pad = length - len(time)
         time = time + pad*[0]
+
     return tuple(time)
 
 
-def maketag(time):
+def tstr(time, length=7):
     """Create date/time string of the convention to tag files with given array of integers
     
     tstr((2000, 1, 1, 2)) # 2000:01:01T02:00:00
@@ -28,8 +29,25 @@ def maketag(time):
     tstr((2000, 1, 1, 2, 3, 4)) # 2000:01:01T02:03:04
     tstr((2000, 1, 1, 2, 3, 4, 567)) # 2000:01:01T02:03:04.567
     """
+
+    # ISO 8601
+    assert(len(time) > 2)
+
+    if length == 7:
+        return '%04d-%02d-%02dT%02d:%02d:%02d.%03d' % tpad(time, length=length)
+    elif length == 6:
+        return '%04d-%02d-%02dT%02d:%02d:%02d' % tpad(time, length=length)        
+    elif length == 5:
+        return '%04d-%02d-%02dT%02d:%02d' % tpad(time, length=length)        
+    elif length == 4:
+        return '%04d-%02d-%02dT%02d' % tpad(time, length=length)        
+    elif length == 3:
+        return '%04d-%02d-%02d' % tpad(time, length=length)        
+
+# TODO: maketag(time) -> '_' + tstr(time)
+def maketag(time):
     
-    return '_%04d:%02d:%02dT%02d:%02d:%02d.%03d' % t_format(time, length=7)
+    return '_%04d:%02d:%02dT%02d:%02d:%02d.%03d' % tpad(time, length=7)
 
 
 def time2datetime(t):
@@ -66,7 +84,7 @@ def filename2time(filename):
 def time2filename(time):
 
     filename = conf["run_path"] + '3d__var_3_e' \
-        + '%04d%02d%02d-%02d%02d%02d-%03d' % t_format(time, length=7) + '.out.cdf'
+        + '%04d%02d%02d-%02d%02d%02d-%03d' % tpad(time, length=7) + '.out.cdf'
         
     return filename
 
