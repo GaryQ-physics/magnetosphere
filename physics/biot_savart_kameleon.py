@@ -9,17 +9,20 @@ whern para is false:
     with N = 128+1 (so dx=dy=dz=2.), it prints Btot_EW = -13.94200518544455
 
 Typical outputs:
-    N = 129
-    fullVolume = True
-    slices = 129
-    points in slice = 16641
-    total points = 2146689
-    X[0], X[-1], dx = -224.000000, 32.000000, 2.000000
-    Y[0], Y[-1], dy = -128.000000, 128.000000, 2.000000
-    Z[0], Z[-1], dz = -128.000000, 128.000000, 2.000000
-    para = True
-    time to process all slices (not including suming up) = 23.13155 sec
-    Btot_EW = -13.94200518544455
+
+    N = 65
+    fullVolume = False
+    slices = 33
+    points in slice = 289
+    total points = 9537
+    X[0], X[-1], dx = -96.000000, 32.000000, 4.000000
+    Y[0], Y[-1], dy = -32.000000, 32.000000, 4.000000
+    Z[0], Z[-1], dz = -32.000000, 32.000000, 4.000000
+    para = False
+    time to process all slices (not including suming up) = 0.20150 min
+    Btot = 
+    [ -3.81502299   9.8473954  -40.06357733]
+    Btot_norm = 41.43206276763158
 
     N = 129
     fullVolume = False
@@ -30,8 +33,52 @@ Typical outputs:
     Y[0], Y[-1], dy = -32.000000, 32.000000, 2.000000
     Z[0], Z[-1], dz = -32.000000, 32.000000, 2.000000
     para = True
-    time to process all slices (not including suming up) = 8.25513 sec
-    Btot_EW = -13.862501156128777
+    time to process all slices (not including suming up) = 0.15039 min
+    Btot = 
+    [-2.3255107  -1.41573583 -7.77186095]
+    Btot_norm = 8.234933548023848
+
+    N = 129
+    fullVolume = True
+    slices = 129
+    points in slice = 16641
+    total points = 2146689
+    X[0], X[-1], dx = -224.000000, 32.000000, 2.000000
+    Y[0], Y[-1], dy = -128.000000, 128.000000, 2.000000
+    Z[0], Z[-1], dz = -128.000000, 128.000000, 2.000000
+    para = True
+    time to process all slices (not including suming up) = 0.42586 min
+    Btot = 
+    [-2.31410359 -1.34009783 -7.8129071 ]
+    Btot_norm = 8.257872300049227
+
+    N = 257
+    fullVolume = False
+    slices = 129
+    points in slice = 4225
+    total points = 545025
+    X[0], X[-1], dx = -96.000000, 32.000000, 1.000000
+    Y[0], Y[-1], dy = -32.000000, 32.000000, 1.000000
+    Z[0], Z[-1], dz = -32.000000, 32.000000, 1.000000
+    para = True
+    time to process all slices (not including suming up) = 0.28954 min
+    Btot = 
+    [-4.93034021  0.05562719  0.85745892]
+    Btot_norm = 5.00465630920011
+
+    N = 257
+    fullVolume = True
+    slices = 257
+    points in slice = 66049
+    total points = 16974593
+    X[0], X[-1], dx = -224.000000, 32.000000, 1.000000
+    Y[0], Y[-1], dy = -128.000000, 128.000000, 1.000000
+    Z[0], Z[-1], dz = -128.000000, 128.000000, 1.000000
+    para = True
+    time to process all slices (not including suming up) = 1.63295 min
+    Btot = 
+    [-4.92360583  0.13197522  0.81855364]
+    Btot_norm = 4.992929186467655
 
     N = 2561
     fullVolume = False
@@ -42,92 +89,10 @@ Typical outputs:
     Y[0], Y[-1], dy = -32.000000, 32.000000, 0.100000
     Z[0], Z[-1], dz = -32.000000, 32.000000, 0.100000
     para = True
-    time to process all slices (not including suming up) = 2348.29029 sec
-    Btot_EW = -8.14956342968862
-
-N = 65
-fullVolume = False
-slices = 33
-points in slice = 289
-total points = 9537
-X[0], X[-1], dx = -96.000000, 32.000000, 4.000000
-Y[0], Y[-1], dy = -32.000000, 32.000000, 4.000000
-Z[0], Z[-1], dz = -32.000000, 32.000000, 4.000000
-para = False
-time to process all slices (not including suming up) = 0.20150 min
-Btot = 
-[ -3.81502299   9.8473954  -40.06357733]
-Btot_norm = 41.43206276763158
-
-N = 129
-fullVolume = False
-slices = 65
-points in slice = 1089
-total points = 70785
-X[0], X[-1], dx = -96.000000, 32.000000, 2.000000
-Y[0], Y[-1], dy = -32.000000, 32.000000, 2.000000
-Z[0], Z[-1], dz = -32.000000, 32.000000, 2.000000
-para = True
-time to process all slices (not including suming up) = 0.15039 min
-Btot = 
-[-2.3255107  -1.41573583 -7.77186095]
-Btot_norm = 8.234933548023848
-
-N = 129
-fullVolume = True
-slices = 129
-points in slice = 16641
-total points = 2146689
-X[0], X[-1], dx = -224.000000, 32.000000, 2.000000
-Y[0], Y[-1], dy = -128.000000, 128.000000, 2.000000
-Z[0], Z[-1], dz = -128.000000, 128.000000, 2.000000
-para = True
-time to process all slices (not including suming up) = 0.42586 min
-Btot = 
-[-2.31410359 -1.34009783 -7.8129071 ]
-Btot_norm = 8.257872300049227
-
-N = 257
-fullVolume = False
-slices = 129
-points in slice = 4225
-total points = 545025
-X[0], X[-1], dx = -96.000000, 32.000000, 1.000000
-Y[0], Y[-1], dy = -32.000000, 32.000000, 1.000000
-Z[0], Z[-1], dz = -32.000000, 32.000000, 1.000000
-para = True
-time to process all slices (not including suming up) = 0.28954 min
-Btot = 
-[-4.93034021  0.05562719  0.85745892]
-Btot_norm = 5.00465630920011
-
-N = 257
-fullVolume = True
-slices = 257
-points in slice = 66049
-total points = 16974593
-X[0], X[-1], dx = -224.000000, 32.000000, 1.000000
-Y[0], Y[-1], dy = -128.000000, 128.000000, 1.000000
-Z[0], Z[-1], dz = -128.000000, 128.000000, 1.000000
-para = True
-time to process all slices (not including suming up) = 1.63295 min
-Btot = 
-[-4.92360583  0.13197522  0.81855364]
-Btot_norm = 4.992929186467655
-
-N = 2561
-fullVolume = False
-slices = 1281
-points in slice = 410881
-total points = 526338561
-X[0], X[-1], dx = -96.000000, 32.000000, 0.100000
-Y[0], Y[-1], dy = -32.000000, 32.000000, 0.100000
-Z[0], Z[-1], dz = -32.000000, 32.000000, 0.100000
-para = True
-time to process all slices (not including suming up) = 39.38515 min
-Btot = 
-[-3.13902583  3.25972791 -3.59094972]
-Btot_norm = 5.77704328474687
+    time to process all slices (not including suming up) = 39.38515 min (26.29395 min with usekV)
+    Btot = 
+    [-3.13902583  3.25972791 -3.59094972]
+    Btot_norm = 5.77704328474687
 
 """
 
@@ -167,8 +132,8 @@ global_z_max = 128.
 # difference of 256 for all
 diff = 256.
 
-#n = 256 # for testing
-n = 2560
+n = 128 # for testing
+#n = 2560
 N = n + 1 # for testing
 
 
@@ -198,6 +163,7 @@ Gz = Gz.flatten(order='C')
     #Npole = np.array([0., 0., 1.])
 
 x0 = cx.MAGtoGSM([1., mlat, mlon], time, 'sph', 'car')
+print(x0)
 #Npole = cx.GEOtoGSM([0., 0., 1.], time, 'car', 'car')
 
 def dBslice(i, debug=False):
@@ -250,3 +216,5 @@ Btot = np.sum(B_slices, axis=0)
 
 print('Btot = \n' + str(Btot))
 print('Btot_norm = ' + str(np.linalg.norm(Btot)))
+
+#print(B_slices)
