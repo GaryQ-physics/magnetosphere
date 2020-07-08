@@ -81,10 +81,10 @@ def filename2time(filename):
     return [y, m, d, h, M, s, f]
 
 
-def time2filename(time, extention='.out.cdf'):
+def time2filename(time, extension='.out.cdf'):
 
     filename = conf["run_path"] + '3d__var_3_e' \
-        + '%04d%02d%02d-%02d%02d%02d-%03d' % tpad(time, length=7) + '.out.cdf'
+        + '%04d%02d%02d-%02d%02d%02d-%03d' % tpad(time, length=7) + extension
         
     return filename
 
