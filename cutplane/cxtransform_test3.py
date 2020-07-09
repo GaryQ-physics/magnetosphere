@@ -7,10 +7,12 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 
 import cxtransform as cx
-import pos_sun as ps
 
 data_car = np.array([ 
         [2003.0, 11.0, 20.0, 7.0,   0.0, 0.0, 1.,   0. ,  0.,  'car'],
+        [2003.0, 11.0, 20.0, 17.0, 46.0, 0.0, 1.,   0.,   0.,  'car'],
+        [2003.0, 11.0, 20.0, 17.0, 46.0, 0.0, 1.,   0.,   0.,  'car'],
+        [2003.0, 11.0, 20.0, 17.0, 46.0, 0.0, 1.,   0.,   0.,  'car'],
         [2003.0, 11.0, 20.0, 17.0, 46.0, 0.0, 1.,   0.,   0.,  'car']
     ])
 
@@ -28,20 +30,15 @@ v = cx.MAGtoGSM(pos, time, 'car', 'car')
 MLT = cx.MAGtoMLT(pos, time, csys='car')
 
 for i in range(data_car.shape[0]):
-    print( str(v[i,:]) + ' : ' + str(cx.MAGtoGSM(pos[i,:], time[i,:], 'car', 'car')) \
-          + ' : ' + str(ps.MAGtoGSM(pos[i,:], time[i,:], 'car', 'car')) )
-    print( str(MLT[i]) + ' : ' + str(cx.MAGtoMLT(pos[i,:], time[i,:], csys='car')) \
-          + ' : ' + str(ps.MAGtoMLT(pos[i,:], time[i,:])) )
-
+    print( str(v[i,:]) + ' : ' + str(cx.MAGtoGSM(pos[i,:], time[i,:], 'car', 'car')) )
+    print( str(MLT[i]) + ' : ' + str(cx.MAGtoMLT(pos[i,:], time[i,:], csys='car')) )
 
 time = np.array(data_sph[:,0:6], dtype=float)
 pos = np.array(data_sph[:,6:9], dtype=float)
 
 v = cx.MAGtoGSM(pos, time, 'sph', 'car')
-MLT = cx.MAGtoMLT(pos[:,1], time, onlyMLON=True)
+MLT = cx.MAGtoMLT(pos[:,1], time)
 
 for i in range(data_sph.shape[0]):
-    print( str(v[i,:]) + ' : ' + str(cx.MAGtoGSM(pos[i,:], time[i,:], 'sph', 'car')) \
-          + ' : ' + str(ps.MAGtoGSM(pos[i,:], time[i,:], 'sph', 'car')) )
-    print( str(MLT[i]) + ' : ' + str(cx.MAGtoMLT(pos[i,1], time[i,:], csys='car')) \
-          + ' : ' + str(ps.MAGtoMLT(pos[i,1], time[i,:], csys='car')) )
+    print( str(v[i,:]) + ' : ' + str(cx.MAGtoGSM(pos[i,:], time[i,:], 'sph', 'car')) )
+    print( str(MLT[i]) + ' : ' + str(cx.MAGtoMLT(pos[i,1], time[i,:])) )

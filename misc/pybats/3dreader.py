@@ -35,7 +35,7 @@ z = np.array(z)
 p = np.array(p)
 
 #print(np.sqrt(np.min(x**2 + y**2 + z**2)))
-Int = 5
+Int = 58 # 62
 Tr = x == (0.03125 + Int*0.0625)
 
 eps = 0.011

@@ -6,10 +6,10 @@ import numpy as np
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 
+from util import tpad
+
 import spacepy.coordinates as sc
 from spacepy.time import Ticktock
-
-from util import tpad
 
 
 def transform(v, time, csys_in, csys_out, ctype_in=None, ctype_out=None):
@@ -94,8 +94,14 @@ def transform(v, time, csys_in, csys_out, ctype_in=None, ctype_out=None):
         t = numpy.matlib.repmat(t, v.shape[0], 1)
 
     cvals = sc.Coords(v, csys_in, ctype_in)
-    
-    t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % tpad(time, length=6)
+    if len(time.shape)==1:
+        t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % tpad(time, length=6)
+    else:
+        t_str = []
+        for i in range(time.shape[0]):
+            t_str.append('%04d-%02d-%02dT%02d:%02d:%02d' % tpad(time[i,:], length=6))
+        t_str = np.array(t_str)
+            
 
     cvals.ticks = Ticktock(t_str, 'ISO')
     newcoord = cvals.convert(csys_out, ctype_out)
