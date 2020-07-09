@@ -4,7 +4,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 
-    
+
 def tpad(time, length=7):
 
     # TODO: Check that time is valid
@@ -165,16 +165,27 @@ def urlretrieve(url, fname):
         import urllib, urllib2, ssl
         try:
             context = ssl._create_unverified_context()
+            urllib2.urlopen(url) 
             res = urllib.urlretrieve(url, fname, context=context)
             return res
-        except urllib2.URLError as e:
-            print(e)
+#https://stackoverflow.com/questions/16778435/python-check-if-website-exists
+        except urllib2.HTTPError, e: 
+            return(e.code)
+        except urllib2.URLError, e:
+            return(e.args)
         except ValueError:
             print("'" + url + "' is not a valid URL")
 
             
 def dlfile(filename, debug=False):
 
+    fname_split = os.path.split(filename)[1]
+    fname_full = conf['run_path'] + fname_split
+    fileurl = conf['run_url'] + fname_split
+
+    return urlretrieve(fileurl, fname_full)
+
+    '''
     if type(filename) != str:
         filename = time2filename(filename)
     
@@ -195,7 +206,8 @@ def dlfile(filename, debug=False):
             print('Downloaded ' + fileurl)
         os.rename(fname_tmp, fname_full)
         if debug:
-            print('Renamed *.cdf.tmp to *.cdf')
+            print('Renamed *.tmp')
+    '''
 
     return True
 

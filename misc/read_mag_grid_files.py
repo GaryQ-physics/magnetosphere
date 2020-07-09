@@ -9,13 +9,13 @@ import numpy as np
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
-from util import urlretrieve
+from util import urlretrieve, tpad
 
 
 def time2mag_grid_file(time):
     time = list(time)
     filename = 'mag_grid_e' \
-        + '%04d%02d%02d-%02d%02d%02d' % tuple(time[0:6]) + '.out'
+        + '%04d%02d%02d-%02d%02d%02d' % tpad(time, length=6) + '.out'
     return filename
 
 
@@ -35,17 +35,24 @@ def getdata(filename, debug=True):
 
 def analyzedata(filename, MLAT, MLON, debug=True):
     data, headers = getdata(filename, debug=debug)
-
-    print(headers)
+    if debug:
+        print(headers)
     Tr = np.all([MLON-0.5 <= data[:, 0], 
                  data[:, 0] <= MLON+0.5, MLAT-0.5 <= data[:, 1],
                  data[:, 1] <= MLAT+0.5], axis=0)
     k = np.where(Tr==True)[0][0]
-    print(k)
-    print(data[k, 0],data[k, 1])
+    if debug:
+        print(k)
+        print(data[k, 0],data[k, 1])
+    ret = [k]
     for i in range(3): # i=0 <-> north , i=1 <-> east , i=3 <-> down
-        print(headers[2+i], headers[5+i], headers[8+i], headers[11+i], headers[14+i], 'sum should equal full dB')
-        print(data[k, 2+i], data[k, 5+i], data[k, 8+i], data[k, 11+i], data[k, 14+i], data[k, 5+i] + data[k, 8+i] + data[k, 11+i] + data[k, 14+i])
+        if debug:
+            print(headers[2+i], headers[5+i], headers[8+i], headers[11+i], headers[14+i], 'sum should equal full dB')
+            print(data[k, 2+i], data[k, 5+i], data[k, 8+i], data[k, 11+i], data[k, 14+i], data[k, 5+i] + data[k, 8+i] + data[k, 11+i] + data[k, 14+i])
+        ret.append(data[k, 5+i])
     dB_norm_Mhd = np.sqrt(data[k, 5+0]**2 + data[k, 5+1]**2 + data[k, 5+2]**2)
-    print(headers[5+0] + '  ' + headers[5+1] + '  '+  headers[5+2])
-    print('dB_norm_Mhd = ' + str(dB_norm_Mhd))
+    if debug:
+        print(headers[5+0] + '  ' + headers[5+1] + '  '+  headers[5+2])
+        print('dB_norm_Mhd = ' + str(dB_norm_Mhd))
+
+    return ret
