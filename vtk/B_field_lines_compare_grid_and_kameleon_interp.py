@@ -149,8 +149,18 @@ print(os.environ['PYTHONPATH'].split(os.pathsep))
 fig = plt.figure()
 ax = plt.axes(projection='3d') #https://jakevdp.github.io/PythonDataScienceHandbook/04.12-three-dimensional-plotting.html
 
+import time as tm
+
+to = tm.time()
 solns_original = Compute([2003, 11, 20 , 7, 0, 0, 0, 176.00, 57.50], 6)
+tf = tm.time()
+print('time for original method with calling ccmc.Kameleon() = ' + str(tf-to))
+
+to = tm.time()
 solns_withGrid = bfl.Compute([2003, 11, 20, 7, 0, 57.50, 176.00], 6)
+tf = tm.time()
+print('time for new method with writing grid using probe() = ' + str(tf-to))
+
 
 print(len(solns_withGrid) == len(solns_original))
 
