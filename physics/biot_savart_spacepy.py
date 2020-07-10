@@ -26,16 +26,16 @@ from units_and_constants import phys
 import cxtransform as cx
 import biot_savart as bs
 import read_mag_grid_files as rmg
-from events import events
+import events
 
 import spacepy.pybats.bats as bats
 
-from util import time2filename, dlfile, tpad
+from util import time2filename, dlfile, tpad, urlretrieve
 
 test_Event = np.array([2003, 11, 20, 7, 0, 57.50, 176.00])
 
 #data = np.array([test_Event])
-data = events()
+data =events.events()
 n = data.shape[0]
 n = 2
 for i in range(n):
@@ -46,13 +46,17 @@ for i in range(n):
     Event = data[i, :]
 
     # read in the 3d magnetosphere
-    filename = time2filename(time, extension='.out')
+    filename_split = events.findfile(time)
 
+    filename = conf['run_path'] + filename_split
     if not os.path.exists(filename):
+        print('hello there')
+        #mess = dlfile(filename, debug=True)
+        urlretrieve(conf['run_url'] + filename_split, filename)
+
+        '''
         files = os.listdir(conf["run_path"])
-
         done = False
-
         lookfor = '3d__var_3_e' \
                 + '%04d%02d%02d-%02d%02d%02d' % tpad(time, length=6)
 
@@ -76,6 +80,7 @@ for i in range(n):
 
             i += 1
             assert(i != 1000)
+        '''
 
     print('opening: ' + filename)
     data3d = bats.Bats2d(filename)
