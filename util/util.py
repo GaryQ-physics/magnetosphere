@@ -117,7 +117,14 @@ def dirlist(rootdir, **kwargs):
     return file_keep
 
 
-def filelist(listtxt = 'ls-1.txt'):
+def timelist(listtxt='ls-1.txt'):
+    times = []
+    for file_name in filelist(listtxt = 'ls-1.txt'):
+        times.append(filename2time(file_name))
+    return times
+
+
+def filelist(listtxt='ls-1.txt'):
 
     # Get list of run files
     urlretrieve(conf['run_url'] + listtxt, conf['run_path'] + listtxt)

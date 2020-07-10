@@ -8,13 +8,14 @@ from config import conf
 import cxtransform as cx
 from util import time2filename
 
-def events():
-    """Event information
+def eventlist():
+    """List of events
     
     Returns
     -------
     np.ndarray of [year, month, day, hour, minute, mag_lat, mag_lon, mlt]
     """
+
     infile = conf["run_path_derived"] + 'LOCALIZED.txt'
 
     data = np.genfromtxt(infile, skip_header=1)    
@@ -28,9 +29,21 @@ def events():
     
     return data
 
-def findfile(time):
-    files = np.genfromtxt(conf["run_path"] + 'ls-1.txt', dtype=str)
-    filename = time2filename(time, extension='', split=True)
-    fname = filename[0:26]
-    ind = np.where(np.char.find(files, fname) == 0)[0][0]
-    return files[ind][0:34]
+def events(time):
+    """Returns events that ocurred at a given time
+    
+    Example
+    -------
+    
+    events([2003,11,20])
+    events([2003, 11, 20, 17, 46])
+    """
+
+    event_list = eventlist()
+    idx = np.all(time == event_list[:, 0:len(time)], axis=1)
+    return event_list[idx,:]
+
+def count(time):
+    """Returns # of events at a given time"""
+    
+    return len(events(time))

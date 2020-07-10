@@ -34,9 +34,9 @@ from config import conf
 from niceticks import niceticks
 import cutplane_plot as cp
 from util import filelist, filename2time, dlfile, time2datetime, filemeta
-from events import events
+from events import eventlist
 
-event_list = events()
+event_list = eventlist()
 
 debug         = False  # Show extra logging information
 para          = False  # Process in parallel using all CPUs
