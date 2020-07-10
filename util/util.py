@@ -81,12 +81,13 @@ def filename2time(filename):
     return [y, m, d, h, M, s, f]
 
 
-def time2filename(time, extension='.out.cdf'):
+def time2filename(time, extension='.out.cdf', split=False):
 
-    filename = conf["run_path"] + '3d__var_3_e' \
+    filename = '3d__var_3_e' \
         + '%04d%02d%02d-%02d%02d%02d-%03d' % tpad(time, length=7) + extension
-        
-    return filename
+    if split:
+        return filename
+    return conf["run_path"] + filename
 
 
 def dirlist(rootdir, **kwargs):
@@ -276,7 +277,7 @@ def filemeta(filename):
             plot_unit = native_unit
             if native_unit in units:
                 plot_unit = units[native_unit]
-    
+
             plot_name = varname
             if plot_name in names:
                 plot_name = names[varname]
@@ -330,7 +331,7 @@ def printmetadata(filename):
             gname = kameleon.getGlobalAttributeName(i)
             gattr = kameleon.getGlobalAttribute(gname)
             if gname != 'README':
-                print gname, gattr.toString()
+                print(gname, gattr.toString())
                 
         for i in range(kameleon.getNumberOfVariables()):
             varname  = kameleon.getVariableName(i)
@@ -339,7 +340,7 @@ def printmetadata(filename):
             max_attr = kameleon.getVariableAttribute(varname, 'actual_max').getAttributeFloat()
             units = kameleon.getVisUnit(varname)
             units2 = kameleon.getNativeUnit(varname)
-            print varname, '\t', min_attr,'\t', max_attr, units, units2
+            print(varname, '\t', min_attr,'\t', max_attr, units, units2)
         
         kameleon.close()    
         print('----------------------------------------------------------------------')
