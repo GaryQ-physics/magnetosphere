@@ -94,12 +94,12 @@ def transform(v, time, csys_in, csys_out, ctype_in=None, ctype_out=None):
         t = numpy.matlib.repmat(t, v.shape[0], 1)
 
     cvals = sc.Coords(v, csys_in, ctype_in)
-    if len(time.shape)==1:
-        t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % tpad(time, length=6)
+    if len(t.shape)==1:
+        t_str = '%04d-%02d-%02dT%02d:%02d:%02d' % tpad(t, length=6)
     else:
         t_str = []
-        for i in range(time.shape[0]):
-            t_str.append('%04d-%02d-%02dT%02d:%02d:%02d' % tpad(time[i,:], length=6))
+        for i in range(t.shape[0]):
+            t_str.append('%04d-%02d-%02dT%02d:%02d:%02d' % tpad(t[i,:], length=6))
         t_str = np.array(t_str)
             
 

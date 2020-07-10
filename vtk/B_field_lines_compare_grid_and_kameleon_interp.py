@@ -7,9 +7,9 @@ from scipy.integrate import odeint
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
-#import _CCMC as ccmc
+import _CCMC as ccmc
 
-import pos_sun as ps
+import cxtransform as cx
 import b_field_lines_write as bfl
 
 
@@ -68,7 +68,7 @@ def Compute(Event, Nb, debug=False):
         else:
             #delta=(i-Nb/2)*eps
             delta = (-i)*eps
-        IC.append(ps.MAGtoGSM([R, MLAT-delta, MLON], time[0:6], 'sph', 'car'))
+        IC.append(cx.MAGtoGSM([R, MLAT-delta, MLON], time[0:6], 'sph', 'car'))
 
     if debug:
         print(IC)
