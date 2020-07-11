@@ -17,7 +17,7 @@ print 'c3'
 import longitude_lines_write
 import j_field_lines_write
 import earth_write
-from events import events
+from events import eventlist
 
 '''
 line_list = [2003, 11, 20, 7, 0, 176.00, 57.50]
@@ -53,7 +53,7 @@ filename = conf["run_path"] + '3d__var_3_e' \
 line_list = [2003, 11, 20, 7, 0, 176.00, 57.50]
 
 data = np.array([[2003, 11, 20, 7, 0, 57.50, 176.00]])
-#data = events()
+#data = eventlist()
 
 print('data.shape = ' + str(data.shape))
 

@@ -27,31 +27,39 @@ import cxtransform as cx
 import biot_savart as bs
 import read_mag_grid_files as rmg
 import events
+import util
 
 import spacepy.pybats.bats as bats
 
 from util import time2filename, dlfile, tpad, urlretrieve
 
 test_Event = np.array([2003, 11, 20, 7, 0, 57.50, 176.00])
-
 #data = np.array([test_Event])
-data =events.events()
-n = data.shape[0]
+data = events.eventlist()
+
+files = util.filelist()
+
+n = files.size
 n = 2
 for i in range(n):
+    filename_split = files[i]
 
-    time = data[i, 0:5]
+    #time = data[i, 0:5]
     mlat = data[i, 5]
     mlon = data[i, 6]
-    Event = data[i, :]
+    #Event = data[i, :]
 
-    # read in the 3d magnetosphere
-    filename_split = events.findfile(time)
+    time = util.filename2time(filename_split)
+
+    # get list of events with same y,m,d,hour,min
+    events.events(time[0:6))
+
+    #filename_split = events.findfile(time)
 
     filename = conf['run_path'] + filename_split
     if not os.path.exists(filename):
         print('hello there')
-        #mess = dlfile(filename, debug=True)
+        mess = dlfile(filename, debug=True)
         urlretrieve(conf['run_url'] + filename_split, filename)
 
         '''
@@ -83,6 +91,7 @@ for i in range(n):
         '''
 
     print('opening: ' + filename)
+    # read in the 3d magnetosphere
     data3d = bats.Bats2d(filename)
 
     # get the cell coordinates

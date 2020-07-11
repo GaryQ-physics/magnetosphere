@@ -1,7 +1,7 @@
-from events import events
+from events import eventlist
 from matplotlib import pyplot as plt
 
-event_list = events()
+event_list = eventlist()
 
 plt.figure()
 plt.hist(event_list[:,7], bins=range(25), density=True, color='k')
