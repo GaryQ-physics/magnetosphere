@@ -11,10 +11,7 @@ opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-174
 dBmhd = 1004.0975310504954
 fractional error = -0.24662938647340985
 
-
 """
-
-
 
 import sys
 import os
@@ -28,18 +25,13 @@ import biot_savart as bs
 import read_mag_grid_files as rmg
 import events
 import util
+#from util import time2filename, dlfile, tpad, urlretrieve
 
 import spacepy.pybats.bats as bats
 
-from util import time2filename, dlfile, tpad, urlretrieve
-
-test_Event = np.array([2003, 11, 20, 7, 0, 57.50, 176.00])
-#data = np.array([test_Event])
-data = events.eventlist()
 
 files = util.filelist()
 
-print files[0]
 n = len(files)
 n = 2
 for i in range(n):
@@ -89,10 +81,7 @@ for i in range(n):
     assert((D+D)/(128-1) == dx)
     assert(xax[1] - xax[0] == dx)
 
-
-    Slice = x==x
-
-    Tr = np.all([-D<=x, x<=D, -D<=y, y<=D, -D<=z, z<=D, Slice], axis=0)
+    Tr = np.all([-D<=x, x<=D, -D<=y, y<=D, -D<=z, z<=D], axis=0)
     x_ = x[Tr]
     y_ = y[Tr]
     z_ = z[Tr]
@@ -120,29 +109,3 @@ for i in range(n):
         print('dBmhd = ' + str(Bmhd_magfile))
         print('fractional error = ' + str( (B_spacepy-Bmhd_magfile)/Bmhd_magfile ))
         print('----------------------------')
-
-'''
-    if tuple(Event) == tuple(test_Event):
-        from probe import probe
-        J_kam = probe(time, X, var=['jx', 'jy', 'jz'], usekV=True)
-
-        out_kam1 = bs.deltaB('deltaB', x0, X, J_kam*(phys['muA']/phys['m']**2), V_char = dV)
-
-        Grid = bs.make_grid(xax, yax, zax, 0, 0, 0)[0]
-        J_kam_grid = probe(time, Grid, var=['jx', 'jy', 'jz'], usekV=True)
-        out_kam2 = bs.deltaB('deltaB', x0, Grid, J_kam_grid*(phys['muA']/phys['m']**2), V_char = dV)
-
-        L = 4.
-        custGrid = bs.make_grid([-L, L], [-L, L], [-L, L], 0.1, 0.1, 0.1)[0]
-        J_kam_cust = probe(time, custGrid, var=['jx', 'jy', 'jz'], usekV=True)
-        out_kam3 = bs.deltaB('deltaB', x0, custGrid, J_kam_cust*(phys['muA']/phys['m']**2), V_char = 0.1**3)
-
-        print(out_spacepy)
-        print(np.linalg.norm(out_spacepy))
-        print(out_kam1)
-        print(np.linalg.norm(out_kam1))
-        print(out_kam2)
-        print(np.linalg.norm(out_kam2))
-        print(out_kam3)
-        print(np.linalg.norm(out_kam3))
-'''
