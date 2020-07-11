@@ -39,56 +39,26 @@ data = events.eventlist()
 
 files = util.filelist()
 
-n = files.size
+print files[0]
+n = len(files)
 n = 2
 for i in range(n):
     filename_split = files[i]
 
-    #time = data[i, 0:5]
-    mlat = data[i, 5]
-    mlon = data[i, 6]
-    #Event = data[i, :]
-
-    time = util.filename2time(filename_split)
+    time = util.filename2time(filename_split) # returns length 7 list
 
     # get list of events with same y,m,d,hour,min
-    events.events(time[0:6))
+    events_array = events.events(time[0:5])
+    print(events_array.shape)
+    if events_array.size == 0:
+        print('hello there')
+        continue
 
-    #filename_split = events.findfile(time)
-
-    filename = conf['run_path'] + filename_split
+    filename = conf['run_path'] + filename_split[0:34] # remove '.cdf'
     if not os.path.exists(filename):
         print('hello there')
         mess = dlfile(filename, debug=True)
-        urlretrieve(conf['run_url'] + filename_split, filename)
-
-        '''
-        files = os.listdir(conf["run_path"])
-        done = False
-        lookfor = '3d__var_3_e' \
-                + '%04d%02d%02d-%02d%02d%02d' % tpad(time, length=6)
-
-        for fil in  files:
-            if lookfor in fil and not '.cdf' in fil:
-                done = True
-                filename = conf['run_path'] + fil
-
-        i = 0
-        while not done and i < 1000:
-            fl = '3d__var_3_e' \
-                + '%04d%02d%02d-%02d%02d%02d-' % tpad(time, length=6) \
-                + '%03d' % (i,) + '.out'
-                
-            print('trying ' + fl)
-            mess = dlfile(fl, debug=False)
-            if mess != 404:
-                done = True
-                filename = conf['run_path'] + fl
-                print('downloaded ' + filename)
-
-            i += 1
-            assert(i != 1000)
-        '''
+        #urlretrieve(conf['run_url'] + filename_split, filename)
 
     print('opening: ' + filename)
     # read in the 3d magnetosphere
@@ -132,20 +102,26 @@ for i in range(n):
 
     J_sp = np.column_stack([jx_, jy_, jz_])
     X = np.column_stack([x_, y_, z_])
-    x0 = cx.MAGtoGSM([1., mlat, mlon], time, 'sph', 'car')
 
-    out_spacepy = bs.deltaB('deltaB', x0, X, J_sp*(phys['muA']/phys['m']**2), V_char = dV)
-    B_spacepy = np.linalg.norm(out_spacepy)
-    magfile = rmg.analyzedata(time, mlat, mlon, debug=False)
-    Bmhd_magfile = np.sqrt(magfile[1]**2 + magfile[2]**2 + magfile[3]**2)
+    for j in range(events_array.shape[0]):
+        mlat = events_array[j, 5]
+        mlon = events_array[j, 6]
+        x0 = cx.MAGtoGSM([1., mlat, mlon], time, 'sph', 'car')
 
-    print('---')
-    #print(B_spacepy)
-    print('dBmhd = ' + str(Bmhd_magfile))
-    print('fractional error = ' + str( (B_spacepy-Bmhd_magfile)/Bmhd_magfile ))
-    print('----------------------------')
+        out_spacepy = bs.deltaB('deltaB', x0, X, J_sp*(phys['muA']/phys['m']**2), V_char = dV)
+        B_spacepy = np.linalg.norm(out_spacepy)
+        magfile = rmg.analyzedata(time, mlat, mlon, debug=False)
+        Bmhd_magfile = np.sqrt(magfile[1]**2 + magfile[2]**2 + magfile[3]**2)
 
+        print('---')
+        #print(B_spacepy)
+        print('Event: {0:d},{1:d},{2:d},{3:d},{4:d};{5:.2f},{6:.2f}'.format\
+                    (time[0],time[1],time[2],time[3],time[4],mlat,mlon))
+        print('dBmhd = ' + str(Bmhd_magfile))
+        print('fractional error = ' + str( (B_spacepy-Bmhd_magfile)/Bmhd_magfile ))
+        print('----------------------------')
 
+'''
     if tuple(Event) == tuple(test_Event):
         from probe import probe
         J_kam = probe(time, X, var=['jx', 'jy', 'jz'], usekV=True)
@@ -169,3 +145,4 @@ for i in range(n):
         print(np.linalg.norm(out_kam2))
         print(out_kam3)
         print(np.linalg.norm(out_kam3))
+'''
