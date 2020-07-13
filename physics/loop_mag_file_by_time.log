@@ -1,0 +1,63 @@
+This unreleased version of SpacePy is not supported by the SpacePy team.
+Qin-Denton/OMNI2 data not found in current format. This module has limited functionality.
+Run spacepy.toolbox.update(QDomni=True) to download data
+opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out
+---
+Event: 2003,11,20,7,0;-60.34,280.00
+dBmhd = 26.17346053405494
+fractional error = -0.8517412749044352
+----------------------------
+opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out
+---
+Event: 2003,11,20,7,0;-60.34,281.00
+dBmhd = 26.206879853697437
+fractional error = -0.8501570144400173
+----------------------------
+opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out
+---
+Event: 2003,11,20,7,0;-60.34,282.00
+dBmhd = 26.23936968774467
+fractional error = -0.8485775208565672
+----------------------------
+opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out
+---
+Event: 2003,11,20,7,0;-60.34,283.00
+dBmhd = 26.270889674805186
+fractional error = -0.8470035862824165
+----------------------------
+opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out
+---
+Event: 2003,11,20,7,0;-60.34,284.00
+dBmhd = 26.30140030057307
+fractional error = -0.8454360757777604
+----------------------------
+opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out
+---
+Event: 2003,11,20,7,0;-60.34,285.00
+dBmhd = 26.33086292657914
+fractional error = -0.8438759189195276
+----------------------------
+opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out
+---
+Event: 2003,11,20,7,0;-60.34,286.00
+dBmhd = 26.359239803985375
+fractional error = -0.8423240945320143
+----------------------------
+opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out
+---
+Event: 2003,11,20,7,0;-60.34,287.00
+dBmhd = 26.38649409710792
+fractional error = -0.8407816090845502
+----------------------------
+opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out
+---
+Event: 2003,11,20,7,0;-60.34,288.00
+dBmhd = 26.41258990104031
+fractional error = -0.8392494694417212
+----------------------------
+opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out
+---
+Event: 2003,11,20,7,0;-60.34,289.00
+dBmhd = 26.437492254637306
+fractional error = -0.8377286511194209
+----------------------------
