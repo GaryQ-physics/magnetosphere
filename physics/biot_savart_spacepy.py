@@ -11,9 +11,7 @@ import biot_savart as bs
 import spacepy.pybats.bats as bats
 
 
-def(data3d, time, mlat, mlon, debug=False):
-    data3d = bats.Bats2d(filename)
-
+def run(data3d, time, mlat, mlon, debug=False, returnX=False):
     # get the cell coordinates
     x = data3d['x']
     y = data3d['y']
@@ -30,14 +28,13 @@ def(data3d, time, mlat, mlon, debug=False):
     jz = np.array(jz, dtype=float)
 
     D = 3.96875
-    xax = np.linspace(-D, D, 128)
-    yax = np.linspace(-D, D, 128)
-    zax = np.linspace(-D, D, 128)
+    #xax = np.linspace(-D, D, 128)
+    #yax = np.linspace(-D, D, 128)
+    #zax = np.linspace(-D, D, 128)
     dx = 0.0625
     dV = dx**3
 
     assert((D+D)/(128-1) == dx)
-    assert(xax[1] - xax[0] == dx)
 
     Tr = np.all([-D<=x, x<=D, -D<=y, y<=D, -D<=z, z<=D], axis=0)
     x_ = x[Tr]
@@ -62,5 +59,6 @@ def(data3d, time, mlat, mlon, debug=False):
                     (time[0],time[1],time[2],time[3],time[4],mlat,mlon))
         print('dBmhd = ' + str(Bmhd_magfile))
 
-
+    if returnX:
+        return X
     return out_spacepy
