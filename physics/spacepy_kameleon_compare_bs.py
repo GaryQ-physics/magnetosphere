@@ -11,6 +11,24 @@ opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070
 [ 0.50112569  3.46145452 -2.60177497]
 4.359131487480463
 
+after importing biot_savart_kameleon:
+
+
+para = True
+time to process all slices (not including suming up) = 0.39816 min
+Btot = 
+[ 0.47685288  3.48787187 -2.54728568]
+Btot_norm = 4.345262153715209
+[ 0.16935409  3.49882983 -2.03944467]
+4.053372119835279
+[ 0.16935409  3.49882983 -2.03944467]
+4.053372119895642
+[ 0.47685288  3.48787187 -2.54728568]
+4.345262153715209
+[ 0.50112569  3.46145452 -2.60177497]
+4.359131487480463
+
+
 '''
 
 
@@ -25,6 +43,7 @@ import cxtransform as cx
 import biot_savart as bs
 from probe import probe
 from util import time2filename
+import biot_savart_kameleon as bsk
 
 import spacepy.pybats.bats as bats
 
@@ -84,9 +103,11 @@ B_spacepy = np.linalg.norm(out_spacepy)
 J_kam = probe(time, X, var=['jx', 'jy', 'jz'], usekV=True)
 out_kam1 = bs.deltaB('deltaB', x0, X, J_kam*(phys['muA']/phys['m']**2), V_char = dV)
 
-Grid = bs.make_grid(xax, yax, zax, 0, 0, 0)[0]
-J_kam_grid = probe(time, Grid, var=['jx', 'jy', 'jz'], usekV=True)
-out_kam2 = bs.deltaB('deltaB', x0, Grid, J_kam_grid*(phys['muA']/phys['m']**2), V_char = dV)
+#Grid = bs.make_grid(xax, yax, zax, 0, 0, 0)[0]
+#J_kam_grid = probe(time, Grid, var=['jx', 'jy', 'jz'], usekV=True)
+#out_kam2 = bs.deltaB('deltaB', x0, Grid, J_kam_grid*(phys['muA']/phys['m']**2), V_char = dV)
+out_kam2 = bsk.run(time, mlat, mlon, para=True, n=1, spacepy_like=True)
+
 
 L = 4.
 custGrid = bs.make_grid([-L, L], [-L, L], [-L, L], 0.1, 0.1, 0.1)[0]
