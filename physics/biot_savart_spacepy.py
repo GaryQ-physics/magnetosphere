@@ -1,15 +1,44 @@
 """
 typical output:
 
-opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-174600-259.out
----------
-dBmhd = 1011.2855377944559
-fractional error = -0.20493277341394997
------------------------
-opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-174500-000.out
----------
-dBmhd = 1004.0975310504954
-fractional error = -0.24662938647340985
+Reading /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/ls-1.txt
+Read /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/ls-1.txt
+(117, 8)
+opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out
+---
+Event: 2003,11,20,7,0;55.00,241.00
+dBmhd = 9.191891190839051
+fractional error = -0.5617626327431128
+----------------------------
+---
+Event: 2003,11,20,7,0;57.50,173.50
+dBmhd = 4.3780911656688595
+fractional error = -0.0838124112032659
+----------------------------
+---
+Event: 2003,11,20,7,0;57.50,176.00
+dBmhd = 4.581437951020489
+fractional error = -0.11526202839167266
+----------------------------
+
+...ect...
+
+---
+Event: 2003,11,20,7,0;70.00,71.00
+dBmhd = 5.727670735327844
+fractional error = -0.4909633725350057
+----------------------------
+---
+Event: 2003,11,20,7,0;70.00,73.50
+dBmhd = 5.633768489142312
+fractional error = -0.46235987679069007
+----------------------------
+---
+Event: 2003,11,20,7,0;70.00,76.00
+dBmhd = 5.492119516943414
+fractional error = -0.4276395477958862
+----------------------------
+
 
 """
 
