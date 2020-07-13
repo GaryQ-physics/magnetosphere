@@ -1,43 +1,57 @@
 """
+when run in terminal, this script prints out series of:
+
+    Event: year, month, day, hour, minuts; latitude in MAG, longitude in MAG
+
+    dBmhd = the magnitude of dBmhd calculated from the components 
+            dBnMhd, dBeMhd, dBdMhd as givent in the mag_grid____.out files.
+            i.e.  it is the magnitude of dB given in SWMF output due to 
+            magnetosphere currents.
+
+    fractional error = the fractional error, relative to dBmhd, of the
+                    result gotten by performing biot savart (using the 
+                    biot_savart module) on the SWMF fine mesh grid near
+                    earth.
+
 typical output:
 
-Reading /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/ls-1.txt
-Read /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/ls-1.txt
-(117, 8)
-opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out
----
-Event: 2003,11,20,7,0;55.00,241.00
-dBmhd = 9.191891190839051
-fractional error = -0.5617626327431128
-----------------------------
----
-Event: 2003,11,20,7,0;57.50,173.50
-dBmhd = 4.3780911656688595
-fractional error = -0.0838124112032659
-----------------------------
----
-Event: 2003,11,20,7,0;57.50,176.00
-dBmhd = 4.581437951020489
-fractional error = -0.11526202839167266
-----------------------------
+    Reading /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/ls-1.txt
+    Read /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/ls-1.txt
+    (117, 8)
+    opening: /home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070000-000.out
+    ---
+    Event: 2003,11,20,7,0;55.00,241.00
+    dBmhd = 9.191891190839051
+    fractional error = -0.5617626327431128
+    ----------------------------
+    ---
+    Event: 2003,11,20,7,0;57.50,173.50
+    dBmhd = 4.3780911656688595
+    fractional error = -0.0838124112032659
+    ----------------------------
+    ---
+    Event: 2003,11,20,7,0;57.50,176.00
+    dBmhd = 4.581437951020489
+    fractional error = -0.11526202839167266
+    ----------------------------
 
-...ect...
+    ...ect...
 
----
-Event: 2003,11,20,7,0;70.00,71.00
-dBmhd = 5.727670735327844
-fractional error = -0.4909633725350057
-----------------------------
----
-Event: 2003,11,20,7,0;70.00,73.50
-dBmhd = 5.633768489142312
-fractional error = -0.46235987679069007
-----------------------------
----
-Event: 2003,11,20,7,0;70.00,76.00
-dBmhd = 5.492119516943414
-fractional error = -0.4276395477958862
-----------------------------
+    ---
+    Event: 2003,11,20,7,0;70.00,71.00
+    dBmhd = 5.727670735327844
+    fractional error = -0.4909633725350057
+    ----------------------------
+    ---
+    Event: 2003,11,20,7,0;70.00,73.50
+    dBmhd = 5.633768489142312
+    fractional error = -0.46235987679069007
+    ----------------------------
+    ---
+    Event: 2003,11,20,7,0;70.00,76.00
+    dBmhd = 5.492119516943414
+    fractional error = -0.4276395477958862
+    ----------------------------
 
 
 """
@@ -75,7 +89,7 @@ for i in range(n):
         print('hello there')
         continue
 
-    filename = conf['run_path'] + filename_split[0:34] # remove '.cdf'
+    filename = conf['run_path'] + filename_split.replace(".out.cdf", ".out")
     if not os.path.exists(filename):
         print('hello there')
         mess = dlfile(filename, debug=True)
