@@ -186,7 +186,7 @@ def urlretrieve(url, fname):
 
             
 def dlfile(filename, debug=False):
-
+    '''
     fname_split = os.path.split(filename)[1]
     fname_full = conf['run_path'] + fname_split
     fileurl = conf['run_url'] + fname_split
@@ -209,15 +209,14 @@ def dlfile(filename, debug=False):
         if debug:
             print(fname_tmp)
         # TODO: Catch download error
-        urlretrieve(fileurl, fname_tmp)
+        ret = urlretrieve(fileurl, fname_tmp)
         if debug:
             print('Downloaded ' + fileurl)
         os.rename(fname_tmp, fname_full)
         if debug:
             print('Renamed *.tmp')
-    '''
 
-    return True
+    return ret
 
 
 def filemeta(filename):
