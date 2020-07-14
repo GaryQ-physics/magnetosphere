@@ -106,6 +106,8 @@ out_kam1 = bs.deltaB('deltaB', x0, X, J_kam*(phys['muA']/phys['m']**2), V_char =
 #J_kam_grid = probe(time, Grid, var=['jx', 'jy', 'jz'], usekV=True)
 #out_kam2 = bs.deltaB('deltaB', x0, Grid, J_kam_grid*(phys['muA']/phys['m']**2), V_char = dV)
 out_kam2 = bsk.run(time, mlat, mlon, para=True, spacepy_like=True, print_output=False)
+# equivalent out_kam2 = bsk.run(time, mlat, mlon, para=True, L=3.96875, eps=0.0625, print_output=False, tolerance=0.)
+
 
 L = 8.
 #custGrid = bs.make_grid([-L, L], [-L, L], [-L, L], 0.1, 0.1, 0.1)[0]

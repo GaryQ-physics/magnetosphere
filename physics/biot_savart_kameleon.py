@@ -61,6 +61,7 @@ def run(time, mlat, mlon, para=True,
         X = np.linspace(xlims[0], xlims[1], Nx)
     elif dx != None:
         X = np.arange(xlims[0], xlims[1] + dx, dx)
+        X = np.arange(xlims[0], xlims[1], dx, endpoint=True)
     else:
         assert(False)
 
