@@ -73,13 +73,14 @@ out_kam1 = bs.deltaB('deltaB', x0, X, J_kam*(phys['muA']/phys['m']**2), V_char =
 #Grid = bs.make_grid(xax, yax, zax, 0, 0, 0)[0]
 #J_kam_grid = probe(time, Grid, var=['jx', 'jy', 'jz'], usekV=True)
 #out_kam2 = bs.deltaB('deltaB', x0, Grid, J_kam_grid*(phys['muA']/phys['m']**2), V_char = dV)
-out_kam2 = bsk.run(time, mlat, mlon, para=True, n=1, spacepy_like=True)
+out_kam2 = bsk.run(time, mlat, mlon, para=True, spacepy_like=True, print_output=False)
 
 
-L = 8.
-custGrid = bs.make_grid([-L, L], [-L, L], [-L, L], 0.1, 0.1, 0.1)[0]
-J_kam_cust = probe(time, custGrid, var=['jx', 'jy', 'jz'], usekV=True)
-out_kam3 = bs.deltaB('deltaB', x0, custGrid, J_kam_cust*(phys['muA']/phys['m']**2), V_char = 0.1**3)
+#L = 8.
+#custGrid = bs.make_grid([-L, L], [-L, L], [-L, L], 0.1, 0.1, 0.1)[0]
+#J_kam_cust = probe(time, custGrid, var=['jx', 'jy', 'jz'], usekV=True)
+#out_kam3 = bs.deltaB('deltaB', x0, custGrid, J_kam_cust*(phys['muA']/phys['m']**2), V_char = 0.1**3)
+out_kam3 = bsk.run(time, mlat, mlon, para=True, L=8., eps=0.1, print_output=False)
 
 print(out_spacepy)
 print(np.linalg.norm(out_spacepy))
