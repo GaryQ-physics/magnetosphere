@@ -11,7 +11,7 @@ import biot_savart as bs
 import spacepy.pybats.bats as bats
 
 
-def run(data3d, time, mlat, mlon, debug=False, returnX=False):
+def run(data3d, time, mlat, mlon, debug=False, returnX=False, quick=True):
     # get the cell coordinates
     x = data3d['x']
     y = data3d['y']
@@ -33,19 +33,24 @@ def run(data3d, time, mlat, mlon, debug=False, returnX=False):
     #zax = np.linspace(-D, D, 128)
     dx = 0.0625
     dV = dx**3
-
     assert((D+D)/(128-1) == dx)
 
-    Tr = np.all([-D<=x, x<=D, -D<=y, y<=D, -D<=z, z<=D], axis=0)
-    x_ = x[Tr]
-    y_ = y[Tr]
-    z_ = z[Tr]
-    jx_ = jx[Tr]
-    jy_ = jy[Tr]
-    jz_ = jz[Tr]
+    if quick:
+        Tr = np.all([-D<=x, x<=D, -D<=y, y<=D, -D<=z, z<=D], axis=0)
+        J_sp = np.column_stack([jx[Tr], jy[Tr], jz[Tr]])
+        X = np.column_stack([x[Tr], y[Tr], z[Tr]])
+    else:
+        X = np.empty((0, 3)) # Combined slices in x
+        J_sp = np.empty((0, 3)) # Combined slices in x
+        for i in range(128):
+            tr = x == i*0.0625 - D
 
-    J_sp = np.column_stack([jx_, jy_, jz_])
-    X = np.column_stack([x_, y_, z_])
+            S = np.column_stack([x[tr], y[tr], z[tr]]) # each slice
+            X = np.vstack((X, S))
+
+            S = np.column_stack([jx[tr], jy[tr], jz[tr]])
+            J_sp = np.vstack((J_sp, S))
+
 
     x0 = cx.MAGtoGSM([1., mlat, mlon], time, 'sph', 'car')
 

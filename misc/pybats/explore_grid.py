@@ -36,7 +36,6 @@ zax = np.linspace(-D, D, 128)
 
 X = np.empty((0, 3)) # Combined slices in x
 X2 = np.empty((0, 3)) # Combined slices in z
-Tr = np.empty((0, ), dtype=bool)
 for i in range(128):
     tr = x == i*0.0625 - D
 
@@ -57,8 +56,14 @@ for i in range(128):
     S2 = np.column_stack([x_2, y_2, z_2]) # each slice
     X2 = np.vstack((X2, S2))
 
-#X2 = np.column_stack([x[Tr], y[Tr], z[Tr]])
-full_grid = True
+Tr = np.all([-D<=x, x<=D, -D<=y, y<=D, -D<=z, z<=D], axis=0)
+x_3 = x[Tr]
+y_3 = y[Tr]
+z_3 = z[Tr]
+X3 = np.column_stack([x_3, y_3, z_3])
+
+
+full_grid = False
 
 if Test:
     import biot_savart as bs
@@ -70,15 +75,22 @@ print(X)
 print(X.shape)
 print(X2)
 print(X2.shape)
-
+print(X3)
+print(X3.shape)
 
 list1 = list(X)
 list2 = list(X2)
+list3 = list(X3)
 
 ltup1 = [tuple(l) for l in list1]
 ltup2 = [tuple(l) for l in list2]
+ltup3 = [tuple(l) for l in list3]
 
-consistent = set(ltup1) == set(ltup2)
+set1 = set(ltup1)
+set2 = set(ltup2)
+set3 = set(ltup3)
+
+consistent = set1 == set2
 
 if consistent:
     print('consistent')
@@ -86,6 +98,11 @@ else:
     print('inconsistent')
 if not (Test or full_grid):
     assert(consistent)
+
+difs = np.array(list(set3.difference(set1)))
+Rdifs = np.sqrt(difs[:,0]**2 + difs[:,1]**2 + difs[:,2]**2)
+print(np.min(Rdifs))
+print(Rdifs.shape)
 
 if Test:
     fname = 'explore_grid_linspace.vtk'
