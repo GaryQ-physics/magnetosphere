@@ -57,17 +57,6 @@ def writevtk(filename, debug=True):
     f.close()
     print("Wrote " + fname)
 
-def MAGtoSM(v_MAG, time, ctype_in, ctype_out):
-    return cx.transform(v_MAG, time, 'MAG', 'SM', ctype_in=ctype_in, ctype_out=ctype_out)
-
-def MAGtoGEI(v_MAG, time, ctype_in, ctype_out):
-    return cx.transform(v_MAG, time, 'MAG', 'GEI', ctype_in=ctype_in, ctype_out=ctype_out)
-
-def GEOtoGEI(v_GEO, time, ctype_in, ctype_out):
-    return cx.transform(v_GEO, time, 'GEO', 'GEI', ctype_in=ctype_in, ctype_out=ctype_out)
-
-def GEOtoSM(v_GEO, time, ctype_in, ctype_out):
-    return cx.transform(v_GEO, time, 'GEO', 'SM', ctype_in=ctype_in, ctype_out=ctype_out)
 
 def explore(ccmcSite=True):
     data, headers = getdata('YKC_pointdata_754297001306.txt')
@@ -83,7 +72,7 @@ def explore(ccmcSite=True):
 
     station_MAG = np.array([1., MLAT, MLON])
 
-    X_conv = MAGtoSM(station_MAG, time, 'sph', 'car')
+    X_conv = cx.MAGtoSM(station_MAG, time, 'sph', 'car')
     print(X_conv)
     print(X)
     #R = np.sqrt(X_conv[:,0]**2 + X_conv[:,1]**2 + X_conv[:,2]**2)

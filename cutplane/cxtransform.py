@@ -131,6 +131,18 @@ def GEOtoMAG(v_GEO, time, ctype_in, ctype_out):
 def MAGtoGEO(v_MAG, time, ctype_in, ctype_out):
     return transform(v_MAG, time, 'MAG', 'GEO', ctype_in=ctype_in, ctype_out=ctype_out)
 
+def MAGtoSM(v_MAG, time, ctype_in, ctype_out):
+    return transform(v_MAG, time, 'MAG', 'SM', ctype_in=ctype_in, ctype_out=ctype_out)
+
+def MAGtoGEI(v_MAG, time, ctype_in, ctype_out):
+    return transform(v_MAG, time, 'MAG', 'GEI', ctype_in=ctype_in, ctype_out=ctype_out)
+
+def GEOtoGEI(v_GEO, time, ctype_in, ctype_out):
+    return transform(v_GEO, time, 'GEO', 'GEI', ctype_in=ctype_in, ctype_out=ctype_out)
+
+def GEOtoSM(v_GEO, time, ctype_in, ctype_out):
+    return transform(v_GEO, time, 'GEO', 'SM', ctype_in=ctype_in, ctype_out=ctype_out)
+
 
 def StoC(r, theta, phi):
     """Convert from spherical to cartesian coordinates
