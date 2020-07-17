@@ -1,3 +1,12 @@
+"""
+This script reads the calculated values for the different contributions to the
+(probably) magnetic field that are in the .txt files from
+https://ccmc.gsfc.nasa.gov/results/viewrun.php?domain=GM&runnumber=SWPC_SWMF_052811_2
+
+currently for YKC station
+
+"""
+
 import os
 import sys
 import numpy as np
@@ -10,29 +19,64 @@ import cxtransform as cx
 
 
 def time2ccmc_datafile(filename):
-    return ''
+    return 'test.txt'
 
 
 def getdata(filename, debug=True):
+    """
+
+    Parameters
+    ----------
+    filename : string
+            name of .txt datafile (NOT full path)
+    debug : boolean, OPTIONAL
+        DESCRIPTION. The default is True.
+
+    Returns
+    -------
+    list of np arrays = [data, headers]
+    
+    where data is (N,25) array of N datapoints given in the file and 
+    headers is (25,) array of string for the corresponding quantities of data
+    
+    """
     if type(filename) != str:
         filename = time2ccmc_datafile(filename)
+    '''
     if not os.path.exists(conf['run_path'] + filename):
         urlretrieve(conf['run_url'] + filename, conf['run_path'] + filename)
         if debug:
             print('Downloading' + filename)
+    '''
     fname = conf['run_path'] + filename
-
     data = np.genfromtxt(fname, skip_header=6, comments=None)
     headers = np.loadtxt(fname, dtype=str, skiprows=4, max_rows=1, comments=None)
     assert(headers[0] == '#')
     headers = headers[1:]
     if debug:
-        print(headers.shape)
         print(data.shape)
+        print(headers.shape)
 
     return [data, headers]
 
 def writevtk(filename, debug=True):
+    """
+
+    Parameters
+    ----------
+    filename : string
+            name of .txt datafile (NOT full path)
+    debug : boolean, OPTIONAL
+        DESCRIPTION. The default is True.
+
+    Returns
+    -------
+    None.
+    
+    writes binary UNSTRUCTURED_GRID vtk file of all the cartesian x,y,z points
+        given by data in getdata()
+
+    """
     data, headers = getdata(filename, debug=debug)
 
     print(headers[7]+headers[8]+headers[9])
@@ -58,21 +102,60 @@ def writevtk(filename, debug=True):
     print("Wrote " + fname)
 
 
-def explore(ccmcSite=True):
-    data, headers = getdata('YKC_pointdata_754297001306.txt')
+def explore(fileyear=2001, useGEO=True, magSource=0):
+    """
+    working hypothesis:
+        'JhdBn+JpBn' = ionosphere contribution to deltaB in fig3a in CalcDeltaB
+        'facdBn' = FAC contributions to deltaB in fig2a in CalcDeltaB
+    
+        'dBn' is magnetosphere contribution output by SWMF, see 
+        https://ccmc.gsfc.nasa.gov/VIS_DOCS/MAGNETOMETER_timeline_quantities.php
+    
+        X,Y,Z columns are the station position in SM coordinates at that time
+    
+    ##########################################################################
+    
+    ---- https://ccmc.gsfc.nasa.gov/VIS_DOCS/Magnetometer_names.php ----
+     Station                 Code    MLAT         MLON
+     Yellowknife             YKC      68.8576     300.063
+    
+    ---- CalcDeltaB paper ----
+      Station                Geographic            Geomagnetic
+    Name   IAGA_Code    Latitude  Longitude    Latitude  Longitude
+    
+    Yellowknife YKC      62.48     245.52       68.93     299.36
+    
+    ---- https://www.geomag.nrcan.gc.ca/obs/ykc-en.php ----
+    IAGA alphabetic code 	YKC
+    IAGA numeric code 	028246
+    Geographic coordinates 	62.480 N, 245.518 E
+    Geomagnetic coordinates (IGRF-12 (2015)) 	68.62 N, 58.22 W (2015.0)
+    Elevation 	198 m
+
+    """
+    data, headers = getdata(str(fileyear) + '_YKC_pointdata.txt')
     time = np.array(data[:, 0:7], dtype=int)
     #print(headers)
     X = data[:, 7:10]*phys['m']
-    if ccmcSite:
-        MLAT = 68.8576
-        MLON = 300.063
+
+    if useGEO:
+
+        lat = 62.480
+        lon = 245.518
+        station_GEO = np.array([1., lat, lon])
+        X_conv = cx.GEOtoSM(station_GEO, time, 'sph', 'car')
+
     else:
-        MLAT=68.93
-        MLON = 299.36
 
-    station_MAG = np.array([1., MLAT, MLON])
+        if magSource==0:
+            MLAT = 68.8576
+            MLON = 300.063
+        elif magSource==1:
+            MLAT=68.93
+            MLON = 299.36
+        station_MAG = np.array([1., MLAT, MLON])
+        X_conv = cx.MAGtoSM(station_MAG, time, 'sph', 'car')
 
-    X_conv = cx.MAGtoSM(station_MAG, time, 'sph', 'car')
     print(X_conv)
     print(X)
     #R = np.sqrt(X_conv[:,0]**2 + X_conv[:,1]**2 + X_conv[:,2]**2)
@@ -110,7 +193,31 @@ def explore(ccmcSite=True):
     plt.show()
 
 
-def plot(fileyear, pltvars=['dBn', 'facdBn', 'sumBn', 'JhdBn', 'JpBn']):
+def plot(fileyear, pltvars=['dBn', 'facdBn', 'sumBn', 'JhdBn', 'JpBn', 'JhdBn+JpBn']):
+    """
+
+    Parameters
+    ----------
+    fileyear : integer
+        the year the datafile is from. It is implicitly assumed there is only one 
+        datafile stored for a given year. It is asserted that all datapoints have
+        that year.
+        so far tried with 2001 and 2006
+    pltvars : list, OPTIONAL
+        A list of strings of all the variable to be plotted. The list elements
+        can either be a variable in the headers of the file or a sum of them.
+        when denoting a sum, use no spaces in the string, just +
+        
+        The default is ['dBn', 'facdBn', 'sumBn', 'JhdBn', 'JpBn', 'JhdBn+JpBn'].
+
+    Returns
+    -------
+    None.
+    
+    plots (using matplotlib) a graph of all the variables in pltvars as a function
+    of time in datetime format
+
+    """
     import matplotlib.pyplot as plt
     #import matplotlib.dates
     import datetime
@@ -145,33 +252,7 @@ def plot(fileyear, pltvars=['dBn', 'facdBn', 'sumBn', 'JhdBn', 'JpBn']):
     plt.legend()
     plt.show()
 
-plot(2006, pltvars = ['dBn', 'facdBn'])
-plot(2006, pltvars = ['JhdBn', 'JpBn', 'JhdBn+JpBn'])
-plot(2006, pltvars = ['sumBn'])
-
-"""
-working hypothesis:
-    'JhdBn+JpBn' = ionosphere contribution to deltaB in fig3a in CalcDeltaB
-    'facdBn' = FAC contributions to deltaB in fig2a in CalcDeltaB
-
-    'dBn' is magnetosphere contribution output by SWMF, see 
-    https://ccmc.gsfc.nasa.gov/VIS_DOCS/MAGNETOMETER_timeline_quantities.php
-
-"""
-
-"""
----- https://ccmc.gsfc.nasa.gov/VIS_DOCS/Magnetometer_names.php ----
- Station                 Code    MLAT         MLON
- Yellowknife             YKC      68.8576     300.063
-
-
-
-
----- CalcDeltaB paper ----
-  Station                Geographic            Geomagnetic
-Name   IAGA_Code    Latitude  Longitude    Latitude  Longitude
-
-Yellowknife YKC      62.48     245.52       68.93     299.36
-
-
-"""
+#plot(2006, pltvars = ['dBn', 'facdBn'])
+#plot(2006, pltvars = ['JhdBn', 'JpBn', 'JhdBn+JpBn'])
+#plot(2006, pltvars = ['sumBn'])
+explore()

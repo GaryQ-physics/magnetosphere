@@ -11,7 +11,42 @@ import biot_savart as bs
 import spacepy.pybats.bats as bats
 
 
-def run(data3d, time, mlat, mlon, debug=False, returnX=False, quick=True):
+def run(data3d, time, mlat, mlon, debug=False, returnX=False, quick=False):
+    """
+
+    Returns
+    -------
+    (3,) numpy array
+        Using data from a SWMF IDL-Binary file, returns the result of biot savart 
+        integration on fine near earth grid given said SWMF file, for the field
+        at x0 corresponding to mlat, mlon on earth.
+
+    Parameters
+    ----------
+    data3d : spacepy.pybats.bats.Bats2d
+        this is the spacepy object with the loaded SWMF IDL-Binary file where 
+        the current values will be pulled from.
+    time : tuple/list/array
+        the date-time in y, m, d, h, m, (s, milisec) implicitly assumed to be 
+        consistent with the time in the file loaded in data3d
+    mlat : float
+        magentic latitude of x0 (radius is 1 R_e).
+    mlon : float
+        magentic latitude of x0 
+    debug : boolean, optional
+        DESCRIPTION. The default is False.
+    returnX : boolean, optional
+        DESCRIPTION. 
+        if true, insted of returning the result of integration, returns (N,3) 
+        array of all the gridpoints in the fine grid.
+        The default is False.
+    quick : boolean, optional
+        if True, instead of integrating on fine mesh, it quickens the computation
+        by selecting all points inside 3d box of the same size. This pickes up
+        a few extra points.
+        The default is False.
+
+    """
     # get the cell coordinates
     x = data3d['x']
     y = data3d['y']
@@ -62,7 +97,7 @@ def run(data3d, time, mlat, mlon, debug=False, returnX=False, quick=True):
         #print(B_spacepy)
         print('input: {0:d},{1:d},{2:d},{3:d},{4:d};{5:.2f},{6:.2f}'.format\
                     (time[0],time[1],time[2],time[3],time[4],mlat,mlon))
-        print('dBmhd = ' + str(Bmhd_magfile))
+        print('dBmhd = ' + str(B_spacepy))
 
     if returnX:
         return X
