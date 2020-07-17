@@ -13,6 +13,19 @@ from util import urlretrieve, tpad
 
 
 def time2mag_grid_file(time):
+    """
+    takes in tuple/list/array of time
+    returns mag .out filename associated with that time
+    note: mag file names only have resolution up to seconds
+
+    ex:
+        time2mag_grid_file([2003,11,20])
+            returns l
+        time2mag_grid_file([2003,11,20,7,0,11])
+            returns 'mag_grid_e20031120-070011.out'
+        time2mag_grid_file([2003,11,20,7,0,11,123])
+            returns 'mag_grid_e20031120-070011.out'
+    """
     time = list(time)
     filename = 'mag_grid_e' \
         + '%04d%02d%02d-%02d%02d%02d' % tpad(time, length=6) + '.out'
@@ -20,6 +33,25 @@ def time2mag_grid_file(time):
 
 
 def getdata(filename, debug=True):
+    """
+
+    Parameters
+    ----------
+    filename : string or tuple/list/array
+        if tuple/list/array, it's treated as time and converted to filename str
+    debug : boolean, OPTIONAL
+        DESCRIPTION. The default is True.
+
+    Returns
+    -------
+    list of np arrays = [data, headers]
+    
+    where data is (N,17) array of N datapoints given in the file and 
+    headers is (17,) array of string for the corresponding quantities of data
+    
+    if the file doesnt exist, it is downloaded form mag.gmu.edu
+    
+    """
     if type(filename) != str:
         filename = time2mag_grid_file(filename)
     if not os.path.exists(conf['run_path'] + filename):
@@ -34,6 +66,30 @@ def getdata(filename, debug=True):
     return [data, headers]
 
 def analyzedata(filename, MLAT, MLON, debug=True):
+    """
+
+    Parameters
+    ----------
+    filename : string or tuple/list/array
+        if tuple/list/array, it's treated as time and converted to filename str
+    MLAT : float
+        input magnetic latitude in degrees.
+    MLON : float
+        input magnetic longitude in degrees.
+
+
+    debug : boolean, OPTIONAL
+    the default is True. 
+
+    Returns
+    -------
+    ret : list 
+        ret[0] is the index (int) of datapoint which the mlat and mlon value are near what was inputed
+        ret[1],ret[2],ret[3] are the dBnMhd,dBeMhd,dBdMhd value at that datapoint
+        
+        if debug=True then this prints all the magnetic field information for that datapoint
+        
+    """
     data, headers = getdata(filename, debug=debug)
     if debug:
         print(headers)

@@ -17,14 +17,86 @@ from probe import probe
 
 
 def run(time, mlat, mlon, para=True,
-        fullVolume=False, spacepy_like=False, 
-        N=None, L=None, eps=None,
         Nx=None, xlims=None, dx=None,
         Ny=None, ylims=None, dy=None,
         Nz=None, zlims=None, dz=None,
+        N=None, L=None, eps=None,
+        fullVolume=False, spacepy_like=False,
         print_output=False, tolerance=1e-13):
+    """
 
-###### make X, Y, and Z ##############
+    Returns (Btot)
+    -------
+    (3,) numpy array
+    
+        using kameleon, through probe, returns the result of biot savart 
+        integration on regular grid given by a mesh of 1d arrays X,Y,Z 
+        (specified by input parameters) for the field at x0 corresponding to 
+        mlat, mlon on earth.
+
+    
+    Parameters
+    ----------
+    time : tuple/list/array
+        the time at which probe will evaluate the current.
+    mlat : float
+        magentic latitude of x0 (radius is 1 R_e).
+    mlon : float
+        magentic latitude of x0 
+    para : boolean, OPTIONAL
+        if true, then computation run in parallel on multiple processors. Output
+        returned is identical.
+        The default is True.
+    Nx : integer, optional
+        the number of points in X 
+        The default is None.
+    xlims : list/tuple, optional
+        list/tuple of length 2
+        X ranges from X[0]=xlims[0] to X[-1]=xlims[1]
+        The default is None.
+    dx : float, optional
+        stepsize between points in X 
+        The default is None.
+    Ny : TYPE, optional
+        DESCRIPTION. The default is None.
+    ylims : TYPE, optional
+        DESCRIPTION. The default is None.
+    dy : TYPE, optional
+        DESCRIPTION. The default is None.
+    Nz : TYPE, optional
+        DESCRIPTION. The default is None.
+    zlims : TYPE, optional
+        DESCRIPTION. The default is None.
+    dz : TYPE, optional
+        DESCRIPTION. The default is None.
+    N : integer, optional
+        if not None, it overrides Nx, Ny, and Nz to all be N
+        The default is None.
+    L : float, optional
+        if not None, it overrides xlims,ylims,and zlims to all be (-L,L)
+        The default is None.
+    eps : float, optional
+        if not None, it overrides dx, dy, and dz to all be eps
+        The default is None.
+    fullVolume : boolean, OPTIONAL
+        if True, it overides xlims, ylims and zlims to be the limits of the 
+        full kameleon grid. 
+        The default is False.
+    spacepy_like : bolean, OPTIONAL
+        if True, it overides everything so that the grid is like the fine mesh 
+        grid in the SWMF files except extend to be regular over a whole cube. 
+        The default is False.
+    print_output : boolean, optional
+        prints output on command line. 
+        The default is False.
+    tolerance : floar, optional
+        the tolerance to which which N and eps type choices must be consistent.
+        slight errors can be due to floating point arithmetic. 
+        The default is 1e-13.
+        Note if spacepy_like=True, this is overidden to 0.
+
+    """
+    ###### make X, Y, and Z ###########################
     assert(not (fullVolume and spacepy))
 
     if spacepy_like:
@@ -61,7 +133,7 @@ def run(time, mlat, mlon, para=True,
         X = np.linspace(xlims[0], xlims[1], Nx)
     elif dx != None:
         X = np.arange(xlims[0], xlims[1] + dx, dx)
-        X = np.arange(xlims[0], xlims[1], dx, endpoint=True)
+        #X = np.arange(xlims[0], xlims[1], dx, endpoint=True) doesnt work
     else:
         assert(False)
 
@@ -104,7 +176,7 @@ def run(time, mlat, mlon, para=True,
         assert(np.abs(dz_check - dz) <= tolerance or dz == None)
     assert(np.abs(zlims[1] - zlims[0] - z_range_check) <= tolerance)
 
-######################################
+    ############################################
 
     dx = dx_check
     dy = dy_check
