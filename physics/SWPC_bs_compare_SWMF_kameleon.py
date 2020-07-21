@@ -10,12 +10,15 @@ import util
 import cxtransform as cx
 import read_ccmc_datafiles as r_ccmc
 
+samp = 50*np.arange(31)
+YKClat = 62.480
+YKClon = 245.518
 
 def commonTimes(debug=False):
     data, headers = r_ccmc.getdata(2006)
 
     listnames = '/home/gary/magnetosphere/data/SWPC_SWMF_052811_2/GM_CDF/SWPC_SWMF_052811_2_GM_cdf_list'
-    a = np.loadtxt(listnames, dtype=str, skiprows=1) #(N,5)
+    a = np.loadtxt(listnames, dtype=str, skiprows=1) #(_,5)
 
     times1 = np.array(data[:, 0:6], dtype=int)
     times2 = np.column_stack([np.array(list(np.char.split(a[:,2],sep='/')), 
@@ -45,25 +48,24 @@ def commonTimes(debug=False):
     return [times1[ind1, :], a[ind2,0], data[ind1, 13:16]]
 
 
-def dB_kam_tofile(time_common, filenames, debug=False, tag=''):
+def dB_kam_tofile(time_common, filenames, debug=False, tag=None, xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.125):
     assert(time_common.shape[0] == filenames.shape[0])
     if debug:
         print(time_common)
         print(filenames)
         print(dB_SWMF)
 
+    if tag == None:
+        tup = xlims+ylims+zlims+(d,)
+        tag = '_{0:07.2f}_{1:07.2f}_{2:07.2f}_{3:07.2f}_{4:07.2f}_{5:07.2f}_{6:.5f}_'.format(*tup)
+
     datafname = conf['data_path'] + 'dB_kam_tofile' + tag + '.txt'
     f = open(datafname,'a') # append only mode
-    f.write('\n  new_run: xlims=(-56., 8.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.125\n')
-    f.write('time, dB_kam_0, dB_kam_1, dB_kam_2\n')
+    f.write('\n  new_run: xlims=' + str(xlims) + ', ylims=' + str(ylims) + ', zlims=' + str(zlims) + ', d=' + str(d) + '\n')
+    f.write('-- $' + str(d) + 'R_E$ interpolated grid; (X,Y,Z) = (' + str(xlims) + ', ' + str(ylims) + ', ' + str(zlims) + ')')
+    f.write('year, day, month, hr, min, sec, dB_kam_0, dB_kam_1, dB_kam_2\n')
 
-    samp = 50*np.arange(31)
-    #samp = 500*np.arange(3)
-
-    YKClat = 62.480
-    YKClon = 245.518
     dB_kam = np.nan*np.empty((samp.size, 3))
-
     for i in range(samp.size):
         print('i,samp[i] = ' + str((i,samp[i])) )
         time = time_common[samp[i],:]
@@ -79,12 +81,10 @@ def dB_kam_tofile(time_common, filenames, debug=False, tag=''):
         print(filename)
 
         dB_kam[i,:] = bsk.run(time, mlat, mlon, filename='/home/gary/magnetosphere/data/SWPC_SWMF_052811_2/GM_CDF/' + filename, para=True,
-            xlims=(-56., 8.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.125,
+            xlims=xlims, ylims=ylims, zlims=zlims, d=d,
             print_output=True)
 
-        f.write(str(time) + ' ')
-        f.write(str(dB_kam[i,:]) + '\n')
-        #f.write('%e %e %e'%(dB_kam[i,0], dB_kam[i,1], dB_kam[i,2]))
+        f.write(str(time)[1:-1] + '   ' + str(dB_kam[i,:])[1:-1] + '\n')
 
     f.close()
     return dB_kam
@@ -92,34 +92,51 @@ def dB_kam_tofile(time_common, filenames, debug=False, tag=''):
 def dB_kam_fromfile(filename, fullname=False):
     if not fullname:
         filename = conf['data_path'] + filename
-    arr = np.loadtxt(filename, skiprows=3)
+    arr = np.loadtxt(filename, skiprows=4)
     times = arr[:, 0:6]
     dB_kam = arr[:, 6:9]
-    return [times, dB_kam]
+    f = open(filename, 'r')
+    f.readline()
+    f.readline()
+    label = f.readline()
+    return [times, dB_kam, label]
 
 
-def plot_from_file(filename):
-    time, dB_kam = dB_kam_fromfile(filename)
-    time_common, filenames, dB_SWMF_allcommon = commonTimes()
-
-    samp = 50*np.arange(31)
-    dB_SWMF = dB_SWMF_allcommon[samp, :]
-
+def plot_from_file(datafnames, fullname=False):
     import matplotlib.pyplot as plt
     #import matplotlib.dates
     import datetime
 
-    time = np.array(time, dtype=int)
+    if type(datafnames) == str:
+        datafnames = [datafnames]
+
+    time_common, filenames, dB_SWMF_allcommon = commonTimes()
+
+    dB_SWMF = dB_SWMF_allcommon[samp, :]
+
+    for datafname in datafnames:
+        times, dB_kam, label = dB_kam_fromfile(datafname, fullname=fullname)
+
+        tup = tuple([float(datafname.split('_')[i+3]) for i in range(7)])
+
+        assert(times.shape[0] == 31)
+        assert(dB_kam.shape[0] == 31)
+
+        times = np.array(times, dtype=int)
+        dtimes = []
+        for i in range(times.shape[0]):
+            dtimes.append(datetime.datetime(times[i,0],times[i,1],times[i,2],times[i,3],times[i,4],times[i,5]))
+
+        dB_kam_norm = np.sqrt(np.einsum('ij,ij->i', dB_kam, dB_kam))
+        plt.plot(dtimes, dB_kam_norm, label=label)
+
+    times = np.array(time_common[samp,:], dtype=int)
     dtimes = []
-    for i in range(time.shape[0]):
-        dtimes.append(datetime.datetime(time[i,0],time[i,1],time[i,2],time[i,3],time[i,4],time[i,5]))
+    for i in range(times.shape[0]):
+        dtimes.append(datetime.datetime(times[i,0],times[i,1],times[i,2],times[i,3],times[i,4],times[i,5]))
 
-    #dtimes = matplotlib.dates.date2num(dtimes)
-
-    dB_kam_norm = np.sqrt(np.einsum('ij,ij->i', dB_kam, dB_kam))
     dB_SWMF_norm = np.sqrt(np.einsum('ij,ij->i', dB_SWMF, dB_SWMF))
-    plt.plot(dtimes, dB_kam_norm, label='dB_kam_norm')
-    plt.plot(dtimes, dB_SWMF_norm, label='dB_SWMF_norm')
+    plt.plot(dtimes, dB_SWMF_norm, label='-- SWMF')
 
 
     # https://stackoverflow.com/questions/1574088/plotting-time-in-python-with-matplotlib
@@ -128,14 +145,14 @@ def plot_from_file(filename):
     plt.xlabel('year = 2006')
     plt.legend()
     plt.show()
-    
+
 '''
 import time as tm
 
 to = tm.time()
 
 time_common, filenames, dB_SWMF_allcommon = commonTimes()
-ret = dB_kam_tofile(time_common,filenames)
+ret = dB_kam_tofile(time_common, filenames, tag=None, xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.25)
 
 tf = tm.time()
 
@@ -143,4 +160,8 @@ print(ret)
 print('time = ' + str((tf-to)/3600.) + ' hours') # time = 3.4527500342 hours
 '''
 
-plot_from_file('dB_kam_tofile.txt')
+plot_from_file(['dB_kam_tofile_-048.00_0016.00_-032.00_0032.00_-032.00_0032.00_0.50000_.txt',
+            'dB_kam_tofile_-048.00_0016.00_-032.00_0032.00_-032.00_0032.00_0.25000_.txt',
+            'dB_kam_tofile_-056.00_0008.00_-032.00_0032.00_-032.00_0032.00_0.12500_.txt'])
+#       or alternatively
+#plot_from_file('/home/gary/magnetosphere/dB_kam_tofile_copy.txt', fullname=True)

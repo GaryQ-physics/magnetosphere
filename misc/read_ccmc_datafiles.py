@@ -18,7 +18,7 @@ from units_and_constants import phys
 import cxtransform as cx
 
 
-def time2ccmc_datafile(fileyear):
+def year2ccmc_datafile(fileyear):
     return str(fileyear) + '_YKC_pointdata.txt'
 
 
@@ -40,14 +40,11 @@ def getdata(filename, debug=False):
     headers is (25,) array of string for the corresponding quantities of data
     
     """
+
     if type(filename) != str:
-        filename = time2ccmc_datafile(filename)
-    '''
-    if not os.path.exists(conf['run_path'] + filename):
-        urlretrieve(conf['run_url'] + filename, conf['run_path'] + filename)
-        if debug:
-            print('Downloading' + filename)
-    '''
+        filename = year2ccmc_datafile(filename)
+
+
     fname = conf['data_path'] + filename
     data = np.genfromtxt(fname, skip_header=6, comments=None)
     headers = np.loadtxt(fname, dtype=str, skiprows=4, max_rows=1, comments=None)
@@ -215,10 +212,9 @@ def plot(fileyear, pltvars=['dBn', 'facdBn', 'sumBn', 'JhdBn', 'JpBn', 'JhdBn+Jp
 
     Parameters
     ----------
-    fileyear : integer  #######string!1111!!!!
-        the year the datafile is from. It is implicitly assumed there is only one 
-        datafile stored for a given year. It is asserted!!! that all datapoints have
-        that year.
+    fileyear : integer or string
+        the year the datafile is from, or just the string name of the datafilefile. It is implicitly assumed there is only one 
+        datafile stored for a given year.
         so far tried with 2001 and 2006
     pltvars : list, OPTIONAL
         A list of strings of all the variable to be plotted. The list elements
@@ -238,13 +234,9 @@ def plot(fileyear, pltvars=['dBn', 'facdBn', 'sumBn', 'JhdBn', 'JpBn', 'JhdBn+Jp
     import matplotlib.pyplot as plt
     #import matplotlib.dates
     import datetime
-    if type(fileyear) == str:
-        datafname = fileyear
-    else:
-        datafname = str(fileyear) + '_YKC_pointdata.txt'
-    data, headers = getdata(datafname)
+
+    data, headers = getdata(fileyear)
     time = np.array(data[:, 0:7], dtype=int)
-    #assert(np.all(time[:,0] == fileyear))
 
     dtimes = []
     for i in range(time.shape[0]):
