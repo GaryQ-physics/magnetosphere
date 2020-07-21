@@ -14,16 +14,21 @@ import biot_savart as bs
 import cxtransform as cx
 from units_and_constants import phys
 from probe import probe
+from util import tpad, time2filename
 
 
-def run(time, mlat, mlon, para=True,
-        Nx=None, xlims=None, dx=None,
-        Ny=None, ylims=None, dy=None,
-        Nz=None, zlims=None, dz=None,
-        N=None, L=None, eps=None,
-        fullVolume=False, spacepy_like=False,
+def run(time, mlat, mlon, filename=None, para=True,
+        fullVolume=False, fineVolume=False,
+        xlims=(-56., 8.), ylims=(-32., 32.), zlims=(-32., 32.),
+        d=0.125,
+        dx=None, dy=None, dz=None,
+        N=None,
+        Nx=None, Ny=None, Nz=None,
+        L=None,
         print_output=False, tolerance=1e-13):
     """
+
+    spacepy_like -> native fine grid spacing
 
     Returns (Btot)
     -------
@@ -75,8 +80,8 @@ def run(time, mlat, mlon, para=True,
     L : float, optional
         if not None, it overrides xlims,ylims,and zlims to all be (-L,L)
         The default is None.
-    eps : float, optional
-        if not None, it overrides dx, dy, and dz to all be eps
+    d : float, optional
+        if not None, it overrides dx, dy, and dz to all be d
         The default is None.
     fullVolume : boolean, OPTIONAL
         if True, it overides xlims, ylims and zlims to be the limits of the 
@@ -90,7 +95,7 @@ def run(time, mlat, mlon, para=True,
         prints output on command line. 
         The default is False.
     tolerance : floar, optional
-        the tolerance to which which N and eps type choices must be consistent.
+        the tolerance to which which N and d type choices must be consistent.
         slight errors can be due to floating point arithmetic. 
         The default is 1e-13.
         Note if spacepy_like=True, this is overidden to 0.
@@ -99,12 +104,12 @@ def run(time, mlat, mlon, para=True,
     ###### make X, Y, and Z ###########################
     assert(not (fullVolume and spacepy))
 
-    if spacepy_like:
+    if fineVolume:
         L = 3.96875
-        eps = 0.0625
+        d = 0.0625
         N = 128
-        assert((L+L)/(N-1) == eps)
-        assert((2*L)/(N-1) == eps)
+        assert((L+L)/(N-1) == d)
+        assert((2*L)/(N-1) == d)
         tolerance = 0.
     if fullVolume:
         xlims = (-224., 32.)
@@ -121,13 +126,13 @@ def run(time, mlat, mlon, para=True,
         Ny = N
         Nz = N
 
-    if eps != None:
-        dx = eps
-        dy = eps
-        dz = eps
+    if d != None:
+        dx = d
+        dy = d
+        dz = d
 
 
-    assert(xlims!=None and xlims!=None and zlims!=None)
+    assert(xlims!=None and ylims!=None and zlims!=None)
 
     if Nx != None:
         X = np.linspace(xlims[0], xlims[1], Nx)
@@ -196,9 +201,12 @@ def run(time, mlat, mlon, para=True,
         print(x0)
     #Npole = cx.GEOtoGSM([0., 0., 1.], time, 'car', 'car')
 
+    if filename == None:
+        filename = time2filename(time)
+
     def dBslice(i, debug=False):
         Grid = np.column_stack([X[i]*np.ones(Gy.shape), Gy, Gz])
-        J_kameleon = probe(time, Grid, ['jx','jy','jz'])
+        J_kameleon = probe(filename, Grid, ['jx','jy','jz'], usekV=True)
         J = J_kameleon*(phys['muA']/phys['m']**2)
         if debug:
             print(Grid.shape)
@@ -234,7 +242,7 @@ def run(time, mlat, mlon, para=True,
     if print_output:
         print('Nx, Ny, Nz = {0:d}, {1:d}, {2:d}'.format(Nx,Ny,Nz))
         print('fullVolume = ' + str(fullVolume))
-        print('spacepy_like = ' + str(spacepy_like))
+        print('fineVolume = ' + str(fineVolume))
         print('slices = ' + str(X.size))
         print('points in slice = ' + str(Y.size*Z.size))
         print('total points = ' + str(X.size*Y.size*Z.size))
@@ -249,5 +257,13 @@ def run(time, mlat, mlon, para=True,
     if print_output:
         print('Btot = \n' + str(Btot))
         print('Btot_norm = ' + str(np.linalg.norm(Btot)))
+
+        string = '\n X[0], X[-1], dx; Y[0], Y[-1], dy; Z[0], Z[-1], dz; Btot[0], Btot[1], Btot[2], np.linalg.norm(Btot) = {0:f}, {1:f}, {2:f}, {3:f}, {4:f}, {5:f}, {6:f}, {7:f}, {8:f}, {9:f}, {10:f}, {11:f}, {12:f}'.format(X[0], X[-1], dx, Y[0], Y[-1], dy, Z[0], Z[-1], dz, Btot[0], Btot[1], Btot[2], np.linalg.norm(Btot))
+        print(string)
+        if tpad(time) == (2003, 11, 20, 7, 0, 0, 0) and (mlat, mlon) == (57.50, 176.00):
+            datafname = conf['run_path_derived'] + 'biot_savart_kameleon_data_2003:11:20T07:00:00.txt'
+            f = open(datafname,'a') # append only mode
+            f.write(string)
+            f.close()
 
     return Btot

@@ -140,9 +140,13 @@ def MAGtoGEI(v_MAG, time, ctype_in, ctype_out):
 def GEOtoGEI(v_GEO, time, ctype_in, ctype_out):
     return transform(v_GEO, time, 'GEO', 'GEI', ctype_in=ctype_in, ctype_out=ctype_out)
 
-def GEOtoSM(v_GEO, time, ctype_in, ctype_out):
+def GEOtoSM(v_GEO, time, ctype_in, ctype_out, fixedYear=False):
+    if fixedYear:
+        time = [2000] + list(time)[1:]
     return transform(v_GEO, time, 'GEO', 'SM', ctype_in=ctype_in, ctype_out=ctype_out)
 
+def dipole(time):
+    return MAGtoGEO(np.array([0.,0.,1.]), time, 'car', 'sph')
 
 def StoC(r, theta, phi):
     """Convert from spherical to cartesian coordinates
@@ -224,8 +228,8 @@ def MAGtoMLT(pos, time, csys='sph', debug=False):
 
     mlt = cx.MAGtoMLT([[-1., 0., 0.],[-1., 0., 0.]], [2000, 1, 1, 0, 0, 0], csys='car')
     print(mlt) # [6.86993657 6.86993657]
-"""
-    
+    """
+
     assert(csys == 'car' or csys == 'sph')
     pos = np.array(pos)
     time = np.array(time)

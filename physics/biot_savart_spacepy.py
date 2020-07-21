@@ -13,6 +13,8 @@ import spacepy.pybats.bats as bats
 
 def run(data3d, time, mlat, mlon, debug=False, returnX=False, quick=False):
     """
+    biot_savart_kameleon interpolated grid
+    biot_ savart native grid
 
     Returns
     -------
