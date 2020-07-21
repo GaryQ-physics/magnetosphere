@@ -90,6 +90,25 @@ def time2filename(time, extension='.out.cdf', split=False):
     return conf["run_path"] + filename
 
 
+def time2SWPCfile(time):
+    import numpy as np
+    t = np.array(time)
+    if len(t.shape) != 1:
+        #filenames = np.empty((t.shape[0],), dtype=str)
+        filenames = []
+        for i in range(t.shape[0]):
+            ret = time2SWPCfile(t[i,:])
+            if ret != None:
+                filenames.append(ret)
+        return filenames
+    time = tpad(time)
+    listnames = '/home/gary/magnetosphere/data/SWPC_SWMF_052811_2/GM_CDF/SWPC_SWMF_052811_2_GM_cdf_list'
+    a = np.loadtxt(listnames, dtype=str, skiprows=1) #(N,5)
+    Tr = np.logical_and(a[:,2] == '{0:04d}/{1:02d}/{2:02d}'.format(*time[0:3]),
+                        a[:,4] == '{0:02d}:{1:02d}:{2:02d}'.format(*time[3:6]))
+    if a[Tr, 0].size != 0:
+        return '/home/gary/magnetosphere/data/SWPC_SWMF_052811_2/GM_CDF/' + a[Tr, 0][0]
+
 def dirlist(rootdir, **kwargs):
     """Recursive file list constrained by regular expression
     
@@ -217,6 +236,36 @@ def dlfile(filename, debug=False):
             print('Renamed *.tmp')
 
     return ret
+
+def dlfile_SWPC(filename, debug=False):
+    '''
+    fname_split = os.path.split(filename)[1]
+    fname_full = conf['run_path'] + fname_split
+    fileurl = conf['run_url'] + fname_split
+
+    return urlretrieve(fileurl, fname_full)
+
+    '''
+    
+    fname_full = '/home/gary/magnetosphere/data/SWPC_SWMF_052811_2/GM_CDF/' + filename
+    if not os.path.exists(fname_full):
+        fileurl = 'http://mag.gmu.edu/git-data/sblake/SWPC_SWMF_052811_2/GM_CDF/' + filename
+        if debug:
+            print('Downloading ' + fileurl)
+            print('to')
+        fname_tmp = fname_full + ".tmp"
+        if debug:
+            print(fname_tmp)
+        # TODO: Catch download error
+        ret = urlretrieve(fileurl, fname_tmp)
+        if debug:
+            print('Downloaded ' + fileurl)
+        os.rename(fname_tmp, fname_full)
+        if debug:
+            print('Renamed *.tmp')
+        return ret
+    return None
+
 
 
 def filemeta(filename):

@@ -18,7 +18,7 @@ Event = data[0, :]
 outs = np.nan*np.empty((6,))
 for i in range(6):
     print('i = ' + str(i))
-    if i == 0 or i == 1:
+    if i == 0:
         outs[i] = 0.
         continue
 

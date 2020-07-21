@@ -18,11 +18,11 @@ from units_and_constants import phys
 import cxtransform as cx
 
 
-def time2ccmc_datafile(filename):
-    return 'test.txt'
+def year2ccmc_datafile(fileyear):
+    return str(fileyear) + '_YKC_pointdata.txt'
 
 
-def getdata(filename, debug=True):
+def getdata(filename, debug=False):
     """
 
     Parameters
@@ -40,15 +40,12 @@ def getdata(filename, debug=True):
     headers is (25,) array of string for the corresponding quantities of data
     
     """
+
     if type(filename) != str:
-        filename = time2ccmc_datafile(filename)
-    '''
-    if not os.path.exists(conf['run_path'] + filename):
-        urlretrieve(conf['run_url'] + filename, conf['run_path'] + filename)
-        if debug:
-            print('Downloading' + filename)
-    '''
-    fname = conf['run_path'] + filename
+        filename = year2ccmc_datafile(filename)
+
+
+    fname = conf['data_path'] + filename
     data = np.genfromtxt(fname, skip_header=6, comments=None)
     headers = np.loadtxt(fname, dtype=str, skiprows=4, max_rows=1, comments=None)
     assert(headers[0] == '#')
@@ -102,7 +99,7 @@ def writevtk(filename, debug=True):
     print("Wrote " + fname)
 
 
-def explore(fileyear=2001, useGEO=True, magSource=0):
+def explore(fileyear=2006, useGEO=True, magSource=0):
     """
     working hypothesis:
         'JhdBn+JpBn' = ionosphere contribution to deltaB in fig3a in CalcDeltaB
@@ -132,8 +129,13 @@ def explore(fileyear=2001, useGEO=True, magSource=0):
     Geomagnetic coordinates (IGRF-12 (2015)) 	68.62 N, 58.22 W (2015.0)
     Elevation 	198 m
 
+    ---- http://www.wdc.bgs.ac.uk/obsinfo/ykc.html ----
+    Latitude 	62.48AN
+    Longitude 	245.518AE
+    Altitude 	198.0m
+
     """
-    data, headers = getdata(str(fileyear) + '_YKC_pointdata.txt')
+    data, headers = getdata(fileyear)
     time = np.array(data[:, 0:7], dtype=int)
     #print(headers)
     X = data[:, 7:10]*phys['m']
@@ -156,11 +158,16 @@ def explore(fileyear=2001, useGEO=True, magSource=0):
         station_MAG = np.array([1., MLAT, MLON])
         X_conv = cx.MAGtoSM(station_MAG, time, 'sph', 'car')
 
-    print(X_conv)
-    print(X)
+
+    di_location = cx.dipole(time)
+    diLAT = di_location[:,1]
+    diLON = di_location[:,2]
+
+    #print(X_conv)
+    #print(X)
     #R = np.sqrt(X_conv[:,0]**2 + X_conv[:,1]**2 + X_conv[:,2]**2)
     R = np.sqrt(np.einsum('ij,ij->i', X, X))
-    print(R)
+    #print(R)
     print( np.abs(R-1.) <= 1e-4 )
 
     assert(np.all(np.abs(R-1.) <= 1e-4))
@@ -173,7 +180,7 @@ def explore(fileyear=2001, useGEO=True, magSource=0):
         plt.plot(X_conv[:,0], 'b.', label='x_conv')
         plt.plot(X_conv[:,1], 'r.', label='y_conv')
         plt.plot(X_conv[:,2], 'g.', label='z_conv')
-    if True:
+    if False:
         plt.plot(X_conv[:,0]-X[:,0], 'b.', label='xdif')
         plt.plot(X_conv[:,1]-X[:,1], 'r.', label='ydif')
         plt.plot(X_conv[:,2]-X[:,2], 'g.', label='zdif')
@@ -183,6 +190,12 @@ def explore(fileyear=2001, useGEO=True, magSource=0):
         plt.plot(X[:,2], 'g.', label='Z')
     if False:
         plt.plot(R-1., 'k.', label='Rdif')
+    if True:
+        plt.plot(diLAT, 'b.', label='diLAT')
+        plt.plot(diLON, 'b.', label='diLON')
+        plt.axvline(x=79.0)
+        plt.axvline(x=289.1)
+
     
     plt.xlabel('index')
     plt.legend()
@@ -191,6 +204,7 @@ def explore(fileyear=2001, useGEO=True, magSource=0):
     #plt.axvline(x=1.25)
     plt.grid()
     plt.show()
+    return data
 
 
 def plot(fileyear, pltvars=['dBn', 'facdBn', 'sumBn', 'JhdBn', 'JpBn', 'JhdBn+JpBn']):
@@ -198,10 +212,9 @@ def plot(fileyear, pltvars=['dBn', 'facdBn', 'sumBn', 'JhdBn', 'JpBn', 'JhdBn+Jp
 
     Parameters
     ----------
-    fileyear : integer
-        the year the datafile is from. It is implicitly assumed there is only one 
-        datafile stored for a given year. It is asserted that all datapoints have
-        that year.
+    fileyear : integer or string
+        the year the datafile is from, or just the string name of the datafilefile. It is implicitly assumed there is only one 
+        datafile stored for a given year.
         so far tried with 2001 and 2006
     pltvars : list, OPTIONAL
         A list of strings of all the variable to be plotted. The list elements
@@ -222,9 +235,8 @@ def plot(fileyear, pltvars=['dBn', 'facdBn', 'sumBn', 'JhdBn', 'JpBn', 'JhdBn+Jp
     #import matplotlib.dates
     import datetime
 
-    data, headers = getdata(str(fileyear) + '_YKC_pointdata.txt')
+    data, headers = getdata(fileyear)
     time = np.array(data[:, 0:7], dtype=int)
-    assert(np.all(time[:,0] == fileyear))
 
     dtimes = []
     for i in range(time.shape[0]):
@@ -255,4 +267,4 @@ def plot(fileyear, pltvars=['dBn', 'facdBn', 'sumBn', 'JhdBn', 'JpBn', 'JhdBn+Jp
 #plot(2006, pltvars = ['dBn', 'facdBn'])
 #plot(2006, pltvars = ['JhdBn', 'JpBn', 'JhdBn+JpBn'])
 #plot(2006, pltvars = ['sumBn'])
-explore()
+#explore()
