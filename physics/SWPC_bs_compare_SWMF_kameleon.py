@@ -62,7 +62,7 @@ def dB_kam_tofile(time_common, filenames, debug=False, tag=None, xlims=(-48., 16
     datafname = conf['data_path'] + 'dB_kam_tofile' + tag + '.txt'
     f = open(datafname,'a') # append only mode
     f.write('\n  new_run: xlims=' + str(xlims) + ', ylims=' + str(ylims) + ', zlims=' + str(zlims) + ', d=' + str(d) + '\n')
-    f.write('-- $' + str(d) + 'R_E$ interpolated grid; (X,Y,Z) = (' + str(xlims) + ', ' + str(ylims) + ', ' + str(zlims) + ')')
+    f.write('-- $' + str(d) + 'R_E$ interpolated grid; (X,Y,Z) = (' + str(xlims) + ', ' + str(ylims) + ', ' + str(zlims) + ')\n')
     f.write('year, day, month, hr, min, sec, dB_kam_0, dB_kam_1, dB_kam_2\n')
 
     dB_kam = np.nan*np.empty((samp.size, 3))
@@ -103,6 +103,9 @@ def dB_kam_fromfile(filename, fullname=False):
 
 
 def plot_from_file(datafnames, fullname=False):
+    from hapiclient.plot.datetick import datetick
+    #from matplotlib import pyplot as plt
+
     import matplotlib.pyplot as plt
     #import matplotlib.dates
     import datetime
@@ -128,7 +131,7 @@ def plot_from_file(datafnames, fullname=False):
             dtimes.append(datetime.datetime(times[i,0],times[i,1],times[i,2],times[i,3],times[i,4],times[i,5]))
 
         dB_kam_norm = np.sqrt(np.einsum('ij,ij->i', dB_kam, dB_kam))
-        plt.plot(dtimes, dB_kam_norm, label=label)
+        plt.plot(dtimes, dB_kam_norm, label=label, alpha=0.7)
 
     times = np.array(time_common[samp,:], dtype=int)
     dtimes = []
@@ -136,32 +139,12 @@ def plot_from_file(datafnames, fullname=False):
         dtimes.append(datetime.datetime(times[i,0],times[i,1],times[i,2],times[i,3],times[i,4],times[i,5]))
 
     dB_SWMF_norm = np.sqrt(np.einsum('ij,ij->i', dB_SWMF, dB_SWMF))
-    plt.plot(dtimes, dB_SWMF_norm, label='-- SWMF')
+    plt.plot(dtimes, dB_SWMF_norm, label='-- SWMF', alpha=0.7)
 
-
+    datetick('x')
     # https://stackoverflow.com/questions/1574088/plotting-time-in-python-with-matplotlib
-    plt.gcf().autofmt_xdate()
+    #plt.gcf().autofmt_xdate()
 
-    plt.xlabel('year = 2006')
+    plt.xlabel('xlabel here')
     plt.legend()
     plt.show()
-
-'''
-import time as tm
-
-to = tm.time()
-
-time_common, filenames, dB_SWMF_allcommon = commonTimes()
-ret = dB_kam_tofile(time_common, filenames, tag=None, xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.25)
-
-tf = tm.time()
-
-print(ret)
-print('time = ' + str((tf-to)/3600.) + ' hours') # time = 3.4527500342 hours
-'''
-
-plot_from_file(['dB_kam_tofile_-048.00_0016.00_-032.00_0032.00_-032.00_0032.00_0.50000_.txt',
-            'dB_kam_tofile_-048.00_0016.00_-032.00_0032.00_-032.00_0032.00_0.25000_.txt',
-            'dB_kam_tofile_-056.00_0008.00_-032.00_0032.00_-032.00_0032.00_0.12500_.txt'])
-#       or alternatively
-#plot_from_file('/home/gary/magnetosphere/dB_kam_tofile_copy.txt', fullname=True)
