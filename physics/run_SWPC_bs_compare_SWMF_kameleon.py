@@ -52,7 +52,9 @@ if plot:
     swpc.plot_from_file(['dB_kam_tofile_-048.00_0016.00_-032.00_0032.00_-032.00_0032.00_0.50000_.txt',
                 'dB_kam_tofile_-048.00_0016.00_-032.00_0032.00_-032.00_0032.00_0.25000_.txt',
                 'dB_kam_tofile_-048.00_0016.00_-032.00_0032.00_-032.00_0032.00_0.12500_.txt',
-                'dB_kam_tofile_-112.00_0016.00_-064.00_0064.00_-064.00_0064.00_0.50000_.txt'])
+                'dB_kam_tofile_-112.00_0016.00_-064.00_0064.00_-064.00_0064.00_0.25000_.txt',
+                'dB_kam_tofile_-112.00_0016.00_-064.00_0064.00_-064.00_0064.00_0.50000_.txt',
+                'dB_kam_tofile_-224.00_0032.00_-128.00_0128.00_-128.00_0128.00_0.50000_.txt'])
     #       or alternatively
     #plot_from_file('/home/gary/magnetosphere/dB_kam_tofile_copy.txt', fullname=True)
     plot_explore()
@@ -61,15 +63,18 @@ else:
     to = tm.time()
 
     time_common, filenames, dB_SWMF_allcommon = swpc.commonTimes()
-    ret = swpc.dB_kam_tofile(time_common, filenames, tag=None, xlims=(-112., 16.), ylims=(-64., 64.), zlims=(-64., 64.), d=1.) #0.25
+    ret = swpc.dB_kam_tofile(time_common, filenames, tag=None, xlims=(-112., 16.), ylims=(-64., 64.), zlims=(-64., 64.), d=0.25) #0.25
 
     tf = tm.time()
 
-    print(ret)
+
     print('time = ' + str((tf-to)/3600.) + ' hours') # time = 3.4527500342 hours
+    g = open('done_time.txt', 'a')
+    g.write('\n time = ' + str((tf-to)/3600.) + ' hours\n')
+    g.close()
+    print(ret)
 
     ###################### two runs
-    '''
     to = tm.time()
 
     time_common, filenames, dB_SWMF_allcommon = swpc.commonTimes()
@@ -77,10 +82,9 @@ else:
 
     tf = tm.time()
 
-    print(ret)
     print('time = ' + str((tf-to)/3600.) + ' hours') # time = 3.4527500342 hours
-    '''
-
     g = open('done_time.txt', 'a')
     g.write('\n time = ' + str((tf-to)/3600.) + ' hours\n')
     g.close()
+    print(ret)
+
