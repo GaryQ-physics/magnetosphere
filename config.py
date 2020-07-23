@@ -13,9 +13,11 @@ elif os.path.exists('/home/weigel/'):
 elif os.path.exists('/home/gary/'):
     base = '/home/gary/magnetosphere/'
     kameleon = '/home/gary/magnetosphere/kameleon/lib/python2.7/site-packages/'
+    SWPC_cdf_path = base + 'data/SWPC_SWMF_052811_2/GM_CDF/'
 elif os.path.exists('/home/gquaresi/'):
     base = '/home/gquaresi/magnetosphere/'
     kameleon = '/home/gquaresi/'
+    SWPC_cdf_path = '/media/solar-backup/tmp/' + 'data/SWPC_SWMF_052811_2/GM_CDF/'
 else:
     assert(False)
 
@@ -26,7 +28,7 @@ conf = {
         'run_path': base + 'data/SCARR5_GM_IO2/IO2/',
         'run_path_derived': base + 'data/SCARR5_GM_IO2-derived/',
         'base': base,
-        'SWPC_cdf_path': base + 'data/SWPC_SWMF_052811_2/GM_CDF/'
+        'SWPC_cdf_path': SWPC_cdf_path
     }
 
 if base + 'util/' not in sys.path:
@@ -53,3 +55,7 @@ if base + 'misc/' not in sys.path:
 if not os.path.exists(conf['run_path_derived']):
     os.makedirs(conf['run_path_derived'])
     print('Created directory ' + conf['run_path_derived'])
+
+if not os.path.exists(conf['SWPC_cdf_path']):
+    os.makedirs(conf['SWPC_cdf_path'])
+    print('Created directory ' + conf['SWPC_cdf_path'])
