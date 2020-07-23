@@ -1,6 +1,6 @@
 
 import numpy as np
-import biot_savart_kameleon as bsk
+import biot_savart_kameleon_interpolated_grid as bsk
 
 
 global_xlims = (-224., 32.)

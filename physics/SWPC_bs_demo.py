@@ -5,7 +5,7 @@ import numpy as np
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 
-import biot_savart_kameleon as bsk
+import biot_savart_kameleon_interpolated_grid as bsk
 import util
 import cxtransform as cx
 import read_ccmc_datafiles as r_ccmc

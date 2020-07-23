@@ -71,8 +71,8 @@ import cxtransform as cx
 import biot_savart as bs
 from probe import probe
 from util import time2filename
-import biot_savart_kameleon as bsk
-import biot_savart_spacepy as bss
+import biot_savart_kameleon_interpolated_grid as bsk
+import biot_savart_SWMF_native_finegrid as bss
 
 import spacepy.pybats.bats as bats
 

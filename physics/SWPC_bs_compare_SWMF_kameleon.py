@@ -5,7 +5,7 @@ import numpy as np
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 
-import biot_savart_kameleon as bsk
+import biot_savart_kameleon_interpolated_grid as bsk
 import util
 import cxtransform as cx
 import read_ccmc_datafiles as r_ccmc
@@ -17,7 +17,7 @@ YKClon = 245.518
 def commonTimes(debug=False):
     data, headers = r_ccmc.getdata(2006)
 
-    listnames = '/home/gary/magnetosphere/data/SWPC_SWMF_052811_2/GM_CDF/SWPC_SWMF_052811_2_GM_cdf_list'
+    listnames = conf['SWPC_cdf_path'] + 'SWPC_SWMF_052811_2_GM_cdf_list'
     a = np.loadtxt(listnames, dtype=str, skiprows=1) #(_,5)
 
     times1 = np.array(data[:, 0:6], dtype=int)
@@ -80,7 +80,7 @@ def dB_kam_tofile(time_common, filenames, debug=False, tag=None, xlims=(-48., 16
         print(time)
         print(filename)
 
-        dB_kam[i,:] = bsk.run(time, mlat, mlon, filename='/home/gary/magnetosphere/data/SWPC_SWMF_052811_2/GM_CDF/' + filename, para=True,
+        dB_kam[i,:] = bsk.run(time, mlat, mlon, filename=conf['SWPC_cdf_path'] + filename, para=True,
             xlims=xlims, ylims=ylims, zlims=zlims, d=d,
             print_output=True)
 

@@ -25,7 +25,7 @@ Typical outputs:
 """
 
 import numpy as np
-import biot_savart_kameleon as bsk
+import biot_savart_kameleon_interpolated_grid as bsk
 
 global_x_min = -224.
 global_x_max = 32.

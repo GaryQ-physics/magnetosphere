@@ -10,16 +10,23 @@ if os.path.exists('/Users/weigel/'):
 elif os.path.exists('/home/weigel/'):
     base = '/home/weigel/git/magnetosphere/'
     kameleon = '/home/weigel/kameleon/lib/python2.7/site-packages/'
-else:
+elif os.path.exists('/home/gary/'):
     base = '/home/gary/magnetosphere/'
     kameleon = '/home/gary/magnetosphere/kameleon/lib/python2.7/site-packages/'
+elif os.path.exists('/home/gquaresi/'):
+    base = '/home/gquaresi/magnetosphere/'
+    kameleon = '/home/gquaresi/'
+else:
+    assert(False)
+
 
 conf = {
         'data_path': base + 'data/',
         'run_url': 'http://mag.gmu.edu/git-data/sblake/SCARR5_GM_IO2/IO2/',
         'run_path': base + 'data/SCARR5_GM_IO2/IO2/',
         'run_path_derived': base + 'data/SCARR5_GM_IO2-derived/',
-        'base': base
+        'base': base,
+        'SWPC_cdf_path': base + 'data/SWPC_SWMF_052811_2/GM_CDF/'
     }
 
 if base + 'util/' not in sys.path:
