@@ -7,17 +7,17 @@ if os.path.exists('/Users/robertweigel/'):
 if os.path.exists('/Users/weigel/'):
     base = '/Users/weigel/git/magnetosphere/'
     kameleon = '/Users/weigel/kameleon/lib/python2.7/site-packages/'
-elif os.path.exists('/home/weigel/'):
+elif os.path.exists('/home/weigel/') and False:
     base = '/home/weigel/git/magnetosphere/'
     kameleon = '/home/weigel/kameleon/lib/python2.7/site-packages/'
 elif os.path.exists('/home/gary/'):
     base = '/home/gary/magnetosphere/'
     kameleon = '/home/gary/magnetosphere/kameleon/lib/python2.7/site-packages/'
-    SWPC_cdf_path = base + 'data/SWPC_SWMF_052811_2/GM_CDF/'
+    storage = base
 elif os.path.exists('/home/gquaresi/'):
-    base = '/home/gquaresi/magnetosphere/'
+    magnetosphere = '/home/gquaresi/magnetosphere/'
     kameleon = '/home/gquaresi/'
-    SWPC_cdf_path = '/media/solar-backup/tmp/' + 'data/SWPC_SWMF_052811_2/GM_CDF/'
+    storage = '/media/solar-backup/tmp/'
 else:
     assert(False)
 
@@ -25,10 +25,11 @@ else:
 conf = {
         'data_path': base + 'data/',
         'run_url': 'http://mag.gmu.edu/git-data/sblake/SCARR5_GM_IO2/IO2/',
-        'run_path': base + 'data/SCARR5_GM_IO2/IO2/',
+        'run_path': storage + 'data/SCARR5_GM_IO2/IO2/',
         'run_path_derived': base + 'data/SCARR5_GM_IO2-derived/',
         'base': base,
-        'SWPC_cdf_path': SWPC_cdf_path
+        'SWPC_cdf_path': storage + 'data/SWPC_SWMF_052811_2/GM_CDF/',
+        'SWPC_derived': base + 'data/SWPC_SWMF_052811_2-derived/'
     }
 
 if base + 'util/' not in sys.path:
@@ -51,6 +52,10 @@ if kameleon + 'ccmc/' not in sys.path:
 
 if base + 'misc/' not in sys.path:
     sys.path.append(base + 'misc/')
+
+if not os.path.exists(conf['run_path_derived']):
+    os.makedirs(conf['run_path_derived'])
+    print('Created directory ' + conf['run_path_derived'])
 
 if not os.path.exists(conf['run_path_derived']):
     os.makedirs(conf['run_path_derived'])

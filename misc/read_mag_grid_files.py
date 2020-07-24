@@ -31,6 +31,14 @@ def time2mag_grid_file(time):
         + '%04d%02d%02d-%02d%02d%02d' % tpad(time, length=6) + '.out'
     return filename
 
+def mag_grid_file2time(filename):
+    """Extract time stamp from file name"""
+
+    tstr = filename[10:] 
+    y, m, d = int(tstr[0:4]), int(tstr[4:6]), int(tstr[6:8])
+    h, M, s = int(tstr[9:11]), int(tstr[11:13]), int(tstr[13:15])
+    f = 0
+    return [y, m, d, h, M, s, f]
 
 def getdata(filename, debug=True):
     """

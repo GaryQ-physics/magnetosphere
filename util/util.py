@@ -234,8 +234,8 @@ def dlfile(filename, debug=False):
         os.rename(fname_tmp, fname_full)
         if debug:
             print('Renamed *.tmp')
-
-    return ret
+        return ret
+    return None
 
 def dlfile_SWPC(filename, debug=False):
     '''
