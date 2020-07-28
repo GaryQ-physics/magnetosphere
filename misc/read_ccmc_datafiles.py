@@ -3,7 +3,6 @@ This script reads the calculated values for the different contributions to the
 (probably) magnetic field that are in the .txt files from
 https://ccmc.gsfc.nasa.gov/results/viewrun.php?domain=GM&runnumber=SWPC_SWMF_052811_2
 
-currently for YKC station
 
 """
 
@@ -18,8 +17,11 @@ from units_and_constants import phys
 import cxtransform as cx
 
 
-def year2ccmc_datafile(fileyear):
-    return str(fileyear) + '_YKC_pointdata.txt'
+def year2ccmc_datafile(tofilename):
+    """
+    tofilename = [2006, 'YKC']
+    """
+    return str(tofilename[0]) + '_' + tofilename[1] + '_pointdata.txt'
 
 
 def getdata(filename, debug=False):
@@ -38,7 +40,7 @@ def getdata(filename, debug=False):
     
     where data is (N,25) array of N datapoints given in the file and 
     headers is (25,) array of string for the corresponding quantities of data
-    
+
     """
 
     if type(filename) != str:

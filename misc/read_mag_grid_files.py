@@ -1,6 +1,39 @@
 """
 This script reads the calculated values for the different contributions to the
 magnetic field that are in mag_grid____.out files
+
+
+NOTE:
+
+lats = np.unique(data[:,1])
+  -> array([-87.5       , -86.49425287, -85.48850575, -84.48275862,
+            ...
+            85.48850575,  86.49425287,  87.5       ])
+lats[1]-lats[0]
+  -> 1.0057471260000028
+lats[6]-lats[5]
+  -> 1.0057471270000065
+lats.shape
+  -> (175,)
+87.5-(-87.5)
+  -> 175.0
+175./(175-1)
+  -> 1.0057471264367817
+
+lons = np.unique(data[:,0])
+  -> array([  0.,   1.,   2.,   3.,   4.,   5.,   6.,   7.,   8.,   9.,  10.,
+            ...
+            352., 353., 354., 355., 356., 357., 358., 359.])
+lons.shape
+  -> (360,)
+(359.-0.)/(360-1)
+  -> 1.0
+
+so while lons in steps of 1. , lats are insteps of 175./174 
+(to some decimal aprox that is not completely consistent between elements)
+so someone probably screwed up the linspace and meant to use (176,)
+
+
 """
 
 import os

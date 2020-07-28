@@ -13,21 +13,32 @@ import read_mag_grid_files as rmg
 
 
 samp_SWPC = 50*np.arange(31)
-YKClat = 62.480
-YKClon = 245.518
+#YKClat = 62.480
+#YKClon = 245.518
+
+magnetometer_stations = {'YKClat':62.480, 'YKClon':245.518}
 
 samp_SCARR5 = 50*np.arange(17)
 #YKClat = 62.480
 #YKClon = 245.518
-MLAT = 0.
-MLON = 0.
+#MLAT = 0.
+#MLON = 0.
 
-def commonTimes(run, debug=False):
-    assert(run == 'SWPC' or run == 'SCARR5')
+def commonTimes(run, station, debug=False, skip_SWMF=False):
+    """
+    run = 'SWPC',  station = 'YKC'
+
+    run = 'SCARR5',  station = [MLAT, MLON]  where these are floats
+    """
+
+    if run == 'SWPC':
+        assert(type(station) == str)
+    elif run == 'SCARR5':
+        assert(type(station) == list)
 
     if run == 'SWPC':
         samp = samp_SWPC
-        data, headers = r_ccmc.getdata(2006)
+        data, headers = r_ccmc.getdata([2006, station])
 
         listnames = conf['SWPC_cdf_path'] + 'SWPC_SWMF_052811_2_GM_cdf_list'
         a = np.loadtxt(listnames, dtype=str, skiprows=1) #(_,5)
@@ -56,39 +67,45 @@ def commonTimes(run, debug=False):
     assert(np.all(times1[ind1, 0:6] == times2[ind2, 0:6])) #!!!ignoring miliseconds!!!
 
     if run == 'SWPC':
+        directory = conf['SWPC_derived'] + station + '/'
+
         filenames = a[ind2,0]
 
-        assert(tuple(headers[13:16]) == ('dBn', 'dBe', 'dBd'))
-        dB_SWMF_allcommon = data[ind1, 13:16] # dBn dBe dBd  as  0,1,2
-        dB_SWMF = dB_SWMF_allcommon[samp, :]
-
     elif run == 'SCARR5':
+        directory = conf['run_path_derived'] + 'mpos:{0:.3f}:{1:.3f}/'.format(*tuple(station))
+
         filenames_all = np.array(filenames_all, dtype=str)
         filenames = filenames_all[ind2]
 
-        dB_SWMF = np.nan*np.empty((samp.size, 3))
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+        print('Created directory ' + directory)
+
+    if not skip_SWMF:
+        if run == 'SWPC':
+            assert(tuple(headers[13:16]) == ('dBn', 'dBe', 'dBd'))
+            dB_SWMF_allcommon = data[ind1, 13:16] # dBn dBe dBd  as  0,1,2
+            dB_SWMF = dB_SWMF_allcommon[samp, :]
+        elif run == 'SCARR5':
+            dB_SWMF = np.nan*np.empty((samp.size, 3))
+            for i in range(samp.size):
+                dB_SWMF[i, :] = np.array(rmg.analyzedata( 
+                                                    str(magfilenames[ind1[samp[i]]]),
+                                                    station[0], station[1], debug=debug) )[1:4]
+
+        datafname = directory + 'dB_SWMF_tofile' + '.txt'
+        f = open(datafname,'a') # append only mode
+        f.write('\n  new_run:\n')
+        f.write('-- SWMF\n')
+        f.write('year, day, month, hr, min, sec, dB_SWMF_0, dB_SWMF_1, dB_SWMF_2\n')
         for i in range(samp.size):
-            dB_SWMF[i, :] = np.array(rmg.analyzedata( 
-                                                str(magfilenames[ind1[samp[i]]]),
-                                                MLAT, MLON, debug=debug) )[1:4]
+            f.write(str(times1[ind1[samp[i]], :])[1:-1] + '   ' + str(dB_SWMF[i,:])[1:-1] + '\n')
+        f.close()
 
-    if run == 'SWPC':
-        datafname = conf['SWPC_derived'] + 'dB_SWMF_tofile' + '.txt'
-    elif run == 'SCARR5':
-        datafname = conf['run_path_derived'] + 'dB_SWMF_tofile' + '.txt'
-
-    f = open(datafname,'a') # append only mode
-    f.write('\n  new_run:\n')
-    f.write('-- SWMF\n')
-    f.write('year, day, month, hr, min, sec, dB_SWMF_0, dB_SWMF_1, dB_SWMF_2\n')
-    for i in range(samp.size):
-        f.write(str(times1[ind1[samp[i]], :])[1:-1] + '   ' + str(dB_SWMF[i,:])[1:-1] + '\n')
-    f.close()
-
-    return [times1[ind1, :], filenames, dB_SWMF]
+    return [times1[ind1, :], filenames]
 
 
-def dB_kam_tofile(run, time_common, filenames, debug=False, tag=None, xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.125):
+def dB_kam_tofile(run, station, time_common, filenames, debug=False, tag=None, xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.125):
     assert(time_common.shape[0] == filenames.shape[0])
     if debug:
         print(time_common)
@@ -102,13 +119,12 @@ def dB_kam_tofile(run, time_common, filenames, debug=False, tag=None, xlims=(-48
 
     if run == 'SWPC':
         samp = samp_SWPC
-
-        datafname = conf['SWPC_derived'] + 'dB_kam_tofile' + tag + '.txt'
+        datafname = conf['SWPC_derived'] + station + '/'
     elif run == 'SCARR5':
         samp = samp_SCARR5
+        directory = conf['run_path_derived'] + 'mpos:{0:.3f}:{1:.3f}/'.format(*tuple(station))
 
-        datafname = conf['run_path_derived'] +'dB_kam_tofile' + tag + '.txt'
-
+    datafname = directory + 'dB_kam_tofile' + tag + '.txt'
     f = open(datafname,'a') # append only mode
     f.write('\n  new_run: xlims=' + str(xlims) + ', ylims=' + str(ylims) + ', zlims=' + str(zlims) + ', d=' + str(d) + '\n')
     f.write('-- $' + str(d) + 'R_E$ interpolated grid; (X,Y,Z) = (' + str(xlims) + ', ' + str(ylims) + ', ' + str(zlims) + ')\n')
@@ -122,14 +138,14 @@ def dB_kam_tofile(run, time_common, filenames, debug=False, tag=None, xlims=(-48
 
         if run == 'SWPC':
             util.dlfile_SWPC(filename, debug=True)
-            mpos = cx.GEOtoMAG([1., YKClat, YKClon] , time, 'sph', 'sph')
+            mpos = cx.GEOtoMAG([1., magnetometer_stations[station + 'lat'], magnetometer_stations[station + 'lon']] , time, 'sph', 'sph')
             mlat = mpos[1]
             mlon = mpos[2]
             filename_full = conf['SWPC_cdf_path'] + filename
         elif run == 'SCARR5':
             util.dlfile(filename, debug=True)
-            mlat = MLAT
-            mlon = MLON
+            mlat = station[0]
+            mlon = station[1]
             filename_full = conf['run_path'] + filename
 
 
@@ -146,12 +162,12 @@ def dB_kam_tofile(run, time_common, filenames, debug=False, tag=None, xlims=(-48
     return dB_kam
 
 
-def dB_fromfile(run, filename, fullname=False):
+def dB_fromfile(run, station, filename, fullname=False):
     if not fullname:
         if run == 'SWPC':
-            filename = conf['SWPC_derived'] + filename
+            filename = conf['SWPC_derived'] + station + '/' + filename
         elif run == 'SCARR5':
-            filename = conf['run_path_derived'] + filename
+            filename = conf['run_path_derived'] + 'mpos:{0:.3f}:{1:.3f}/'.format(*tuple(station)) + filename
     arr = np.loadtxt(filename, skiprows=4)
     times = arr[:, 0:6]
     dB = arr[:, 6:9]
@@ -162,7 +178,11 @@ def dB_fromfile(run, filename, fullname=False):
     return [times, dB, label]
 
 
-def plot_from_file(run, datafnames, fullname=False, component='norm', compsyst='MAG'):
+def plot_from_file(run, station, datafnames, fullname=False, component='norm', compsyst='MAG'):
+    """
+    compsyst = 'MAG'  (default)
+    compsyst = 'GEO'
+    """
     from hapiclient.plot.datetick import datetick
 
     import matplotlib.pyplot as plt
@@ -174,7 +194,7 @@ def plot_from_file(run, datafnames, fullname=False, component='norm', compsyst='
     #time_common, filenames, dB_SWMF = commonTimes(run)
 
     for datafname in datafnames:
-        times, dB, label = dB_fromfile(run, datafname, fullname=fullname)
+        times, dB, label = dB_fromfile(run, station, datafname, fullname=fullname)
 
         #tup = tuple([float(datafname.split('_')[i+3]) for i in range(7)])
 
@@ -189,16 +209,15 @@ def plot_from_file(run, datafnames, fullname=False, component='norm', compsyst='
             assert(times.shape[0] == 31)
             assert(dB.shape[0] == 31)
 
-            YKCpos = cx.GEOtoGSM(np.array([1., YKClat, YKClon]), times, 'sph', 'car')
-            U3 = YKCpos
+            station_pos = cx.GEOtoGSM(np.array([1., magnetometer_stations[station + 'lat'], magnetometer_stations[station + 'lon']]), times, 'sph', 'car')
 
         elif run == 'SCARR5':
             assert(times.shape[0] == 17)
             assert(dB.shape[0] == 17)
 
-            station_pos = cx.MAGtoGSM(np.array([1., MLAT, MLON]), times, 'sph', 'car')
-            U3 = station_pos
+            station_pos = cx.MAGtoGSM(np.array([1., station[0], station[1]]), times, 'sph', 'car')
 
+        U3 = station_pos
         U3norm = np.sqrt(U3[:,0]**2 + U3[:,1]**2 + U3[:,2]**2)#( not really needed since norm is 1 in these units where R_e=1, but just to be consistent in all units)
         divU3norm = 1./U3norm
         U3 = U3*divU3norm[:,np.newaxis]
@@ -266,12 +285,12 @@ def plot_from_file(run, datafnames, fullname=False, component='norm', compsyst='
     plt.show()
 
 
-def compute(run, debug=False, tag=None, xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.125):
+def compute(run, station, debug=False, tag=None, xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.125, skip_SWMF=False):
     import time as tm
     to = tm.time()
 
-    time_common, filenames, dummy = commonTimes(run)
-    ret = dB_kam_tofile(run, time_common, filenames, debug=debug, tag=tag, xlims=xlims, ylims=ylims, zlims=zlims, d=d)
+    time_common, filenames = commonTimes(run, station, skip_SWMF=skip_SWMF)
+    ret = dB_kam_tofile(run, station, time_common, filenames, debug=debug, tag=tag, xlims=xlims, ylims=ylims, zlims=zlims, d=d)
 
     tf = tm.time()
 
