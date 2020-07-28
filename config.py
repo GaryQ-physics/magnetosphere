@@ -29,6 +29,7 @@ conf = {
         'run_path_derived': storage + 'data/SCARR5_GM_IO2-derived/',
         'base': base,
         'SWPC_cdf_path': storage + 'data/SWPC_SWMF_052811_2/GM_CDF/',
+        'SWPC_raw': storage + 'data/SWPC_SWMF_052811_2/raw_output/',
         'SWPC_derived': storage + 'data/SWPC_SWMF_052811_2-derived/'
     }
 

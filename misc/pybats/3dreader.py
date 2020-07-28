@@ -12,7 +12,8 @@ from config import conf
 import spacepy.pybats.bats as bats
 
 # read in the 3d magnetosphere
-filename = conf['run_path'] + "3d__var_3_e20031120-070000-000.out"
+#filename = conf['run_path'] + "3d__var_3_e20031120-070000-000.out"
+filename = conf['SWPC_raw'] + "3d__var_1_t00000000_n0002500.out"
 data3d = bats.Bats2d(filename)
 
 # look at keys:
@@ -33,8 +34,21 @@ y = np.array(y)
 z = np.array(z)
 p = np.array(p)
 
+minx = np.min(np.abs(x))
+print(minx)
+y_ = y[x == minx]
+print(y_)
+print(np.min(y_), np.max(y_))
+print(np.unique(y_))
+print(y.shape)
+print(y_.shape)
+print(np.unique(y_).shape)
+print(np.unique(y_)[1] - np.unique(y_)[0])
+
+
+
 #print(np.sqrt(np.min(x**2 + y**2 + z**2)))
-Int = 58 # 62
+Int = 5 # 62
 Tr = x == (0.03125 + Int*0.0625)
 
 eps = 0.011

@@ -7,6 +7,7 @@ import spacepy.pybats.bats as bats
 
 # read in the 3d magnetosphere
 filename = conf['run_path'] + "3d__var_3_e20031120-070000-000.out"
+#filename = conf['SWPC_raw'] + "3d__var_1_t00000000_n0002500.out"
 data3d = bats.Bats2d(filename)
 
 
@@ -26,7 +27,6 @@ y = np.array(y, dtype=float)
 z = np.array(z, dtype=float)
 #p = np.array(p)
 
-Test = False
 
 D = 3.96875
 
@@ -63,13 +63,14 @@ z_3 = z[Tr]
 X3 = np.column_stack([x_3, y_3, z_3])
 
 
+Test = False
 full_grid = False
-
 if Test:
     import biot_savart as bs
     X = bs.make_grid(xax, yax, zax, 0, 0, 0)[0]
 if full_grid:
     X = np.column_stack([x, y, z])
+
 
 print(X)
 print(X.shape)
@@ -96,8 +97,11 @@ if consistent:
     print('consistent')
 else:
     print('inconsistent')
-if not (Test or full_grid):
-    assert(consistent)
+
+print('check edges: ' + str(set1 == set3))
+
+#if not (Test or full_grid):
+#    assert(consistent)
 
 difs = np.array(list(set3.difference(set1)))
 Rdifs = np.sqrt(difs[:,0]**2 + difs[:,1]**2 + difs[:,2]**2)

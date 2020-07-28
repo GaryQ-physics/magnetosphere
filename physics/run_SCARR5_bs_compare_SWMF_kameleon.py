@@ -14,7 +14,7 @@ plot = True
 
 if plot:
     compsyst = 'MAG'
-    scarr5.plot_from_file(['dB_kam_tofile_-048.00_0016.00_-032.00_0032.00_-032.00_0032.00_0.50000_.txt'])
+    scarr5.plot_from_file(['dB_kam_tofile_-048.00_0016.00_-032.00_0032.00_-032.00_0032.00_0.50000_.txt', 'dB_kam_tofile_-048.00_0016.00_-032.00_0032.00_-032.00_0032.00_0.12500_.txt'])
 
 else:
     to = tm.time()
