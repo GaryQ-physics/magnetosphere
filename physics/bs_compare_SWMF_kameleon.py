@@ -16,7 +16,8 @@ samp_SWPC = 50*np.arange(31)
 #YKClat = 62.480
 #YKClon = 245.518
 
-magnetometer_stations = {'YKClat':62.480, 'YKClon':245.518}
+magnetometer_stations = {'YKClat':62.480, 'YKClon':245.518,
+                         'FRNlat':37.0913, 'FRNlon':-119.7193}
 
 samp_SCARR5 = 50*np.arange(17)
 #YKClat = 62.480
@@ -119,7 +120,7 @@ def dB_kam_tofile(run, station, time_common, filenames, debug=False, tag=None, x
 
     if run == 'SWPC':
         samp = samp_SWPC
-        datafname = conf['SWPC_derived'] + station + '/'
+        directory = conf['SWPC_derived'] + station + '/'
     elif run == 'SCARR5':
         samp = samp_SCARR5
         directory = conf['run_path_derived'] + 'mpos:{0:.3f}:{1:.3f}/'.format(*tuple(station))

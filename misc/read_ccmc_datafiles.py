@@ -136,6 +136,18 @@ def explore(fileyear=2006, useGEO=True, magSource=0):
     Longitude 	245.518AE
     Altitude 	198.0m
 
+    ##########################################################################
+    ---- https://www.usgs.gov/natural-hazards/geomagnetism/science/fresno-frn?qt-science_center_objects=0#qt-science_center_objects
+    Station Id: FRN
+    Location: O'Neals, CA
+    Latitude: 37.0913 N
+    Longitude: 119.7193 W   (i.e. -119.7193)
+    Geomagnetic Latitude: 43.12 N*
+    Geomagnetic Longitude: 306.64 E*
+    Elevation: 331 meters
+    Orientation: HDZF
+    * IGRF values as of 2015.
+
     """
     data, headers = getdata(fileyear)
     time = np.array(data[:, 0:7], dtype=int)
