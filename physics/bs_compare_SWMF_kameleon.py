@@ -17,7 +17,8 @@ samp_SWPC = 50*np.arange(31)
 #YKClon = 245.518
 
 magnetometer_stations = {'YKClat':62.480, 'YKClon':245.518,
-                         'FRNlat':37.0913, 'FRNlon':-119.7193}
+                         'FRNlat':37.0913, 'FRNlon':-119.7193,
+                         'FURlat':48.17, 'FURlon':11.28 }
 
 samp_SCARR5 = 50*np.arange(17)
 #YKClat = 62.480

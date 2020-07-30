@@ -1,6 +1,6 @@
 """
 This script reads the calculated values for the different contributions to the
-(probably) magnetic field that are in the .txt files from
+magnetic field that are in the .txt files from
 https://ccmc.gsfc.nasa.gov/results/viewrun.php?domain=GM&runnumber=SWPC_SWMF_052811_2
 
 
@@ -137,6 +137,7 @@ def explore(fileyear=2006, useGEO=True, magSource=0):
     Altitude 	198.0m
 
     ##########################################################################
+
     ---- https://www.usgs.gov/natural-hazards/geomagnetism/science/fresno-frn?qt-science_center_objects=0#qt-science_center_objects
     Station Id: FRN
     Location: O'Neals, CA
@@ -147,6 +148,19 @@ def explore(fileyear=2006, useGEO=True, magSource=0):
     Elevation: 331 meters
     Orientation: HDZF
     * IGRF values as of 2015.
+
+    ##########################################################################
+
+    ---- http://www.wdc.bgs.ac.uk/obsinfo/fur.html
+    IAGA Code 	FUR
+    Name 	Furstenfeldbruck
+    Latitude 	48.17 N
+    Longitude 	11.28 E
+    Altitude 	572.0m
+    ---- https://www.intermagnet.org/imos/imos-list/imos-details-eng.php?iaga_code=FUR
+    Co-latitude 	41.83  (90. - latitude)
+    Longitude 	11.28
+    Elevation 	572 meter
 
     """
     data, headers = getdata(fileyear)
