@@ -28,9 +28,18 @@ conf = {
         'run_path': storage + 'data/SCARR5_GM_IO2/IO2/',
         'run_path_derived': storage + 'data/SCARR5_GM_IO2-derived/',
         'base': base,
-        'SWPC_cdf_path': storage + 'data/SWPC_SWMF_052811_2/GM_CDF/',
         'SWPC_raw': storage + 'data/SWPC_SWMF_052811_2/raw_output/',
-        'SWPC_derived': storage + 'data/SWPC_SWMF_052811_2-derived/'
+        'SWPC_cdf_path': storage + 'data/SWPC_SWMF_052811_2/GM_CDF/',
+
+        'SWPC_cdf': storage + 'data/SWPC_SWMF_052811_2/GM_CDF/', # = SWPC_cdf_path
+        'SWPC_derived': storage + 'data/SWPC_SWMF_052811_2-derived/',
+        'SCARR5_cdf': storage + 'data/SCARR5_GM_IO2/IO2/', # = run_path
+        'SCARR5_derived': storage + 'data/SCARR5_GM_IO2-derived/', # = run_path_derived
+        'SCARR1_magfile': storage + 'data/SCARR5_GM_IO2/IO2/',
+        'SCARR1_cdf': storage + 'data/SCARR1/tmp/',
+        'SCARR1_magfile': storage + 'data/SCARR1/MAG_FILES/',
+        'SCARR1_derived': storage + 'data/SCARR1-derived/',
+        'mag_server_url': 'http://mag.gmu.edu/git-data/sblake/'
     }
 
 if base + 'util/' not in sys.path:
@@ -54,14 +63,26 @@ if kameleon + 'ccmc/' not in sys.path:
 if base + 'misc/' not in sys.path:
     sys.path.append(base + 'misc/')
 
-if not os.path.exists(conf['run_path_derived']):
-    os.makedirs(conf['run_path_derived'])
-    print('Created directory ' + conf['run_path_derived'])
+if not os.path.exists(conf['SWPC_cdf']):
+    os.makedirs(conf['SWPC_cdf'])
+    print('Created directory ' + conf['SWPC_cdf'])
 
-if not os.path.exists(conf['run_path_derived']):
-    os.makedirs(conf['run_path_derived'])
-    print('Created directory ' + conf['run_path_derived'])
+if not os.path.exists(conf['SWPC_derived']):
+    os.makedirs(conf['SWPC_derived'])
+    print('Created directory ' + conf['SWPC_derived'])
 
-if not os.path.exists(conf['SWPC_cdf_path']):
-    os.makedirs(conf['SWPC_cdf_path'])
-    print('Created directory ' + conf['SWPC_cdf_path'])
+if not os.path.exists(conf['SCARR5_cdf']):
+    os.makedirs(conf['SCARR5_cdf'])
+    print('Created directory ' + conf['SCARR5_cdf'])
+
+if not os.path.exists(conf['SCARR5_derived']):
+    os.makedirs(conf['SCARR5_derived'])
+    print('Created directory ' + conf['SCARR5_derived'])
+
+if not os.path.exists(conf['SCARR1_cdf']):
+    os.makedirs(conf['SCARR1_cdf'])
+    print('Created directory ' + conf['SCARR1_cdf'])
+
+if not os.path.exists(conf['SCARR1_derived']):
+    os.makedirs(conf['SCARR1_derived'])
+    print('Created directory ' + conf['SCARR1_derived'])

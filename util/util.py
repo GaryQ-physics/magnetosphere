@@ -102,12 +102,12 @@ def time2SWPCfile(time):
                 filenames.append(ret)
         return filenames
     time = tpad(time)
-    listnames = conf['SWPC_cdf_path']+'SWPC_SWMF_052811_2_GM_cdf_list'
+    listnames = conf['SWPC_cdf']+'SWPC_SWMF_052811_2_GM_cdf_list'
     a = np.loadtxt(listnames, dtype=str, skiprows=1) #(N,5)
     Tr = np.logical_and(a[:,2] == '{0:04d}/{1:02d}/{2:02d}'.format(*time[0:3]),
                         a[:,4] == '{0:02d}:{1:02d}:{2:02d}'.format(*time[3:6]))
     if a[Tr, 0].size != 0:
-        return conf['SWPC_cdf_path'] + a[Tr, 0][0]
+        return conf['SWPC_cdf'] + a[Tr, 0][0]
 
 def dirlist(rootdir, **kwargs):
     """Recursive file list constrained by regular expression
@@ -206,13 +206,13 @@ def urlretrieve(url, fname):
             
 def dlfile(filename, debug=False):
     '''
+    ''
     fname_split = os.path.split(filename)[1]
     fname_full = conf['run_path'] + fname_split
     fileurl = conf['run_url'] + fname_split
 
     return urlretrieve(fileurl, fname_full)
-
-    '''
+    ''
     if type(filename) != str:
         filename = time2filename(filename)
     
@@ -236,16 +236,49 @@ def dlfile(filename, debug=False):
             print('Renamed *.tmp')
         return ret
     return None
-
-def dlfile_SWPC(filename, debug=False):
     '''
+    assert(filename[0] == '/')
+    fdir, fname_split = os.path.split(filename)
+    fdir = fdir + '/'
+    assert(fdir in conf.values())
+    if not os.path.exists(filename):
+        fileurl =  conf['mag_server_url'] + fdir.split('/data/')[-1] + fname_split
+
+        if debug:
+            print('Downloading ' + fileurl)
+            print('to')
+        fname_tmp = filename + ".tmp"
+        if debug:
+            print(fname_tmp)
+        # TODO: Catch download error
+        ret = urlretrieve(fileurl, fname_tmp)
+        if debug:
+            print('Downloaded ' + fileurl)
+        os.rename(fname_tmp, filename)
+        if debug:
+            print('Renamed *.tmp')
+        return ret
+    return None
+
+def dlfile_test(filename, debug=False):
+    assert(filename[0] == '/')
+    fdir, fname_split = os.path.split(filename)
+    fdir = fdir + '/'
+    assert(fdir in conf.values())
+    if not os.path.exists(filename):
+        print('hello there')
+    return conf['mag_server_url'] + fdir.split('/data/')[-1] + fname_split
+
+'''
+def dlfile_SWPC(filename, debug=False):
+    ''
     fname_split = os.path.split(filename)[1]
     fname_full = conf['run_path'] + fname_split
     fileurl = conf['run_url'] + fname_split
 
     return urlretrieve(fileurl, fname_full)
 
-    '''
+    ''
     
     fname_full = conf['SWPC_cdf_path'] + filename
     if not os.path.exists(fname_full):
@@ -265,7 +298,7 @@ def dlfile_SWPC(filename, debug=False):
             print('Renamed *.tmp')
         return ret
     return None
-
+'''
 
 
 def filemeta(filename):

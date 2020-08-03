@@ -25,7 +25,7 @@ def run(time, mlat, mlon, filename=None, para=True,
         Nx=None, Ny=None, Nz=None,
         L=None,
         fullVolume=False, fineVolume=False,
-        print_output=False, tolerance=1e-13):
+        print_output=False, tolerance=1e-13, tonpfile=False):
     """
 
     Returns (Btot)
@@ -194,10 +194,9 @@ def run(time, mlat, mlon, filename=None, para=True,
     x0 = cx.MAGtoGSM([1., mlat, mlon], time, 'sph', 'car')
     if print_output:
         print(x0)
-    #Npole = cx.GEOtoGSM([0., 0., 1.], time, 'car', 'car')
 
     if filename == None:
-        filename = time2filename(time)
+        filename = time2filename(time) #!!!!!
 
     def dBslice(i, debug=False):
         Grid = np.column_stack([X[i]*np.ones(Gy.shape), Gy, Gz])
@@ -209,7 +208,6 @@ def run(time, mlat, mlon, filename=None, para=True,
 
         deltaB = bs.deltaB('deltaB', x0, Grid, J, V_char = dx*dy*dz)
         return deltaB
-        #return bs.B_EW(X0, Grid, J, Npole, dx*dy*dz)
 
     if print_output:
         import time as t_module

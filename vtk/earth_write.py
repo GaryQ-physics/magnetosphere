@@ -44,10 +44,10 @@ def writevtk(Event, Nt=100, Np=100):
     print("Writing " + fname)
     f = open(fname,'w')
     f.write('# vtk DataFile Version 3.0\n')
-    f.write('Structured Grid for rotated sphere\n')
+    f.write('Structured Grid for rotated sphere\n') # title = 'Structured Grid for rotated sphere'
     f.write('ASCII\n')
     f.write('DATASET STRUCTURED_GRID\n')
-    f.write('DIMENSIONS ' + str(Nt) + ' ' + str(Np) + ' ' + str(1) + '\n' )
+    f.write('DIMENSIONS ' + str(Nt) + ' ' + str(Np) + ' ' + str(1) + '\n' ) # [Nx, Ny, Nz] -> [Nt, Np, 1]
     f.write('POINTS '+str(Nt*Np)+' float\n')
     np.savetxt(f, XYZr)
     f.write('\n')

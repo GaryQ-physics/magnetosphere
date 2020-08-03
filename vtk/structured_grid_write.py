@@ -15,6 +15,34 @@ import cxtransform as cx
 
 
 
+import biot_savart_kameleon_interpolated_grid as bsk
+
+def cdf_to_structured_grid(run, time, mlat, mlon, var, para=True,
+        xlims=(-56., 8.), ylims=(-32., 32.), zlims=(-32., 32.),
+        d=0.125):
+
+    if dB in var:
+
+         = bsk.run(time, mlat, mlon, filename = conf[run + '_cdf'] + time2filename_ext(run, time),
+            para=para, xlims=xlims, ylims=ylims, zlims=zlims, d=d,
+            print_output=True, tonpfile=True):
+
+    else:
+        x0 = cx.MAGtoGSM(np.array([1., mlat, mlon]), time, 'sph', 'car')
+
+        ret = bs.make_grid(xlims, ylims, zlims, d, d, d)
+        Xgrid = ret[0]
+
+        Aa = probe(conf[run + '_cdf'] + time2filename_ext(run, time), Xgrid, var=var, debug=debug)
+
+    out_filename = ' bla bla ' #!!!!!!!!!!!
+    writevtk(out_filename, Xgrid, Aa, [Nx,Ny,Nz], 'SCALARS',
+             point_data_name = var, title='structured grid ' + run, ftype='BINARY', grid='STRUCTURED_GRID', debug=True):
+
+
+
+
+
 rbody = 1.25 #???
 global_x_min = -224.
 global_x_max = 32.
@@ -25,6 +53,9 @@ global_z_max = 128.
 # difference of 256 for all
 
 # using global min max and dx=dy=dz=0.1  -->  1.6777216e+10 grid points (16 billion)
+
+# 1024 x 1024 x 1024 grid -> 1.073741824 billion  np.zeros works  (i.e.  +/-32 at 0.0625 or +/-64 at 0.125 or  +/-128(full) at 0.25)
+# 2048 x 2048 x 2048 grid -> 8.589934592 billion  np.zeros doesnt work
 
 
 Test = False
@@ -124,6 +155,64 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
             return total
     return [Aa, Xgrid, ret[1], ret[2], ret[3]]
 
+def writevtk(out_filename, points, point_data, connectivity, texture,
+             point_data_name = 'point data', title='Title', ftype='BINARY', grid='STRUCTURED_GRID', debug=True):
+    """
+    ftype = 'BINARY' or 'ASCII'
+    grid = 'STRUCTURED_GRID' or 'TRIANGLE_STRIPS' or
+    """
+    if grid == 'STRUCTURED_GRID':
+        Nx,Ny,Nz = connectivity
+
+    assert(out_filename[0] == '/')
+    f = open(out_filename,'w')
+    if debug:
+        print("Writing " + fname)
+    f.write('# vtk DataFile Version 3.0\n')
+    f.write(title + '\n')
+    f.write(ftype + '\n')
+    f.write('DATASET ' + grid + '\n')
+
+    if grid == 'STRUCTURED_GRID':
+        f.write('DIMENSIONS ' + str(Nx) + ' ' + str(Ny) + ' ' + str(Nz) + '\n' )
+        f.write('POINTS '+str(Nx*Ny*Nz)+' float\n')
+
+    if ftype=='BINARY':
+        Bb = np.array(Bb, dtype='>f')
+        f.write(Bb.tobytes())
+    elif ftype=='ASCII':
+        np.savetxt(f, Bb)
+
+    f.write('\n')
+    if grid == 'STRUCTURED_GRID':
+        f.write('POINT_DATA ' + str(Nx*Ny*Nz) + '\n')
+
+    f.write(texture + ' ' + point_data_name + ' float\n') # number with float???
+    # http://www.earthmodels.org/data-and-tools/topography/paraview-topography-by-texture-mapping
+
+    '''
+    f.write('TEXTURE_COORDINATES TextureCoordinates 2 float\n') # http://www.earthmodels.org/data-and-tools/topography/paraview-topography-by-texture-mapping
+
+
+    if var=='J':
+        f.write('VECTORS ' + var + ' float\n')
+    else:
+        f.write('SCALARS ' + var + ' float 1\n')
+        f.write('LOOKUP_TABLE default\n')
+    '''
+
+    if ftype=='BINARY':
+        Aa = np.array(Aa, dtype='>f')
+        f.write(Aa.tobytes())
+    elif ftype=='ASCII':
+        np.savetxt(f, Aa)
+
+    f.close()
+    if debug:
+        print("Wrote " + fname)
+
+'''
+
 def writevtk(Event, var, calcTotal=False, binary=True, dx=.3, dy=.3, dz=.3, fname=None):
     Aa, Bb, Nx, Ny, Nz = Compute(Event, var, calcTotal=calcTotal, dx=dx, dy=dy, dz=dz)
 
@@ -178,3 +267,4 @@ def writevtk(Event, var, calcTotal=False, binary=True, dx=.3, dy=.3, dz=.3, fnam
 
     f.close()
     print("Wrote " + fname)
+'''

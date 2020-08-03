@@ -126,9 +126,17 @@ def GEOtoGSM(v_GEO, time, ctype_in, ctype_out):
     return transform(v_GEO, time, 'GEO', 'GSM', ctype_in=ctype_in, ctype_out=ctype_out)
 
 def GEOtoMAG(v_GEO, time, ctype_in, ctype_out):
+    """
+    note: no interpolation is done on the dipole position between years,
+        so this function is actually only dependent on time[0]
+    """
     return transform(v_GEO, time, 'GEO', 'MAG', ctype_in=ctype_in, ctype_out=ctype_out)
 
 def MAGtoGEO(v_MAG, time, ctype_in, ctype_out):
+    """
+    note: no interpolation is done on the dipole position between years,
+        so this function is actually only dependent on time[0]
+    """
     return transform(v_MAG, time, 'MAG', 'GEO', ctype_in=ctype_in, ctype_out=ctype_out)
 
 def MAGtoSM(v_MAG, time, ctype_in, ctype_out):
