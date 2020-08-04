@@ -10,38 +10,69 @@ from units_and_constants import phys
 import biot_savart as bs
 from biot_savart_demo1 import J_kunits
 from probe import probe
-from util import time2filename, maketag
+from util import time2CDFfilename, maketag, tpad
+import util
 import cxtransform as cx
 
 
 
 import biot_savart_kameleon_interpolated_grid as bsk
 
-def cdf_to_structured_grid(run, time, mlat, mlon, var, para=True,
+def cdf_to_structured_grid(run, time, mlat, mlon, var, para=True, debug=False,
         xlims=(-56., 8.), ylims=(-32., 32.), zlims=(-32., 32.),
         d=0.125):
 
-    if dB in var:
+    Nx = int(round((xlims[1]-xlims[0])/d)) + 1
+    Ny = int(round((ylims[1]-ylims[0])/d)) + 1
+    Nz = int(round((zlims[1]-zlims[0])/d)) + 1
 
-         = bsk.run(time, mlat, mlon, filename = conf[run + '_cdf'] + time2filename_ext(run, time),
-            para=para, xlims=xlims, ylims=ylims, zlims=zlims, d=d,
-            print_output=True, tonpfile=True):
 
+
+    ret = bs.make_grid(xlims, ylims, zlims, d, d, d)
+    Xgrid = ret[0]
+
+
+
+    cdf_fname = time2CDFfilename(run, time)
+    if cdf_fname == None:
+        print('WARNING: no file for that time')
+        values = np.zeros((Nx*Ny*Nz, 3))
+        tag = 'ERROR'
+        texture = ''
     else:
-        x0 = cx.MAGtoGSM(np.array([1., mlat, mlon]), time, 'sph', 'car')
+        util.dlfile(cdf_fname, debug=True)
+        if 'dB' in var:
+            bsk.run(time, mlat, mlon, filename = cdf_fname,
+                para=para, xlims=xlims, ylims=ylims, zlims=zlims, d=d,
+                print_output=True, tonpfile=True)
 
-        ret = bs.make_grid(xlims, ylims, zlims, d, d, d)
-        Xgrid = ret[0]
+            values = []
+            for i in range(Nx):
+                npfname = '/tmp/dB_array_slice%d'%(i) + '.bin'
+                dB_slice = np.fromfile(npfname).reshape((Ny*Nz, 3))
+                values.append(dB_slice)
+            values = np.column_stack(values).reshape((Nx*Ny*Nz, 3))
+            tag = var + '_{0:.3f}_{1:.3f}'.format(mlat, mlon)
+            texture = 'VECTORS'
+        else:
+            x0 = cx.MAGtoGSM(np.array([1., mlat, mlon]), time, 'sph', 'car')
 
-        Aa = probe(conf[run + '_cdf'] + time2filename_ext(run, time), Xgrid, var=var, debug=debug)
+            values = probe(cdf_fname, Xgrid, var=var, debug=debug)
+            tag = var
+            texture = 'SCALARS'
 
-    out_filename = ' bla bla ' #!!!!!!!!!!!
-    writevtk(out_filename, Xgrid, Aa, [Nx,Ny,Nz], 'SCALARS',
-             point_data_name = var, title='structured grid ' + run, ftype='BINARY', grid='STRUCTURED_GRID', debug=True):
+    #tag = maketag(time)
+    subdir = '%04d%02d%02dT%02d%02d%02d/' % tuple(tpad(time, length=6))
+    if not os.path.exists(conf[run + "_derived"] + subdir):
+        os.mkdir(conf[run + "_derived"] + subdir)
+    out_filename = conf[run + "_derived"] + subdir + 'structured_grid_'  + tag + '.vtk'
+
+    writevtk(out_filename, Xgrid, values, [Nx,Ny,Nz], texture,
+             point_data_name = var, title=var + 'structured grid ' + run, ftype='BINARY', grid='STRUCTURED_GRID', debug=True)
 
 
 
-
+'''
 
 rbody = 1.25 #???
 global_x_min = -224.
@@ -118,7 +149,7 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
             if '_EW' in var:
                 unit_v = a2
             if '_NS' in var:
-                unit_v = a1                
+                unit_v = a1
         unit_v = np.repeat([unit_v], Xgrid.shape[0], axis=0)
 
         if Test:
@@ -155,19 +186,23 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
             return total
     return [Aa, Xgrid, ret[1], ret[2], ret[3]]
 
+'''
+
+
 def writevtk(out_filename, points, point_data, connectivity, texture,
              point_data_name = 'point data', title='Title', ftype='BINARY', grid='STRUCTURED_GRID', debug=True):
     """
     ftype = 'BINARY' or 'ASCII'
     grid = 'STRUCTURED_GRID' or 'TRIANGLE_STRIPS' or
     """
+
     if grid == 'STRUCTURED_GRID':
         Nx,Ny,Nz = connectivity
 
     assert(out_filename[0] == '/')
     f = open(out_filename,'w')
     if debug:
-        print("Writing " + fname)
+        print("Writing " + out_filename)
     f.write('# vtk DataFile Version 3.0\n')
     f.write(title + '\n')
     f.write(ftype + '\n')
@@ -178,16 +213,24 @@ def writevtk(out_filename, points, point_data, connectivity, texture,
         f.write('POINTS '+str(Nx*Ny*Nz)+' float\n')
 
     if ftype=='BINARY':
-        Bb = np.array(Bb, dtype='>f')
-        f.write(Bb.tobytes())
+        points = np.array(points, dtype='>f')
+        f.write(points.tobytes())
     elif ftype=='ASCII':
-        np.savetxt(f, Bb)
+        np.savetxt(f, points)
 
     f.write('\n')
     if grid == 'STRUCTURED_GRID':
         f.write('POINT_DATA ' + str(Nx*Ny*Nz) + '\n')
 
-    f.write(texture + ' ' + point_data_name + ' float\n') # number with float???
+    if texture == 'SCALARS':
+        f.write('SCALARS ' + point_data_name + ' float 1\n') # number with float???
+        f.write('LOOKUP_TABLE default\n')
+    if texture == 'VECTORS':
+        f.write('VECTORS ' + var + ' float\n')
+    if texture == 'TEXTURE_COORDINATES':
+        f.write('TEXTURE_COORDINATES TextureCoordinates 2 float\n') # http://www.earthmodels.org/data-and-tools/topography/paraview-topography-by-texture-mapping
+
+
     # http://www.earthmodels.org/data-and-tools/topography/paraview-topography-by-texture-mapping
 
     '''
@@ -202,14 +245,14 @@ def writevtk(out_filename, points, point_data, connectivity, texture,
     '''
 
     if ftype=='BINARY':
-        Aa = np.array(Aa, dtype='>f')
-        f.write(Aa.tobytes())
+        point_data = np.array(point_data, dtype='>f')
+        f.write(point_data.tobytes())
     elif ftype=='ASCII':
-        np.savetxt(f, Aa)
+        np.savetxt(f, point_data)
 
     f.close()
     if debug:
-        print("Wrote " + fname)
+        print("Wrote " + out_filename)
 
 '''
 

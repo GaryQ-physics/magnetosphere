@@ -26,6 +26,7 @@ def probe(time, P, var=None, debug=False, dictionary=False, usekV=False):
     if type(time) == str:
         filename = time
     else:
+        print('hello there')
         filename = time2filename(time)
 
     if not os.path.exists(filename):

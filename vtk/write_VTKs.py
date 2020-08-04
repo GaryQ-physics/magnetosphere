@@ -8,16 +8,17 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 
 print 'c0'
-import b_field_lines_write
+#import b_field_lines_write
 print 'c1'
 import structured_grid_write
 print 'c2'
 import cutplane
 print 'c3'
-import longitude_lines_write
-import j_field_lines_write
+#import longitude_lines_write
+#import j_field_lines_write
 import earth_write
 from events import eventlist
+
 
 '''
 line_list = [2003, 11, 20, 7, 0, 176.00, 57.50]
@@ -52,7 +53,7 @@ filename = conf["run_path"] + '3d__var_3_e' \
 
 line_list = [2003, 11, 20, 7, 0, 176.00, 57.50]
 
-data = np.array([[2003, 11, 20, 7, 0, 57.50, 176.00]])
+data = np.array([[2003, 11, 20, 7, 0, 57.50, ]])
 #data = eventlist()
 
 print('data.shape = ' + str(data.shape))
@@ -60,18 +61,36 @@ print('data.shape = ' + str(data.shape))
 import time as tm
 to = tm.time()
 
+#time = np.array([2003, 11, 20, 7, 0])
+#mlat = 57.50
+#mlon = 176.00
+
+time = np.array([2006, 12, 15, 7, 7, 0])
+mlat = 57.50
+mlon = 176.00
+
+structured_grid_write.cdf_to_structured_grid('SWPC', time, mlat, mlon, 'p',
+            xlims=(-56., 8.), ylims=(-32., 32.), zlims=(-32., 32.),
+            d=0.25)
+
+'''
 N = 1
 for i in range(N):
     time = data[i, 0:5]
     mlat = data[i, 5]
     mlon = data[i, 6]
     Event = data[i, :]
-    print Event
-    structured_grid_write.writevtk(Event, 'p')
-    longitude_lines_write.writevtk(Event)
-    earth_write.writevtk(Event)
-    b_field_lines_write.writevtk(Event)
+    print time, mlat, mlon
+
+
+    #structured_grid_write.writevtk(Event, 'p')
+    #longitude_lines_write.writevtk(Event)
+    #earth_write.writevtk(Event)
+    #b_field_lines_write.writevtk(Event)
     #j_field_lines_write.writevtk(Event)
+'''
+
+
 
 tf = tm.time()
 print('run time = ' + str(tf-to))

@@ -206,7 +206,13 @@ def run(time, mlat, mlon, filename=None, para=True,
             print(Grid.shape)
             print(J.shape)
 
-        deltaB = bs.deltaB('deltaB', x0, Grid, J, V_char = dx*dy*dz)
+        dB = bs.deltaB('dB', x0, Grid, J, V_char = dx*dy*dz)
+        deltaB = np.sum(dB, axis=0)
+
+        if tonpfile:
+            npfname = '/tmp/dB_array_slice%d'%(i) + '.bin'
+            dB.tofile(npfname)
+
         return deltaB
 
     if print_output:

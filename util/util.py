@@ -90,6 +90,53 @@ def time2filename(time, extension='.out.cdf', split=False):
     return conf["run_path"] + filename
 
 
+def time2CDFfilename(run, time, split=False):
+    """
+    >>> u.time2CDFfilename('SCARR5',[2003,11,20,7,7,0])
+    '/home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070700-000.out.cdf'
+    >>> u.time2CDFfilename('SCARR5',[2003,11,20,7,7,0,99])
+    '/home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070700-099.out.cdf'
+    >>> u.time2CDFfilename('SWPC',[2006,12,15,7,7,0])
+    '/home/gary/magnetosphere/data/SWPC_SWMF_052811_2/GM_CDF/3d__var_1_t00240700_n0290130.out.cdf'
+    >>> u.time2CDFfilename('SWPC',[2006,12,15,7,7,0,99])
+    '/home/gary/magnetosphere/data/SWPC_SWMF_052811_2/GM_CDF/3d__var_1_t00240700_n0290130.out.cdf'
+    >>> u.time2CDFfilename('SWPC',[2003,11,20,7,7,0])
+    >>> u.time2CDFfilename('SWPC',[2003,11,20,7,7,0]) == None
+    True
+    """
+
+    import numpy as np
+    t = np.array(time)
+    if len(t.shape) != 1:
+        #filenames = np.empty((t.shape[0],), dtype=str)
+        filenames = []
+        for i in range(t.shape[0]):
+            ret = time2filename_ext(run, t[i,:])
+            if ret != None:
+                filenames.append(ret)
+        return filenames
+
+
+    if run == 'SCARR5':
+        filename = '3d__var_3_e' \
+            + '%04d%02d%02d-%02d%02d%02d-%03d' % tpad(time, length=7) + '.out.cdf'
+
+    if run == 'SWPC':
+        time = tpad(time)
+        listnames = conf['SWPC_cdf']+'SWPC_SWMF_052811_2_GM_cdf_list'
+        a = np.loadtxt(listnames, dtype=str, skiprows=1) #(N,5)
+        Tr = np.logical_and(a[:,2] == '{0:04d}/{1:02d}/{2:02d}'.format(*time[0:3]),
+                            a[:,4] == '{0:02d}:{1:02d}:{2:02d}'.format(*time[3:6]))
+        if a[Tr, 0].size == 0:
+            return None
+
+        filename = a[Tr, 0][0]
+
+    if split:
+        return filename
+    return conf[run + '_cdf'] + filename
+
+
 def time2SWPCfile(time):
     import numpy as np
     t = np.array(time)
