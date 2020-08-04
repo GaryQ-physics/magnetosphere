@@ -20,11 +20,21 @@ magnetometer_stations = {'YKClat':62.480, 'YKClon':245.518,
                          'FRNlat':37.0913, 'FRNlon':-119.7193,
                          'FURlat':48.17, 'FURlon':11.28 }
 
-samp_SCARR5 = 50*np.arange(17)
+samp_SCARR = 50*np.arange(17)
 #YKClat = 62.480
 #YKClon = 245.518
 #MLAT = 0.
 #MLON = 0.
+
+def get_derived_dir(run, station):
+    directory = conf[run + '_derived']
+    if run == 'SWPC':
+        directory =  directory + station + '/'
+    elif 'SCARR' in run:
+        directory = directory + 'mpos:{0:.3f}:{1:.3f}/'.format(*tuple(station))
+    else:
+        assert(False)
+    return directory
 
 def commonTimes(run, station, debug=False, skip_SWMF=False):
     """
@@ -35,21 +45,21 @@ def commonTimes(run, station, debug=False, skip_SWMF=False):
 
     if run == 'SWPC':
         assert(type(station) == str)
-    elif run == 'SCARR5':
+    elif 'SCARR' in run:
         assert(type(station) == list)
 
     if run == 'SWPC':
         samp = samp_SWPC
         data, headers = r_ccmc.getdata([2006, station])
 
-        listnames = conf['SWPC_cdf_path'] + 'SWPC_SWMF_052811_2_GM_cdf_list'
+        listnames = conf['SWPC_cdf'] + 'SWPC_SWMF_052811_2_GM_cdf_list'
         a = np.loadtxt(listnames, dtype=str, skiprows=1) #(_,5)
 
         times1 = np.array(data[:, 0:6], dtype=int)
         times2 = np.column_stack([np.array(list(np.char.split(a[:,2],sep='/')), 
             dtype=int), np.array(list(np.char.split(a[:,4],sep=':')), dtype=int)])
-    elif run == 'SCARR5':
-        samp = samp_SCARR5
+    elif 'SCARR' in run:
+        samp = samp_SCARR
         magfilenames = np.loadtxt(conf['run_path'] + 'ls-1_magfiles.txt', dtype=str)[:,0]
         times1 = []
         for file_name in list(magfilenames):
@@ -68,14 +78,11 @@ def commonTimes(run, station, debug=False, skip_SWMF=False):
 
     assert(np.all(times1[ind1, 0:6] == times2[ind2, 0:6])) #!!!ignoring miliseconds!!!
 
+    directory = get_derived_dir(run, station)
+
     if run == 'SWPC':
-        directory = conf['SWPC_derived'] + station + '/'
-
         filenames = a[ind2,0]
-
-    elif run == 'SCARR5':
-        directory = conf['run_path_derived'] + 'mpos:{0:.3f}:{1:.3f}/'.format(*tuple(station))
-
+    elif 'SCARR' in run:
         filenames_all = np.array(filenames_all, dtype=str)
         filenames = filenames_all[ind2]
 
@@ -83,21 +90,23 @@ def commonTimes(run, station, debug=False, skip_SWMF=False):
         os.makedirs(directory)
         print('Created directory ' + directory)
 
+    # SWMF file will of course be the same for the same run, regardless of xlims, d, ect. 
+    # so if it has already been run, save time and prevent duplication by passing skip_SWMF=True
     if not skip_SWMF:
         if run == 'SWPC':
             assert(tuple(headers[13:16]) == ('dBn', 'dBe', 'dBd'))
             dB_SWMF_allcommon = data[ind1, 13:16] # dBn dBe dBd  as  0,1,2
             dB_SWMF = dB_SWMF_allcommon[samp, :]
-        elif run == 'SCARR5':
+        elif 'SCARR' in run:
             dB_SWMF = np.nan*np.empty((samp.size, 3))
             for i in range(samp.size):
                 dB_SWMF[i, :] = np.array(rmg.analyzedata( 
-                                                    str(magfilenames[ind1[samp[i]]]),
-                                                    station[0], station[1], debug=debug) )[1:4]
+                                                    conf[run + '_magfile'] + str(magfilenames[ind1[samp[i]]]),
+                                                    station[0], station[1], debug=debug) )[1:4] # dBn dBe dBd  as  0,1,2
 
         datafname = directory + 'dB_SWMF_tofile' + '.txt'
         f = open(datafname,'a') # append only mode
-        f.write('\n  new_run:\n')
+        f.write('\n  new_run:' + run + '\n')
         f.write('-- SWMF\n')
         f.write('year, day, month, hr, min, sec, dB_SWMF_0, dB_SWMF_1, dB_SWMF_2\n')
         for i in range(samp.size):
@@ -113,22 +122,22 @@ def dB_kam_tofile(run, station, time_common, filenames, debug=False, tag=None, x
         print(time_common)
         print(filenames)
         print(dB_SWMF)
-    assert(run == 'SWPC' or run == 'SCARR5')
+    #assert(run == 'SWPC' or run == 'SCARR5')
 
     if tag == None:
         tup = xlims+ylims+zlims+(d,)
         tag = '_{0:07.2f}_{1:07.2f}_{2:07.2f}_{3:07.2f}_{4:07.2f}_{5:07.2f}_{6:.5f}_'.format(*tup)
 
+    directory = get_derived_dir(run, station)
+
     if run == 'SWPC':
         samp = samp_SWPC
-        directory = conf['SWPC_derived'] + station + '/'
-    elif run == 'SCARR5':
-        samp = samp_SCARR5
-        directory = conf['run_path_derived'] + 'mpos:{0:.3f}:{1:.3f}/'.format(*tuple(station))
+    elif 'SCARR' in run:
+        samp = samp_SCARR
 
     datafname = directory + 'dB_kam_tofile' + tag + '.txt'
     f = open(datafname,'a') # append only mode
-    f.write('\n  new_run: xlims=' + str(xlims) + ', ylims=' + str(ylims) + ', zlims=' + str(zlims) + ', d=' + str(d) + '\n')
+    f.write('\n  new_run: ' + run + ' xlims=' + str(xlims) + ', ylims=' + str(ylims) + ', zlims=' + str(zlims) + ', d=' + str(d) + '\n')
     f.write('-- $' + str(d) + 'R_E$ interpolated grid; (X,Y,Z) = (' + str(xlims) + ', ' + str(ylims) + ', ' + str(zlims) + ')\n')
     f.write('year, day, month, hr, min, sec, dB_kam_0, dB_kam_1, dB_kam_2\n')
 
@@ -139,17 +148,19 @@ def dB_kam_tofile(run, station, time_common, filenames, debug=False, tag=None, x
         filename = str(filenames[samp[i]]) # numpy string -> normal string
 
         if run == 'SWPC':
-            util.dlfile_SWPC(filename, debug=True)
+            #util.dlfile_SWPC(filename, debug=True)
             mpos = cx.GEOtoMAG([1., magnetometer_stations[station + 'lat'], magnetometer_stations[station + 'lon']] , time, 'sph', 'sph')
             mlat = mpos[1]
             mlon = mpos[2]
-            filename_full = conf['SWPC_cdf_path'] + filename
-        elif run == 'SCARR5':
-            util.dlfile(filename, debug=True)
+            #filename_full = conf['SWPC_cdf_path'] + filename
+        elif 'SCARR' in run:
+            #util.dlfile(filename, debug=True) old util.dlfile
             mlat = station[0]
             mlon = station[1]
-            filename_full = conf['run_path'] + filename
+            #filename_full = conf['run_path'] + filename
 
+        filename_full = conf[run + '_cdf'] + filename
+        util.dlfile(filename_full, debug=True)
 
         print(time)
         print(filename)
@@ -166,10 +177,7 @@ def dB_kam_tofile(run, station, time_common, filenames, debug=False, tag=None, x
 
 def dB_fromfile(run, station, filename, fullname=False):
     if not fullname:
-        if run == 'SWPC':
-            filename = conf['SWPC_derived'] + station + '/' + filename
-        elif run == 'SCARR5':
-            filename = conf['run_path_derived'] + 'mpos:{0:.3f}:{1:.3f}/'.format(*tuple(station)) + filename
+        filename = get_derived_dir(run, station) + filename
     arr = np.loadtxt(filename, skiprows=4)
     times = arr[:, 0:6]
     dB = arr[:, 6:9]
@@ -193,13 +201,8 @@ def plot_from_file(run, station, datafnames, fullname=False, component='norm', c
     if type(datafnames) == str:
         datafnames = [datafnames]
 
-    #time_common, filenames, dB_SWMF = commonTimes(run)
-
     for datafname in datafnames:
         times, dB, label = dB_fromfile(run, station, datafname, fullname=fullname)
-
-        #tup = tuple([float(datafname.split('_')[i+3]) for i in range(7)])
-
 
         times = np.array(times, dtype=int)
         if compsyst == 'MAG':
@@ -210,13 +213,10 @@ def plot_from_file(run, station, datafnames, fullname=False, component='norm', c
         if run == 'SWPC':
             assert(times.shape[0] == 31)
             assert(dB.shape[0] == 31)
-
             station_pos = cx.GEOtoGSM(np.array([1., magnetometer_stations[station + 'lat'], magnetometer_stations[station + 'lon']]), times, 'sph', 'car')
-
-        elif run == 'SCARR5':
+        elif 'SCARR' in run:
             assert(times.shape[0] == 17)
             assert(dB.shape[0] == 17)
-
             station_pos = cx.MAGtoGSM(np.array([1., station[0], station[1]]), times, 'sph', 'car')
 
         U3 = station_pos
@@ -238,43 +238,24 @@ def plot_from_file(run, station, datafnames, fullname=False, component='norm', c
         if component == 'norm':
             dB_comp = np.sqrt(np.einsum('ij,ij->i', dB, dB))
         else:
-            if 'SWMF' in datafname:
-                if component == 'east':
-                    dB_SWMF_comp = dB_SWMF[:, 1]
-                elif component == 'north':
+            if 'SWMF' in datafname: # dBn dBe dBd  as  0,1,2
+                if component == 'north':
                     dB_SWMF_comp = dB_SWMF[:, 0]
+                elif component == 'east':
+                    dB_SWMF_comp = dB_SWMF[:, 1]
                 elif component == 'down':
                     dB_SWMF_comp = dB_SWMF[:, 2]
 
             else:
-                if component == 'east':
-                    u = U1
-                elif component == 'north':
+                if component == 'north':
                     u = U2
+                elif component == 'east':
+                    u = U1
                 elif component == 'down':
                     u = -U3
                 dB_comp = np.einsum('ij,ij->i', u, dB)
 
         plt.plot(dtimes, dB_comp, label=label, alpha=0.7)
-
-    '''
-    times = np.array(time_common[samp,:], dtype=int)
-    dtimes = []
-    for i in range(times.shape[0]):
-        dtimes.append(datetime.datetime(times[i,0],times[i,1],times[i,2],times[i,3],times[i,4],times[i,5]))
-
-    if component == 'norm':
-        dB_SWMF_comp = np.sqrt(np.einsum('ij,ij->i', dB_SWMF, dB_SWMF))
-    else: # dBn dBe dBd  as  0,1,2
-        if component == 'east':
-            dB_SWMF_comp = dB_SWMF[:, 1]
-        elif component == 'north':
-            dB_SWMF_comp = dB_SWMF[:, 0]
-        elif component == 'down':
-            dB_SWMF_comp = dB_SWMF[:, 2]
-
-    plt.plot(dtimes, dB_SWMF_comp, label='-- SWMF', alpha=0.7)
-    '''
 
     datetick('x')
     # https://stackoverflow.com/questions/1574088/plotting-time-in-python-with-matplotlib
@@ -282,7 +263,10 @@ def plot_from_file(run, station, datafnames, fullname=False, component='norm', c
 
     plt.xlabel('time')
     plt.ylabel('dB (in nanoTesla)')
-    plt.title('dB ' + component + ' using ' + compsyst + ' system')
+    title = 'dB ' + component + ' (' + compsyst + ' system) for '  + run + ' run at ' + str(station)
+    if fullname:
+        title = title + ' OVERIDE fullname'
+    plt.title(title)
     plt.legend()
     plt.show()
 

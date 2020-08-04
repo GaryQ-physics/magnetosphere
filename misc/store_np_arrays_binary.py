@@ -22,8 +22,8 @@ NOTE: where here T depends strongly on wether the file np_array_test.bin already
 import time
 import numpy as np
 
-N = 50000
-fname = '/tmp/np_array_test.bin'
+N = 50000000
+fname = tempfile.gettempdir() + '/np_array_test.bin'
 
 print('N = {0:d}'.format(N))
 
@@ -36,9 +36,12 @@ print('time to generate Nx3 array = {0:.5f} sec'.format(tf-to))
 #print(A.shape)
 
 to = time.time()
-f = open(fname, 'w')
-f.write(A.tobytes())
-f.close()
+if False:
+    f = open(fname, 'w')
+    f.write(A.tobytes())
+    f.close()
+else:
+    A.tofile(fname)
 tf = time.time()
 print('time to write Nx3 array to binary file = {0:.5f} sec'.format(tf-to))
 

@@ -1,4 +1,3 @@
-# coding=utf-8
 import sys
 import os
 import numpy as np
@@ -10,10 +9,70 @@ from units_and_constants import phys
 import biot_savart as bs
 from biot_savart_demo1 import J_kunits
 from probe import probe
-from util import time2filename, maketag
+#from util import time2CDFfilename, maketag, tpad
+import util
 import cxtransform as cx
+from vtk_export import writevtk
 
 
+import biot_savart_kameleon_interpolated_grid as bsk
+
+def cdf_to_structured_grid(run, time, mlat, mlon, var, para=True, debug=False,
+        xlims=(-56., 8.), ylims=(-32., 32.), zlims=(-32., 32.),
+        d=0.125, ftype='BINARY'):
+
+    Nx = int(round((xlims[1]-xlims[0])/d)) + 1
+    Ny = int(round((ylims[1]-ylims[0])/d)) + 1
+    Nz = int(round((zlims[1]-zlims[0])/d)) + 1
+
+
+
+    ret = bs.make_grid(xlims, ylims, zlims, d, d, d)
+    Xgrid = ret[0]
+
+
+
+    cdf_fname = util.time2CDFfilename(run, time)
+    if cdf_fname == None:
+        print('WARNING: no file for that time')
+        values = np.zeros((Nx*Ny*Nz, 3))
+        tag = 'ERROR'
+        texture = ''
+    else:
+        util.dlfile(cdf_fname, debug=True)
+        if 'dB' in var:
+            bsk.run(time, mlat, mlon, filename = cdf_fname,
+                para=para, xlims=xlims, ylims=ylims, zlims=zlims, d=d,
+                print_output=True, tonpfile=True)
+
+            values = []
+            import tempfile
+            for i in range(Nx):
+                npfname = tempfile.gettempdir() + '/dB_array_slice%d'%(i) + '.bin'
+                dB_slice = np.fromfile(npfname).reshape((Ny*Nz, 3))
+                values.append(dB_slice)
+            values = np.column_stack(values).reshape((Nx*Ny*Nz, 3))
+            tag = var + '_{0:.3f}_{1:.3f}'.format(mlat, mlon)
+            texture = 'VECTORS'
+        else:
+            x0 = cx.MAGtoGSM(np.array([1., mlat, mlon]), time, 'sph', 'car')
+
+            values = probe(cdf_fname, Xgrid, var=var, debug=debug)
+            tag = var
+            texture = 'SCALARS'
+
+    #tag = maketag(time)
+    subdir = '%04d%02d%02dT%02d%02d%02d/' % tuple(util.tpad(time, length=6))
+    if not os.path.exists(conf[run + "_derived"] + subdir):
+        os.mkdir(conf[run + "_derived"] + subdir)
+    out_filename = conf[run + "_derived"] + subdir + 'structured_grid_'  + tag + '_%.5f'%(d) + '.vtk'
+
+    writevtk(out_filename, Xgrid, values, [Nx,Ny,Nz], texture,
+             point_data_name = var, title=var + 'structured grid ' + run, ftype=ftype, grid='STRUCTURED_GRID', debug=True)
+
+
+
+'''
 
 rbody = 1.25 #???
 global_x_min = -224.
@@ -25,6 +84,9 @@ global_z_max = 128.
 # difference of 256 for all
 
 # using global min max and dx=dy=dz=0.1  -->  1.6777216e+10 grid points (16 billion)
+
+# 1024 x 1024 x 1024 grid -> 1.073741824 billion  np.zeros works  (i.e.  +/-32 at 0.0625 or +/-64 at 0.125 or  +/-128(full) at 0.25)
+# 2048 x 2048 x 2048 grid -> 8.589934592 billion  np.zeros doesnt work
 
 
 Test = False
@@ -87,7 +149,7 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
             if '_EW' in var:
                 unit_v = a2
             if '_NS' in var:
-                unit_v = a1                
+                unit_v = a1
         unit_v = np.repeat([unit_v], Xgrid.shape[0], axis=0)
 
         if Test:
@@ -123,6 +185,11 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
         if retTotal:
             return total
     return [Aa, Xgrid, ret[1], ret[2], ret[3]]
+
+'''
+
+
+'''
 
 def writevtk(Event, var, calcTotal=False, binary=True, dx=.3, dy=.3, dz=.3, fname=None):
     Aa, Bb, Nx, Ny, Nz = Compute(Event, var, calcTotal=calcTotal, dx=dx, dy=dy, dz=dz)
@@ -178,3 +245,4 @@ def writevtk(Event, var, calcTotal=False, binary=True, dx=.3, dy=.3, dz=.3, fnam
 
     f.close()
     print("Wrote " + fname)
+'''

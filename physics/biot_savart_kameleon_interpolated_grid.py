@@ -18,14 +18,14 @@ from util import tpad, time2filename
 
 
 def run(time, mlat, mlon, filename=None, para=True,
-        xlims=(-56., 8.), ylims=(-32., 32.), zlims=(-32., 32.),
+        xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.),
         d=0.125,
         dx=None, dy=None, dz=None,
         N=None,
         Nx=None, Ny=None, Nz=None,
         L=None,
         fullVolume=False, fineVolume=False,
-        print_output=False, tolerance=1e-13):
+        print_output=False, tolerance=1e-13, tonpfile=False):
     """
 
     Returns (Btot)
@@ -194,11 +194,11 @@ def run(time, mlat, mlon, filename=None, para=True,
     x0 = cx.MAGtoGSM([1., mlat, mlon], time, 'sph', 'car')
     if print_output:
         print(x0)
-    #Npole = cx.GEOtoGSM([0., 0., 1.], time, 'car', 'car')
 
     if filename == None:
-        filename = time2filename(time)
+        filename = time2filename(time) #!!!!!
 
+    import tempfile
     def dBslice(i, debug=False):
         Grid = np.column_stack([X[i]*np.ones(Gy.shape), Gy, Gz])
         J_kameleon = probe(filename, Grid, ['jx','jy','jz'], usekV=True)
@@ -207,9 +207,14 @@ def run(time, mlat, mlon, filename=None, para=True,
             print(Grid.shape)
             print(J.shape)
 
-        deltaB = bs.deltaB('deltaB', x0, Grid, J, V_char = dx*dy*dz)
+        dB = bs.deltaB('dB', x0, Grid, J, V_char = dx*dy*dz)
+        deltaB = np.sum(dB, axis=0)
+
+        if tonpfile:
+            npfname = tempfile.gettempdir() + '/dB_array_slice%d'%(i) + '.bin'
+            dB.tofile(npfname)
+
         return deltaB
-        #return bs.B_EW(X0, Grid, J, Npole, dx*dy*dz)
 
     if print_output:
         import time as t_module

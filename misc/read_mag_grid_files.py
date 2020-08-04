@@ -42,7 +42,7 @@ import numpy as np
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
-from util import urlretrieve, tpad
+from util import dlfile, tpad
 
 
 def time2mag_grid_file(time):
@@ -93,6 +93,7 @@ def getdata(filename, debug=True):
     if the file doesnt exist, it is downloaded form mag.gmu.edu
     
     """
+    '''
     if type(filename) != str:
         filename = time2mag_grid_file(filename)
     if not os.path.exists(conf['run_path'] + filename):
@@ -100,9 +101,20 @@ def getdata(filename, debug=True):
         if debug:
             print('Downloading' + filename)
     fname = conf['run_path'] + filename
+    '''
 
-    data = np.genfromtxt(fname, skip_header=4)
-    headers = np.loadtxt(fname, dtype=str, skiprows=3, max_rows=1)
+    if type(filename) != str:
+        filename = conf['run_path'] + time2mag_grid_file(filename)
+
+    assert(filename[0] == '/')
+    if not os.path.exists(filename):
+        #urlretrieve(conf['run_url'] + filename, conf['run_path'] + filename)
+        dlfile(filename)
+        if debug:
+            print('Downloading' + filename)
+
+    data = np.genfromtxt(filename, skip_header=4)
+    headers = np.loadtxt(filename, dtype=str, skiprows=3, max_rows=1)
 
     return [data, headers]
 
