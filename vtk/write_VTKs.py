@@ -65,13 +65,16 @@ to = tm.time()
 #mlat = 57.50
 #mlon = 176.00
 
+run = 'SWPC'
 time = np.array([2006, 12, 15, 7, 7, 0])
 mlat = 57.50
 mlon = 176.00
 
-structured_grid_write.cdf_to_structured_grid('SWPC', time, mlat, mlon, 'p',
-            xlims=(-56., 8.), ylims=(-32., 32.), zlims=(-32., 32.),
-            d=0.25)
+#structured_grid_write.cdf_to_structured_grid(run, time, mlat, mlon, 'p',
+#            xlims=(-56., 8.), ylims=(-32., 32.), zlims=(-32., 32.),
+#            d=0.25)
+
+earth_write.write_earth_vtk(run, time)
 
 '''
 N = 1

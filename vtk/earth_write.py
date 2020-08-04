@@ -6,16 +6,17 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 
 import cxtransform as cx
+from vtk_export import writevtk
+from util import tpad
 
 
+def write_earth_vtk(run, time, Nt=100, Np=100, ftype='BINARY'):
+    # note: run only affects fname, nothing else...
 
-def writevtk(Event, Nt=100, Np=100):
-    #Event = [year, month, day, hours, minutes, seconds, MLONdeg, MLATdeg]
-    time = Event[0:6]
-    tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tuple(time)
-    subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
+    tag = '_%04d:%02d:%02dT%02d:%02d:%02d' % tpad(time, length=6)
+    subdir = '%04d%02d%02dT%02d%02d%02d/' % tpad(time, length=6)
 
-    fname = conf["run_path_derived"] + subdir + 'earth' + tag +'.vtk'
+    fname = conf[run + "_derived"] + subdir + 'earth' + tag +'.vtk'
 
     R = 1.
     theta = np.linspace(0., np.pi, Nt)
@@ -40,7 +41,7 @@ def writevtk(Event, Nt=100, Np=100):
     XYZ = np.column_stack((x, y, z))
 
     XYZr = cx.GEOtoGSM(XYZ, time, 'car', 'car')
-
+    '''
     print("Writing " + fname)
     f = open(fname,'w')
     f.write('# vtk DataFile Version 3.0\n')
@@ -55,6 +56,10 @@ def writevtk(Event, Nt=100, Np=100):
     f.write('POINT_DATA ' + str(Nt*Np) + '\n')
     f.write('TEXTURE_COORDINATES TextureCoordinates 2 float\n') # http://www.earthmodels.org/data-and-tools/topography/paraview-topography-by-texture-mapping
     np.savetxt(f, UV)
-
+    
     f.close()
     print("Wrote " + fname)
+    '''
+
+    writevtk(fname, XYZr, UV, [Nt, Np, 1], 'TEXTURE_COORDINATES',
+             point_data_name = 'TextureCoordinates', title='Earth', ftype=ftype, grid='STRUCTURED_GRID')
