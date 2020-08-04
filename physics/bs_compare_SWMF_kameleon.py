@@ -102,7 +102,7 @@ def commonTimes(run, station, debug=False, skip_SWMF=False):
             for i in range(samp.size):
                 dB_SWMF[i, :] = np.array(rmg.analyzedata( 
                                                     conf[run + '_magfile'] + str(magfilenames[ind1[samp[i]]]),
-                                                    station[0], station[1], debug=debug) )[1:4]
+                                                    station[0], station[1], debug=debug) )[1:4] # dBn dBe dBd  as  0,1,2
 
         datafname = directory + 'dB_SWMF_tofile' + '.txt'
         f = open(datafname,'a') # append only mode
@@ -238,19 +238,19 @@ def plot_from_file(run, station, datafnames, fullname=False, component='norm', c
         if component == 'norm':
             dB_comp = np.sqrt(np.einsum('ij,ij->i', dB, dB))
         else:
-            if 'SWMF' in datafname: # NEED TO CHECK FOR ALL run, station INPUTS
-                if component == 'east':
-                    dB_SWMF_comp = dB_SWMF[:, 1]
-                elif component == 'north':
+            if 'SWMF' in datafname: # dBn dBe dBd  as  0,1,2
+                if component == 'north':
                     dB_SWMF_comp = dB_SWMF[:, 0]
+                elif component == 'east':
+                    dB_SWMF_comp = dB_SWMF[:, 1]
                 elif component == 'down':
                     dB_SWMF_comp = dB_SWMF[:, 2]
 
             else:
-                if component == 'east':
-                    u = U1
-                elif component == 'north':
+                if component == 'north':
                     u = U2
+                elif component == 'east':
+                    u = U1
                 elif component == 'down':
                     u = -U3
                 dB_comp = np.einsum('ij,ij->i', u, dB)
