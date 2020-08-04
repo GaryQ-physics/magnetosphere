@@ -90,7 +90,7 @@ def time2filename(time, extension='.out.cdf', split=False):
     return conf["run_path"] + filename
 
 
-def time2CDFfilename(run, time, split=False):
+def time2CDFfilename(run, time, split=False, debug=True):
     """
     >>> u.time2CDFfilename('SCARR5',[2003,11,20,7,7,0])
     '/home/gary/magnetosphere/data/SCARR5_GM_IO2/IO2/3d__var_3_e20031120-070700-000.out.cdf'
@@ -131,6 +131,8 @@ def time2CDFfilename(run, time, split=False):
             return None
 
         filename = a[Tr, 0][0]
+
+    dlfile(conf[run + '_cdf'] + filename, debug=debug)
 
     if split:
         return filename
@@ -313,7 +315,7 @@ def dlfile_test(filename, debug=False):
     fdir = fdir + '/'
     assert(fdir in conf.values())
     if not os.path.exists(filename):
-        print('hello there')
+        print('file doesnt exits')
     return conf['mag_server_url'] + fdir.split('/data/')[-1] + fname_split
 
 '''

@@ -198,6 +198,7 @@ def run(time, mlat, mlon, filename=None, para=True,
     if filename == None:
         filename = time2filename(time) #!!!!!
 
+    import tempfile
     def dBslice(i, debug=False):
         Grid = np.column_stack([X[i]*np.ones(Gy.shape), Gy, Gz])
         J_kameleon = probe(filename, Grid, ['jx','jy','jz'], usekV=True)
@@ -210,7 +211,7 @@ def run(time, mlat, mlon, filename=None, para=True,
         deltaB = np.sum(dB, axis=0)
 
         if tonpfile:
-            npfname = '/tmp/dB_array_slice%d'%(i) + '.bin'
+            npfname = tempfile.gettempdir() + '/dB_array_slice%d'%(i) + '.bin'
             dB.tofile(npfname)
 
         return deltaB

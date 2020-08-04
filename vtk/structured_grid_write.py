@@ -46,8 +46,9 @@ def cdf_to_structured_grid(run, time, mlat, mlon, var, para=True, debug=False,
                 print_output=True, tonpfile=True)
 
             values = []
+            import tempfile
             for i in range(Nx):
-                npfname = '/tmp/dB_array_slice%d'%(i) + '.bin'
+                npfname = tempfile.gettempdir() + '/dB_array_slice%d'%(i) + '.bin'
                 dB_slice = np.fromfile(npfname).reshape((Ny*Nz, 3))
                 values.append(dB_slice)
             values = np.column_stack(values).reshape((Nx*Ny*Nz, 3))

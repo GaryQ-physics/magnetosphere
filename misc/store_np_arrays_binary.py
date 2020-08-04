@@ -23,7 +23,7 @@ import time
 import numpy as np
 
 N = 50000000
-fname = '/tmp/np_array_test.bin'
+fname = tempfile.gettempdir() + '/np_array_test.bin'
 
 print('N = {0:d}'.format(N))
 
