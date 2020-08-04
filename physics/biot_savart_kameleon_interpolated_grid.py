@@ -18,7 +18,7 @@ from util import tpad, time2filename
 
 
 def run(time, mlat, mlon, filename=None, para=True,
-        xlims=(-56., 8.), ylims=(-32., 32.), zlims=(-32., 32.),
+        xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.),
         d=0.125,
         dx=None, dy=None, dz=None,
         N=None,
