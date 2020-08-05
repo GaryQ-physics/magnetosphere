@@ -40,6 +40,12 @@ conf = {
         'SCARR1_magfile': storage + 'data/SCARR1/MAG_FILES/',
         'SCARR1_derived': storage + 'data/SCARR1-derived/',
         'mag_server_url': 'http://mag.gmu.edu/git-data/sblake/'
+
+        'SWPC_raw': storage + 'data/SWPC_SWMF_052811_2/raw_output/'
+        'SWPC_iono': storage + 'data/SWPC_SWMF_052811_2/IONO-2D_CDF/'
+
+        'SCARR5_raw': storage + 'data/SCARR5_GM_IO2/IO2/'
+        'SCARR5_iono': storage + 'data/SCARR5_GM_IO2/IO2/'
     }
 
 if base + 'util/' not in sys.path:

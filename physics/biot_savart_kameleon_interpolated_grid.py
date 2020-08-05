@@ -210,8 +210,11 @@ def run(time, mlat, mlon, filename=None, para=True,
         dB = bs.deltaB('dB', x0, Grid, J, V_char = dx*dy*dz)
         deltaB = np.sum(dB, axis=0)
 
+        os.system('rm ' + tempfile.gettempdir() + '/*dB_array_slice*')
         if tonpfile:
             npfname = tempfile.gettempdir() + '/dB_array_slice%d'%(i) + '.bin'
+            #if os.path.exists(npfname):
+            #    os.remove(npfname)
             dB.tofile(npfname)
 
         return deltaB

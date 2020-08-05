@@ -18,8 +18,9 @@ NOTE: where here T depends strongly on wether the file np_array_test.bin already
     if it does and thus needs to be rewritten, it takes about 15 to 18 sec
 
 """
-
+import os
 import time
+import tempfile
 import numpy as np
 
 N = 50000000
@@ -36,12 +37,17 @@ print('time to generate Nx3 array = {0:.5f} sec'.format(tf-to))
 #print(A.shape)
 
 to = time.time()
+
+if os.path.exists(fname):
+    os.remove(fname)
+
 if False:
     f = open(fname, 'w')
     f.write(A.tobytes())
     f.close()
 else:
     A.tofile(fname)
+
 tf = time.time()
 print('time to write Nx3 array to binary file = {0:.5f} sec'.format(tf-to))
 
