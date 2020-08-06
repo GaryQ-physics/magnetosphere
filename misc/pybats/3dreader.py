@@ -10,6 +10,7 @@ sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../../' )
 from config import conf
 
 import spacepy.pybats.bats as bats
+print(bats.__file__)
 
 # read in the 3d magnetosphere
 #filename = conf['run_path'] + "3d__var_3_e20031120-070000-000.out"

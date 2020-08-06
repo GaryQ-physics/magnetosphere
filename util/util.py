@@ -357,9 +357,8 @@ def filemeta(filename):
     if type(filename) != str:
         filename = time2filename(filename)
 
-    filename = os.path.split(filename)[1]
-    
-    filename = conf['run_path'] + filename
+    #filename = os.path.split(filename)[1]
+    #filename = conf['run_path'] + filename
 
     # Look-up tables for units and labels. Must be extended for each
     # new simulation model.
