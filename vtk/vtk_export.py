@@ -23,6 +23,9 @@ def writevtk(out_filename, points, point_data, connectivity, texture,
     if grid == 'STRUCTURED_GRID':
         f.write('DIMENSIONS ' + str(Nx) + ' ' + str(Ny) + ' ' + str(Nz) + '\n' )
         f.write('POINTS '+str(Nx*Ny*Nz)+' float\n')
+    if grid == 'POLYDATA'
+        num_points = points.shape[0]
+        f.write('\nPOINTS '+str(num_points)+' float\n')
 
     if ftype=='BINARY':
         points = np.array(points, dtype='>f')
@@ -31,8 +34,58 @@ def writevtk(out_filename, points, point_data, connectivity, texture,
         np.savetxt(f, points)
 
     f.write('\n')
+
+    if grid == 'POLYDATA':
+        if connectivity == 'triangulation':
+            assert(ftype == 'ASCII')
+            extra_circle = 1
+            closing_points = 2
+            head_count = 1
+            extra_point = 1
+            points_on_circle = 0
+            x_first_circle = X[0]
+            for x_search in X:
+                if x_search == x_first_circle:
+                    points_on_circle += 1
+                else:
+                    break
+            
+            num_circles = int(num_points/points_on_circle)
+            
+            triangle_line = ''
+            lines_of_triangles = num_circles - extra_circle
+            head_triangle = 2 * points_on_circle + closing_points
+            points_on_triangle_strips = (2 
+                                        * points_on_circle 
+                                        + closing_points 
+                                        + head_count) * lines_of_triangles
+            f.write('\n')
+            f.write('TRIANGLE_STRIPS {} {}\n'.format(lines_of_triangles, 
+                                                     points_on_triangle_strips))
+
+            for i in range(num_points - points_on_circle):
+                triangle_line = triangle_line + ' {} {}'.format(i, i+points_on_circle)
+                
+
+                if (i+1) % int(points_on_circle) == 0:
+                    if i == points_on_circle: 
+                        f_repeat_point = 0
+                        l_repeat_point = f_repeat_point + points_on_circle
+                    else: 
+                        f_repeat_point = i - points_on_circle + extra_point
+                        l_repeat_point = f_repeat_point + points_on_circle
+                    line = '{} {} {} {}\n'.format(head_triangle, 
+                                               triangle_line,
+                                               f_repeat_point,
+                                               l_repeat_point)
+                    f.write(line)
+                    triangle_line = ''
+            f.write('\n')
+
     if grid == 'STRUCTURED_GRID':
         f.write('POINT_DATA ' + str(Nx*Ny*Nz) + '\n')
+    if grid == 'POLYDATA':
+        f.write('POINT_DATA ' + str(num_points) + '\n')
 
     if texture == 'SCALARS':
         f.write('SCALARS ' + point_data_name + ' float 1\n') # number with float???
@@ -42,19 +95,6 @@ def writevtk(out_filename, points, point_data, connectivity, texture,
     if texture == 'TEXTURE_COORDINATES':
         f.write('TEXTURE_COORDINATES ' + point_data_name + ' 2 float\n') # http://www.earthmodels.org/data-and-tools/topography/paraview-topography-by-texture-mapping
 
-
-    # http://www.earthmodels.org/data-and-tools/topography/paraview-topography-by-texture-mapping
-
-    '''
-    f.write('TEXTURE_COORDINATES TextureCoordinates 2 float\n') # http://www.earthmodels.org/data-and-tools/topography/paraview-topography-by-texture-mapping
-
-
-    if var=='J':
-        f.write('VECTORS ' + var + ' float\n')
-    else:
-        f.write('SCALARS ' + var + ' float 1\n')
-        f.write('LOOKUP_TABLE default\n')
-    '''
 
     if ftype=='BINARY':
         point_data = np.array(point_data, dtype='>f')

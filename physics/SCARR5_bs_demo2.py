@@ -26,7 +26,7 @@ for i in range(6):
     ylims = tuple(np.array(global_ylims)/float(2**i))
     zlims = tuple(np.array(global_zlims)/float(2**i))
 
-    outvect = bsk.run(time, mlat, mlon, para=True,
+    outvect = bsk.integrate(time, mlat, mlon, para=True,
             Nx=None, xlims=xlims, dx=0.125,
             Ny=None, ylims=ylims, dy=0.125,
             Nz=None, zlims=zlims, dz=0.125,

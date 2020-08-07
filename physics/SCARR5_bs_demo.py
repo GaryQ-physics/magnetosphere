@@ -50,7 +50,7 @@ spacepy_like = False
 n = 128 # for testing
 #n = 2560
 
-bsk.run(time, mlat, mlon, para=para,
+bsk.integrate(time, mlat, mlon, para=para,
     fullVolume=fullVolume, spacepy_like=spacepy_like,
     Nx=n/2+1, xlims=(global_x_min + 128., global_x_max), dx=None,
     Ny=n/4+1, ylims=(global_y_min/4, global_y_max/4), dy=None,

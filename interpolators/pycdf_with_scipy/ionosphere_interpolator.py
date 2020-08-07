@@ -13,6 +13,11 @@ def interpolate(lamb, phi, var, filename): # return var(lambda_in, phi_in)
     lamb_ax = cdf['theta'][...][0,:]
     phi_ax = cdf['phi'][...][0,:]
 
+    lamb_ax[0] = -90.
+    lamb_ax[-1] = 90.  # before its like 89.999...something but needs to
+                       # be 90 otherwise when calling interpolator about
+                       # this 89.99some, doesnt work. Needed fore ex in bs_on_sphere.py
+
     # x_read==x_calc  ==>  x_read[i,j] == x(lamb[j], phi[i]) where x(lambda, phi) is standard cartesian function of lat, lon (in that order)
     #   ==>  var(lamb[j], phi[i]) == cdf['var'][...].reshape((181, 181))[i,j] where variables are considered function var(lambda, phi)
     #   ==>  var(lamb[i], phi[j]) == cdf['var'][...].reshape((181, 181)).transpose()[i,j]
