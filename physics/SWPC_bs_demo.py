@@ -43,7 +43,7 @@ for i in range(6):
     print(time)
     print(filename)
 
-    outvect = bsk.run(time, mlat, mlon, para=True, filename=filename,
+    outvect = bsk.integrate(time, mlat, mlon, para=True, filename=filename,
             Nx=None, xlims=xlims, dx=0.125,
             Ny=None, ylims=ylims, dy=0.125,
             Nz=None, zlims=zlims, dz=0.125,

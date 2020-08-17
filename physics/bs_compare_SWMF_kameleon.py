@@ -165,7 +165,7 @@ def dB_kam_tofile(run, station, time_common, filenames, debug=False, tag=None, x
         print(time)
         print(filename)
 
-        dB_kam[i,:] = bsk.run(time, mlat, mlon, filename=filename_full, para=True,
+        dB_kam[i,:] = bsk.integrate(time, mlat, mlon, filename=filename_full, para=True,
             xlims=xlims, ylims=ylims, zlims=zlims, d=d,
             print_output=True)
 

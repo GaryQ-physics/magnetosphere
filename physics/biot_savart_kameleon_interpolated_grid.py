@@ -17,7 +17,7 @@ from probe import probe
 from util import tpad, time2filename
 
 
-def run(time, mlat, mlon, filename=None, para=True,
+def integrate(time, mlat, mlon, filename=None, para=True,
         xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.),
         d=0.125,
         dx=None, dy=None, dz=None,

@@ -3,20 +3,20 @@ import sys
 
 if os.path.exists('/Users/robertweigel/'):
     base = '/Users/robertweigel/git/students/gquaresi/magnetosphere/'
-    kameleon = '/Users/robertweigel/kameleon/lib/python2.7/site-packages/'
+    #kameleon = '/Users/robertweigel/kameleon/lib/python2.7/site-packages/'
 if os.path.exists('/Users/weigel/'):
     base = '/Users/weigel/git/magnetosphere/'
-    kameleon = '/Users/weigel/kameleon/lib/python2.7/site-packages/'
+    #kameleon = '/Users/weigel/kameleon/lib/python2.7/site-packages/'
 elif os.path.exists('/home/weigel/') and False:
     base = '/home/weigel/git/magnetosphere/'
-    kameleon = '/home/weigel/kameleon/lib/python2.7/site-packages/'
+    #kameleon = '/home/weigel/kameleon/lib/python2.7/site-packages/'
 elif os.path.exists('/home/gary/'):
     base = '/home/gary/magnetosphere/'
-    kameleon = '/home/gary/magnetosphere/kameleon/lib/python2.7/site-packages/'
+    #kameleon = '/home/gary/magnetosphere/kameleon/lib/python2.7/site-packages/'
     storage = base
 elif os.path.exists('/home/gquaresi/'):
     base = '/home/gquaresi/magnetosphere/'
-    kameleon = '/home/gquaresi/'
+    #kameleon = '/home/gquaresi/'
     storage = '/media/solar-backup/tmp/'
 else:
     assert(False)
@@ -45,8 +45,14 @@ conf = {
         'SWPC_iono': storage + 'data/SWPC_SWMF_052811_2/IONO-2D_CDF/',
 
         'SCARR5_raw': storage + 'data/SCARR5_GM_IO2/IO2/',
-        'SCARR5_iono': storage + 'data/SCARR5_GM_IO2/IO2/'
+        'SCARR5_iono': storage + 'data/SCARR5_GM_IO2/IO2/',
+
+        'interpolator': base + 'interpolators/'
+
     }
+
+if conf['interpolator'] not in sys.path:
+    sys.path.append(conf['interpolator'])
 
 if base + 'util/' not in sys.path:
     sys.path.append(base + 'util/')
@@ -60,11 +66,11 @@ if base + 'vtk/' not in sys.path:
 if base + 'cutplane/' not in sys.path:
     sys.path.append(base + 'cutplane/')
 
-if kameleon not in sys.path:
-    sys.path.append(kameleon)
+#if kameleon not in sys.path:
+#    sys.path.append(kameleon)
 
-if kameleon + 'ccmc/' not in sys.path:
-    sys.path.append(kameleon + 'ccmc/')
+#if kameleon + 'ccmc/' not in sys.path:
+#    sys.path.append(kameleon + 'ccmc/')
 
 if base + 'misc/' not in sys.path:
     sys.path.append(base + 'misc/')
