@@ -26,9 +26,12 @@ def interpolate(lamb, phi, var, filename): # return var(lambda_in, phi_in)
 
     cdf.close()
 
+    pts = np.column_stack([lamb, phi])
+    if pts = np.column_stack(np.meshgrid(lamb_ax, phi_ax)): #!!!!!!!!!!
+        print("on grid points")
+        return pts
+
     #https://stackoverflow.com/questions/21836067/interpolate-3d-volume-with-numpy-and-or-scipy
     ret_interp = RegularGridInterpolator((lamb_ax,phi_ax), V)
-    pts = np.column_stack([lamb, phi])
-
     return ret_interp(pts)
 
