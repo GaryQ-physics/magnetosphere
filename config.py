@@ -39,6 +39,9 @@ conf = {
         'SCARR1_cdf': storage + 'data/SCARR1/tmp/',
         'SCARR1_magfile': storage + 'data/SCARR1/MAG_FILES/',
         'SCARR1_derived': storage + 'data/SCARR1-derived/',
+        'CARR_IMPULSE_cdf': storage + 'data/CARR_IMPULSE_3D/',
+        'CARR_IMPULSE_derived': storage + 'data/CARR_IMPULSE_3D-derived/',
+
         'mag_server_url': 'http://mag.gmu.edu/git-data/sblake/',
 
         'SWPC_raw': storage + 'data/SWPC_SWMF_052811_2/raw_output/',
@@ -47,8 +50,7 @@ conf = {
         'SCARR5_raw': storage + 'data/SCARR5_GM_IO2/IO2/',
         'SCARR5_iono': storage + 'data/SCARR5_GM_IO2/IO2/',
 
-        'interpolator': base + 'interpolators/'
-
+        'interpolator': base + 'interpolators/',
     }
 
 if conf['interpolator'] not in sys.path:
@@ -98,3 +100,11 @@ if not os.path.exists(conf['SCARR1_cdf']):
 if not os.path.exists(conf['SCARR1_derived']):
     os.makedirs(conf['SCARR1_derived'])
     print('Created directory ' + conf['SCARR1_derived'])
+
+if not os.path.exists(conf['CARR_IMPULSE_cdf']):
+    os.makedirs(conf['CARR_IMPULSE_cdf'])
+    print('Created directory ' + conf['CARR_IMPULSE_cdf'])
+
+if not os.path.exists(conf['CARR_IMPULSE_derived']):
+    os.makedirs(conf['CARR_IMPULSE_derived'])
+    print('Created directory ' + conf['CARR_IMPULSE_derived'])

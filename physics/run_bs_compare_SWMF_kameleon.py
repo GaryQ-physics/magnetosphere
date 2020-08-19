@@ -14,8 +14,8 @@ plot = True
 run = 'SWPC'
 station = 'FUR'
 
-run = 'SCARR1'
-station = [63.362, 0.] # aproximatly step of 175./174
+#run = 'SCARR5'
+#station = [63.362, 0.] # aproximatly step of 175./174
 
 #run = 'SCARR'
 #station = [0., 0.]
@@ -29,7 +29,7 @@ if plot:
      #'dB_kam_tofile_-048.00_0016.00_-032.00_0032.00_-032.00_0032.00_0.06250_.txt',
      #'dB_kam_tofile_-112.00_0016.00_-064.00_0064.00_-064.00_0064.00_0.12500_.txt',
      ])
-    '''
+
     #bscomp.plot_from_file(run, station, ['/home/gary/magnetosphere/data/SWPC_SWMF_052811_2-derived/YKC/dB_SWMF_tofile.txt', '/home/gary/magnetosphere/data/SWPC_SWMF_052811_2-derived/FRN/dB_SWMF_tofile.txt'], fullname=True)
     bscomp.plot_from_file(run, station, ['/home/gary/magnetosphere/data/SCARR5_GM_IO2-derived/mpos:0.000:0.000/dB_SWMF_tofile.txt',
             '/home/gary/magnetosphere/data/SCARR1-derived/mpos:0.000:0.000/dB_SWMF_tofile.txt',
@@ -40,7 +40,10 @@ if plot:
             '/home/gary/magnetosphere/data/SCARR1-derived/mpos:63.362:0.000/dB_SWMF_tofile.txt',
             '/home/gary/magnetosphere/data/SCARR5_GM_IO2-derived/mpos:63.362:0.000/dB_kam_tofile_-048.00_0016.00_-032.00_0032.00_-032.00_0032.00_0.12500_.txt',
             ], fullname=True)
-
+    '''
+    bscomp.plot_from_file(run, station, ['dB_SWMF_tofile.txt',
+                    'dB_kam_tofile_-048.00_0016.00_-032.00_0032.00_-032.00_0032.00_0.50000_.txt',
+                    ], component='norm')
 
 else:
     bscomp.compute(run, station, tag=None, xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.5, skip_SWMF=True)

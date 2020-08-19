@@ -19,10 +19,12 @@ def deltaB(variable, x0, X, J, V_char = 1.):
     divRcubed = 1./Rcubed
 
     dB = (phys['mu0']/(4*np.pi))*( np.cross(J, R)*divRcubed[:,np.newaxis] ) #https://stackoverflow.com/questions/5795700/multiply-numpy-array-of-scalars-by-array-of-vectors
-    if type(V_char) == float:
-        dB = V_char*dB
-    else:
+
+    try:  #!!!!! better way?
+        V_char.shape
         dB = np.einsum('i,ij->ij', V_char, dB)
+    except:
+        dB = V_char*dB
 
     if(variable=='dB'):
         return dB
