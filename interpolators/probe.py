@@ -5,7 +5,8 @@ import numpy as np
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 
-from util import time2filename, filemeta
+#from util import time2filename, filemeta
+import util
 
 '''
 def interpolate(filename, variable, Q, library)
@@ -38,7 +39,7 @@ def probe(time, P, var=None, debug=False, dictionary=False, library='kameleonV')
     if type(time) == str:
         filename = time
     else:
-        filename = time2filename(time) #!!!!!!
+        filename = util.time2filename(time) #!!!!!!
 
     if not os.path.exists(filename):
         raise ValueError('Not found: ' + filename)
@@ -82,7 +83,7 @@ def probe(time, P, var=None, debug=False, dictionary=False, library='kameleonV')
     ###################
 
     if var is None:
-        meta = filemeta(filename)
+        meta = util.filemeta(filename)
         # Get data for all parameters, store in dictionary
         ret = {}
         for key in meta['parameters']:

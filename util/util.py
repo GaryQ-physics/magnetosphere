@@ -4,6 +4,8 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 
+print('\n\n util path: ~/magnetosphere/util/util.py \n\n')
+
 
 def tpad(time, length=7):
 
@@ -128,9 +130,16 @@ def time2CDFfilename(run, time, split=False, debug=True):
         Tr = np.logical_and(a[:,2] == '{0:04d}/{1:02d}/{2:02d}'.format(*time[0:3]),
                             a[:,4] == '{0:02d}:{1:02d}:{2:02d}'.format(*time[3:6]))
         if a[Tr, 0].size == 0:
+            print('\n WARNING invalid time \n')
             return None
 
         filename = a[Tr, 0][0]
+
+    if run == 'CARR_IMPULSE':
+        if tpad(time, length=6) != (2019,9,2,6,30,0):
+            print('\n WARNING invalid time \n')
+            return None
+        filename = '3d__var_2_e20190902-063000-009.out.cdf'
 
     dlfile(conf[run + '_cdf'] + filename, debug=debug)
 
@@ -351,11 +360,11 @@ def dlfile_SWPC(filename, debug=False):
 
 
 def filemeta(filename):
-    
+    sys.path.append('/home/gary/magnetosphere/interpolators/kameleon/lib/python2.7/site-packages/ccmc')
     import _CCMC as ccmc
 
     if type(filename) != str:
-        filename = time2filename(filename)
+        filename = time2filename(filename) #!!!!!! need to update
 
     #filename = os.path.split(filename)[1]
     #filename = conf['run_path'] + filename

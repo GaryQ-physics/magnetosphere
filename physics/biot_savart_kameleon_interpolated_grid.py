@@ -199,9 +199,11 @@ def integrate(time, mlat, mlon, filename=None, para=True,
         filename = time2filename(time) #!!!!!
 
     import tempfile
+    os.system('rm ' + tempfile.gettempdir() + '/*dB_array_slice*')
+
     def dBslice(i, debug=False):
         Grid = np.column_stack([X[i]*np.ones(Gy.shape), Gy, Gz])
-        J_kameleon = probe(filename, Grid, ['jx','jy','jz'], usekV=True)
+        J_kameleon = probe(filename, Grid, var = ['jx','jy','jz'], library='kameleonV')
         J = J_kameleon*(phys['muA']/phys['m']**2)
         if debug:
             print(Grid.shape)
@@ -210,7 +212,6 @@ def integrate(time, mlat, mlon, filename=None, para=True,
         dB = bs.deltaB('dB', x0, Grid, J, V_char = dx*dy*dz)
         deltaB = np.sum(dB, axis=0)
 
-        os.system('rm ' + tempfile.gettempdir() + '/*dB_array_slice*')
         if tonpfile:
             npfname = tempfile.gettempdir() + '/dB_array_slice%d'%(i) + '.bin'
             #if os.path.exists(npfname):
@@ -270,3 +271,40 @@ def integrate(time, mlat, mlon, filename=None, para=True,
             f.close()
 
     return Btot
+
+
+def toMAGLocalComponents(time, mlat, mlon, dB):
+    time = np.array(time, dtype=int)
+
+    if len(time.shape) == 1 and len(dB.shape) > 1:
+        time = np.repeat([time], dB.shape[0], axis = 0)
+
+    # time is Nx6 and dB is Nx3  mlat, mlon are numbers
+    N = time.shape[0]
+    assert(time.shape == (N,6))
+    assert(dB.shape == (N,3))
+    station_pos = cx.MAGtoGSM(np.array([1., mlat, mlon]), time, 'sph', 'car')
+    assert( station_pos.shape == (N, 3) ) # check
+
+    Pole = cx.MAGtoGSM(np.array([0., 0., 1.]), time, 'car', 'car')
+
+    U3 = station_pos
+    U3norm = np.sqrt(U3[:,0]**2 + U3[:,1]**2 + U3[:,2]**2) #( not really needed since norm is 1 in these units where R_e=1, but just to be consistent in all units)
+    divU3norm = 1./U3norm
+    U3 = U3*divU3norm[:,np.newaxis]
+    U1 = np.cross(Pole, U3)
+    U1norm = np.sqrt(U1[:,0]**2 + U1[:,1]**2 + U1[:,2]**2)
+    divU1norm = 1./U1norm
+    #https://stackoverflow.com/questions/5795700/multiply-numpy-array-of-scalars-by-array-of-vectors
+    U1 = U1*divU1norm[:,np.newaxis]
+    U2 = np.cross(U3, U1)
+    assert(U1.shape == (N, 3)) #check
+
+    R = np.empty((N, 3, 3))
+    R[:,:,0] = U2
+    R[:,:,1] = U1
+    R[:,:,2] = -U3
+
+    dB_rot = np.einsum('ijk,ik->ij', R, dB)
+    return dB_rot
+
