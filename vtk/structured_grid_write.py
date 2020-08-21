@@ -30,6 +30,19 @@ def get_dB_out_filename(run, time, mlat, mlon, xlims, ylims, zlims, d):
     out_filename = directory + vtk_name + '.vtk'
     return out_filename
 
+def get_built_in_var_out_filename(run, var, time, xlims, ylims, zlims, d):
+    tup = xlims+ylims+zlims+(d,)
+    tag = '_{0:07.2f}_{1:07.2f}_{2:07.2f}_{3:07.2f}_{4:07.2f}_{5:07.2f}_{6:.5f}_'.format(*tup)
+    vtk_name= var + tag
+    out_dir = conf[run + "_derived"]
+    subdir = '%04d%02d%02dT%02d%02d%02d/' % tuple(util.tpad(time, length=6))
+    directory = out_dir + subdir
+    #print('\n\n' + directory + '\n\n')
+    if not os.path.exists(directory):
+        os.mkdir(directory)
+    out_filename = directory + vtk_name + '.vtk'
+    return out_filename
+
 
 def built_in_var_from_CDF(run, time, var, para=True, debug=False,
        xlims=(-56., 8.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.125):
@@ -42,34 +55,18 @@ def built_in_var_from_CDF(run, time, var, para=True, debug=False,
     Xgrid = ret[0]
 
     cdf_fname = str(util.time2CDFfilename(run, time))
-    if cdf_fname == None:
-        print('WARNING: no file for that time')
-        values = np.zeros((Nx*Ny*Nz, 3))
-        tag = 'ERROR'
-        texture = ''
-    else:
-        util.dlfile(cdf_fname, debug=True)
-        tag = var
-        texture = 'SCALARS'
+    assert(cdf_fname != None)
+    #if cdf_fname == None:
+    #    print('WARNING: no file for that time')
+    #    values = np.zeros((Nx*Ny*Nz, ))
+    #else:
+    util.dlfile(cdf_fname, debug=True)
+    texture = 'SCALARS'
 
-    out_dir = conf[run + "_derived"]
-    vtk_name = 'structured_grid_'  + tag + '_%.5f'%(d)
+    util.dlfile(cdf_fname, debug=True)
+    values = probe(cdf_fname, Xgrid, var=var, debug=debug)
 
-    subdir = '%04d%02d%02dT%02d%02d%02d/' % tuple(util.tpad(time, length=6))
-    directory = os.path.join(out_dir, subdir)
-    if not os.path.exists(directory):
-        os.mkdir(directory)
-    out_filename = directory + vtk_name + '.vtk'
-
-    if os.path.exists(out_filename):
-        if debug:
-            print(out_filename + ' already exists')
-        return [Xgrid, np.nan*np.empty((Nx*Ny*Nz, )), (Nx,Ny,Nz), None, out_filename]
-    else:
-        util.dlfile(cdf_fname, debug=True)
-        values = probe(cdf_fname, Xgrid, var=var, debug=debug)
-
-    return [Xgrid, values, (Nx,Ny,Nz), texture, out_filename]
+    return [Xgrid, values, (Nx,Ny,Nz)]
 
 
 def dB_from_CDF(run, time, mlat, mlon, var='dB', para=True, debug=False,
@@ -95,7 +92,7 @@ def dB_from_CDF(run, time, mlat, mlon, var='dB', para=True, debug=False,
     dB = []
     import tempfile
     for i in range(Nx):
-        npfname = tempfile.gettempdir() + '/dB_array_slice%d'%(i) + '.bin'
+        npfname = os.path.join(tempfile.gettempdir(), 'dB_array_slice%d'%(i) + '.bin')
         dB_slice = np.fromfile(npfname).reshape((Ny*Nz, 3))
         dB.append(dB_slice)
     dB = np.column_stack(dB).reshape((Nx*Ny*Nz, 3))
