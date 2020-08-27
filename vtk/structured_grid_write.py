@@ -16,59 +16,7 @@ import cxtransform as cx
 
 import biot_savart_kameleon_interpolated_grid as bsk
 
-
-def get_dB_out_filename(run, time, mlat, mlon, xlims, ylims, zlims, d):
-    tup = xlims+ylims+zlims+(d,)
-    tag = '_{0:07.2f}_{1:07.2f}_{2:07.2f}_{3:07.2f}_{4:07.2f}_{5:07.2f}_{6:.5f}_'.format(*tup)
-    vtk_name= 'dB_{0:.3f}_{1:.3f}'.format(mlat, mlon) + tag
-    out_dir = conf[run + "_derived"]
-    subdir = '%04d%02d%02dT%02d%02d%02d/' % tuple(util.tpad(time, length=6))
-    directory = out_dir + subdir
-    #print('\n\n' + directory + '\n\n')
-    if not os.path.exists(directory):
-        os.mkdir(directory)
-    out_filename = directory + vtk_name + '.vtk'
-    return out_filename
-
-def get_built_in_var_out_filename(run, var, time, xlims, ylims, zlims, d):
-    tup = xlims+ylims+zlims+(d,)
-    tag = '_{0:07.2f}_{1:07.2f}_{2:07.2f}_{3:07.2f}_{4:07.2f}_{5:07.2f}_{6:.5f}_'.format(*tup)
-    vtk_name= var + tag
-    out_dir = conf[run + "_derived"]
-    subdir = '%04d%02d%02dT%02d%02d%02d/' % tuple(util.tpad(time, length=6))
-    directory = out_dir + subdir
-    #print('\n\n' + directory + '\n\n')
-    if not os.path.exists(directory):
-        os.mkdir(directory)
-    out_filename = directory + vtk_name + '.vtk'
-    return out_filename
-
-
-def built_in_var_from_CDF(run, time, var, para=True, debug=False,
-       xlims=(-56., 8.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.125):
-
-    Nx = int(round((xlims[1]-xlims[0])/d)) + 1
-    Ny = int(round((ylims[1]-ylims[0])/d)) + 1
-    Nz = int(round((zlims[1]-zlims[0])/d)) + 1
-
-    ret = bs.make_grid(xlims, ylims, zlims, d, d, d)
-    Xgrid = ret[0]
-
-    cdf_fname = str(util.time2CDFfilename(run, time))
-    assert(cdf_fname != None)
-    #if cdf_fname == None:
-    #    print('WARNING: no file for that time')
-    #    values = np.zeros((Nx*Ny*Nz, ))
-    #else:
-    util.dlfile(cdf_fname, debug=True)
-    texture = 'SCALARS'
-
-    util.dlfile(cdf_fname, debug=True)
-    values = probe(cdf_fname, Xgrid, var=var, debug=debug)
-
-    return [Xgrid, values, (Nx,Ny,Nz)]
-
-
+'''
 def dB_from_CDF(run, time, mlat, mlon, var='dB', para=True, debug=False,
        xlims=(-56., 8.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.125):
 
@@ -97,7 +45,8 @@ def dB_from_CDF(run, time, mlat, mlon, var='dB', para=True, debug=False,
         dB.append(dB_slice)
     dB = np.column_stack(dB).reshape((Nx*Ny*Nz, 3))
 
-    return [Xgrid, dB, (Nx,Ny,Nz)]
+    return [dB, Xgrid, (Nx,Ny,Nz)]
+'''
 
 '''
 def dB_from_CDF(run, time, mlat, mlon, var='dB', para=True, debug=False,

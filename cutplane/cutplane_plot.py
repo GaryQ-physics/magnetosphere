@@ -5,7 +5,8 @@ import numpy as np
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 
-from cutplane import data2d, unitvector, fieldlines
+from cutplane import data2d, unitvector
+from fieldlines import fieldlines
 import util
 
 
@@ -57,7 +58,7 @@ def set_colorbar(ax, pcm, zticks, Nbt, title=None, logz=False):
     if title is not None:
         cb.ax.set_title(title, va='bottom', fontsize=10)
 
-def plot(time, parameter, arg3,
+def plot(run, time, parameter, arg3,
          field_lines=None,
          axes=None,
          logz=False,
@@ -93,7 +94,7 @@ def plot(time, parameter, arg3,
     
     xlabel = ''
     ylabel = ''
-    title = 'SCARR5 ' + '%04d-%02d-%02dT%02d:%02d:%02d.%03d' % tuple(time)
+    title = run + ' %04d-%02d-%02dT%02d:%02d:%02d.%03d' % tuple(time)
     if type(arg3) == str:
         if arg3 == 'xy':
             xlabel = 'X [$R_E$]'
@@ -115,7 +116,7 @@ def plot(time, parameter, arg3,
         if arg3.size == 3:
             title = title + "\n" + "[mlat, mlon]=[{0:.1f}$^o$, {1:.1f}$^o$]" \
                     .format(arg3[1], arg3[2])
-            U = unitvector(time, arg3)
+            U = unitvector(run, time, arg3)
             U1 = U[0]
             U2 = U[1]
         else:
@@ -130,13 +131,13 @@ def plot(time, parameter, arg3,
 
     U3 = np.cross(U1, U2)
  
-    filename = util.time2filename(time)
+    filename = util.time2CDFfilename(run, time)
 
     if pngfile is None:
-        outdir = conf['run_path_derived'] + "cutplanes/"
+        outdir = conf[run + '_derived'] + "cutplanes/"
         if not os.path.exists(outdir):
             os.makedirs(outdir)
-        filename_out = filename.replace(conf['run_path'], outdir) + '.png'
+        filename_out = filename.replace(conf[run + 'cdf'], outdir) + '.png'
     else:
         filename_out = pngfile
 
@@ -152,10 +153,10 @@ def plot(time, parameter, arg3,
                 + '-xlims' + str(xlims[0]) + ',' + str(xlims[1]) \
                 + '-ylims' + str(ylims[0]) + ',' + str(ylims[1]) \
                 + '.npy'
-        cachedir = conf['run_path_derived'] + "cutplanes/cache/" + parameter + "/"
+        cachedir = conf[run + '_derived'] + "cutplanes/cache/" + parameter + "/"
         if not os.path.exists(cachedir):
             os.makedirs(cachedir)
-        npfile = filename.replace(conf['run_path'], cachedir) + ext
+        npfile = filename.replace(conf[run + '_cdf'], cachedir) + ext
         if os.path.exists(npfile):
             print("Reading " + npfile)
             Z = np.load(npfile)
@@ -164,7 +165,7 @@ def plot(time, parameter, arg3,
             if debug:
                 print("Interpolating {0:s} onto {1:d}x{2:d} grid" \
                       .format(parameter,len(x_1d),len(y_1d)))
-            Z = data2d(time, parameter, X, Y, [U1, U2, U3], debug=debug)
+            Z = data2d(run, time, parameter, X, Y, [U1, U2, U3], debug=debug)
             print("Writing " + npfile)
             np.save(npfile, Z)
             print("Wrote " + npfile)
@@ -181,7 +182,7 @@ def plot(time, parameter, arg3,
                 lineU[k, 2] = np.dot(line[k, :], U3)
             linesU.append(lineU)
         '''
-        lines = fieldlines(time, field_lines)
+        lines = fieldlines(run, time, field_lines)
         for line in lines:
             lineU = np.empty(line.shape)
             for k in range(line.shape[0]):  # TO DO: vectorize this loop
@@ -192,9 +193,14 @@ def plot(time, parameter, arg3,
 
     meta = util.filemeta(filename)
 
-    parameter_unit = meta["parameters"][parameter]['plot_unit']
-    parameter_label = meta["parameters"][parameter]['plot_name']
-    
+    if 'dB' in parameter:
+        parameter_unit = 'nT/R_e**3'
+        parameter_label = parameter
+    else:
+        parameter_unit = meta["parameters"][parameter]['plot_unit']
+        parameter_label = meta["parameters"][parameter]['plot_name']
+
+
     if axes is None:
         fig = plt.figure(figsize=(7, 6), dpi=dpi, tight_layout=False)
         axes = fig.gca()

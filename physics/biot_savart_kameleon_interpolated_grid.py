@@ -14,18 +14,12 @@ import biot_savart as bs
 import cxtransform as cx
 from units_and_constants import phys
 from probe import probe
-from util import tpad, time2filename
+import util
+from make_grid import make_grid, make_axes
 
-
-def integrate(time, mlat, mlon, filename=None, para=True,
-        xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.),
-        d=0.125,
-        dx=None, dy=None, dz=None,
-        N=None,
-        Nx=None, Ny=None, Nz=None,
-        L=None,
-        fullVolume=False, fineVolume=False,
-        print_output=False, tolerance=1e-13, tonpfile=False):
+def integrate(run, time_fname, mlat, mlon, para=True,
+        xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.125, 
+        tonpfile=False, returnAll=False):
     """
 
     Returns (Btot)
@@ -186,45 +180,50 @@ def integrate(time, mlat, mlon, filename=None, para=True,
     Ny = Ny_check
     Nz = Nz_check
 
+    if Nx*Ny*Nz > 513**3:
+        raise ValueError("number of points exceeds 513**3, potentially may run out of memory")
 
-    Gy, Gz = np.meshgrid(Y,Z)
-    Gy = Gy.flatten(order='C')
-    Gz = Gz.flatten(order='C')
+    if type(time_fname) == str:
+        filename = os.path.split(time_fname)[1]
+        time = util.CDFfilename2time(run, time_fname)
+    else:
+        time = time_fname
+        filepath = util.time2CDFfilename(run, time_fname)
+
+    util.dlfile(filepath, debug=True)
 
     x0 = cx.MAGtoGSM([1., mlat, mlon], time, 'sph', 'car')
     if print_output:
         print(x0)
 
-    if filename == None:
-        filename = time2filename(time) #!!!!!
-
     import tempfile
     os.system('rm ' + tempfile.gettempdir() + '/*dB_array_slice*')
 
-    def dBslice(i, debug=False):
-        Grid = np.column_stack([X[i]*np.ones(Gy.shape), Gy, Gz])
-        J_kameleon = probe(filename, Grid, var = ['jx','jy','jz'], library='kameleonV')
-        J = J_kameleon*(phys['muA']/phys['m']**2)
-        if debug:
-            print(Grid.shape)
-            print(J.shape)
-
-        dB = bs.deltaB('dB', x0, Grid, J, V_char = dx*dy*dz)
-        deltaB = np.sum(dB, axis=0)
-
-        if tonpfile:
-            npfname = tempfile.gettempdir() + '/dB_array_slice%d'%(i) + '.bin'
-            #if os.path.exists(npfname):
-            #    os.remove(npfname)
-            dB.tofile(npfname)
-
-        return deltaB
-
-    if print_output:
-        import time as t_module
-        to = t_module.time()
-
     if para:
+        #Gy, Gz = np.meshgrid(Y,Z)
+        #Gy = Gy.flatten(order='C')
+        #Gz = Gz.flatten(order='C')
+        G_s = make_grid(make_axes(xlims, ylims, zlims, d), slices=True)
+
+        def dBslice(i, debug=False):
+            #Grid = np.column_stack([X[i]*np.ones(Gy.shape), Gy, Gz])
+            J_kameleon = probe(filepath, G_s[i], var = ['jx','jy','jz'], library='kameleonV')
+            J = J_kameleon*(phys['muA']/phys['m']**2)
+            if debug:
+                print(G_s[i].shape)
+                print(J.shape)
+
+            dB_slice = bs.deltaB('dB', x0, G_s[i], J, V_char = dx*dy*dz)
+            #deltaB_slice = np.sum(dB, axis=0)
+
+            if tonpfile:
+                npfname = tempfile.gettempdir() + '/dB_array_slice%d'%(i) + '.bin'
+                #if os.path.exists(npfname):
+                #    os.remove(npfname)
+                dB_slice.tofile(npfname)
+
+            return dB_slice
+
         from joblib import Parallel, delayed
         import multiprocessing
         num_cores = multiprocessing.cpu_count()
@@ -232,16 +231,29 @@ def integrate(time, mlat, mlon, filename=None, para=True,
             num_cores = X.size
         print('Parallel processing {0:d} slices(s) using {1:d} cores'\
               .format(X.size, num_cores))
-        B_slices = Parallel(n_jobs=num_cores)(delayed(dBslice)(j) for j in range(X.size))
-        B_slices = np.array(B_slices) # was list of (3,) numpy arrays
-    else:
-        B_slices = np.nan*np.empty((X.size, 3))
-        for j in range(X.size):
-            B_slices[j,:] = dBslice(j)
+        dB_slices = Parallel(n_jobs=num_cores)(delayed(dBslice)(j) for j in range(X.size))
 
-    if print_output:
-        tf = t_module.time()
-    #print(B_slices.shape)
+        G = np.column_stack(G_s).reshape((Nx*Ny*Nz,3)) #this is equivalent to having used slices=False
+                                                        #see make_grid documentation, this 
+        dB = np.column_stack(dB_slices).reshape((Nx*Ny*Nz,3)) # stitch together dB's in matching way
+
+    else:
+        G = make_grid(make_axes(xlims, ylims, zlims, d), slices=False)
+        J_kameleon = probe(filepath, G, var = ['jx','jy','jz'], library='kameleon')
+        J = J_kameleon*(phys['muA']/phys['m']**2)
+        if debug:
+            print(G.shape)
+            print(J.shape)
+
+        dB = bs.deltaB('dB', x0, G, J, V_char = dx*dy*dz)
+
+    if returnAll:
+        return [dB, G, (Nx,Ny,Nz)]
+    else:
+        Btot = np.sum(dB, axis=0)
+        return Btot
+
+'''
 
     if print_output:
         print('Nx, Ny, Nz = {0:d}, {1:d}, {2:d}'.format(Nx,Ny,Nz))
@@ -254,10 +266,8 @@ def integrate(time, mlat, mlon, filename=None, para=True,
         print('Y[0], Y[-1], dy = {0:f}, {1:f}, {2:f}'.format(Y[0], Y[-1], dy))
         print('Z[0], Z[-1], dz = {0:f}, {1:f}, {2:f}'.format(Z[0], Z[-1], dz))
         print('para = ' + str(para))
-        print('time to process all slices (not including suming up) = {0:.5f} min'\
-                .format((tf-to)/60.))
 
-    Btot = np.sum(B_slices, axis=0)
+
     if print_output:
         print('Btot = \n' + str(Btot))
         print('Btot_norm = ' + str(np.linalg.norm(Btot)))
@@ -271,6 +281,40 @@ def integrate(time, mlat, mlon, filename=None, para=True,
             f.close()
 
     return Btot
+'''
+
+def dB_dV_slice(run, time_fname, mlat, mlon, u, v, U, returnAll=False):
+    U1 = U[0]
+    U2 = U[1]
+    U3 = U[2]
+    if isinstance(u, float):
+        G = u*U1 + v*U2
+    else:
+        G = np.einsum('i,j->ij', u, U1) + np.einsum('i,j->ij', v, U2)
+    
+
+    if type(time_fname) == str:
+        filename = os.path.split(time_fname)[1]
+        time = util.CDFfilename2time(run, time_fname)
+    else:
+        time = time_fname
+        filepath = util.time2CDFfilename(run, time_fname)
+
+    util.dlfile(filepath, debug=True)
+
+    x0 = cx.MAGtoGSM([1., mlat, mlon], time, 'sph', 'car')
+
+    J_kameleon = probe(filepath, G, var = ['jx','jy','jz'], library='kameleon')
+    J = J_kameleon*(phys['muA']/phys['m']**2)
+
+    dB = bs.deltaB('dB', x0, G, J, V_char = 1.)
+
+    if returnAll:
+        return [dB, G, None]
+    else:
+        Btot = np.sum(dB, axis=0)
+        return Btot
+  
 
 
 def toMAGLocalComponents(time, mlat, mlon, dB):
@@ -281,7 +325,8 @@ def toMAGLocalComponents(time, mlat, mlon, dB):
 
     # time is Nx6 and dB is Nx3  mlat, mlon are numbers
     N = time.shape[0]
-    assert(time.shape == (N,6))
+    print('time.shape == ' + str(time.shape))
+    #assert(time.shape == (N,6))
     assert(dB.shape == (N,3))
     station_pos = cx.MAGtoGSM(np.array([1., mlat, mlon]), time, 'sph', 'car')
     assert( station_pos.shape == (N, 3) ) # check

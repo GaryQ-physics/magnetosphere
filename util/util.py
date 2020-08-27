@@ -73,9 +73,22 @@ def time2datetime(t):
         return dt.datetime(int(t[0]), int(t[1]), int(t[2]), int(t[3]), int(t[4]), int(t[5]), int(t[6]))    
 
             
-def filename2time(filename):
+def CDFfilename2time(run, filename): #TODO: finish
     """Extract time stamp from file name"""
+    if run == 'SCARR5':
+        tstr = filename[11:] 
+        y, m, d = int(tstr[0:4]), int(tstr[4:6]), int(tstr[6:8])
+        h, M, s = int(tstr[9:11]), int(tstr[11:13]), int(tstr[13:15])
+        f = int(tstr[16:19])
+        return [y, m, d, h, M, s, f]
+    if run == 'CARR_IMPULSE':
+        if filename == '3d__var_2_e20190902-063000-009.out.cdf':
+            return [2019, 9, 2, 6, 30, 0, 9]
+        else:
+            return None
 
+def filename2time(filename): #TODO: finish
+    """Extract time stamp from file name"""
     tstr = filename[11:] 
     y, m, d = int(tstr[0:4]), int(tstr[4:6]), int(tstr[6:8])
     h, M, s = int(tstr[9:11]), int(tstr[11:13]), int(tstr[13:15])
@@ -201,28 +214,31 @@ def timelist(listtxt='ls-1.txt'):
     return times
 
 
-def filelist(listtxt='ls-1.txt'):
+def filelist(run):
+    if run == 'CARR_IMPULSE':
+        return ['3d__var_2_e20190902-063000-009.out.cdf']
 
-    # Get list of run files
-    urlretrieve(conf['run_url'] + listtxt, conf['run_path'] + listtxt)
-    
-    # Read list of run files
-    ls = conf['run_path'] + listtxt
-    print('Reading ' + ls)
-    with open(ls,'r') as f:
-        files = f.readlines()
-    print('Read ' + ls)
-    
-    # Keep only certain files
-    i = 0
-    while i < len(files):
-        files[i] = files[i].rstrip()
-        if not files[i][0:9] == '3d__var_3':
-            files.pop(i)
-        else:
-            i = i + 1
+    if run == 'SCARR5':
+        listtxt = 'ls-2.txt'
+        # Get list of run files
+        #urlretrieve(conf['run_url'] + listtxt, conf['run_path'] + listtxt)
+        # Read list of run files
+        ls = conf[run + '_cdf'] + listtxt
+        print('Reading ' + ls)
+        with open(ls,'r') as f:
+            files = f.readlines()
+        print('Read ' + ls)
+        
+        # Keep only certain files
+        i = 0
+        while i < len(files):
+            files[i] = files[i].rstrip()
+            if not files[i][0:9] == '3d__var_3':
+                files.pop(i)
+            else:
+                i = i + 1
 
-    return files
+        return files
 
 
 def urlretrieve(url, fname):

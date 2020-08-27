@@ -160,15 +160,8 @@ def dB_kam_tofile(run, station, time_common, filenames, debug=False, tag=None, x
             mlon = station[1]
             #filename_full = conf['run_path'] + filename
 
-        filename_full = conf[run + '_cdf'] + filename
-        util.dlfile(filename_full, debug=True)
-
-        print(time)
-        print(filename)
-
-        dB_kam[i,:] = bsk.integrate(time, mlat, mlon, filename=filename_full, para=True,
-            xlims=xlims, ylims=ylims, zlims=zlims, d=d,
-            print_output=True)
+        dB_kam[i,:] = bsk.integrate(run, time, mlat, mlon, para=False,
+            xlims=xlims, ylims=ylims, zlims=zlims, d=d, returnAll=False)
 
         f.write(str(time)[1:-1] + '   ' + str(dB_kam[i,:])[1:-1] + '\n')
 

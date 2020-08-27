@@ -48,6 +48,7 @@ def deltaB(variable, x0, X, J, V_char = 1.):
     '''
     return np.nan
 
+'''
 def B_EW(x0, X, J, Npole, dV_grid):
     Npole=np.array(Npole)
 
@@ -58,7 +59,9 @@ def B_EW(x0, X, J, Npole, dV_grid):
     print(list(a2))
     deltaBnT = deltaB('deltaB', x0, X, J, V_char=dV_grid)/phys['nT']
     return np.dot(deltaBnT,a2)
+'''
 
+'''
 def make_grid(xlims, ylims, zlims, dx, dy, dz):
     if len(xlims) == 2:
         no_origin = xlims[0] > 0. or xlims[1] < 0. or ylims[0] > 0. or ylims[1] < 0. or zlims[0] > 0. or zlims[1] < 0.
@@ -106,3 +109,4 @@ def make_grid(xlims, ylims, zlims, dx, dy, dz):
     cell_inds = np.column_stack((D1, D2, D3))
 
     return [Bgrid, Nx, Ny, Nz, cell_inds, inds]
+'''

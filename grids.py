@@ -1,6 +1,33 @@
 import numpy as np
 import time as tm
 
+def make_grid(X, Y, Z, slices = False):
+
+    if slices:
+        Gy, Gz = np.meshgrid(Y,Z)
+        Gy = Gy.flatten(order='C')
+        Gz = Gz.flatten(order='C')
+
+        ret = []
+        for i in range(X.size):
+            Grid = np.column_stack([X[i]*np.ones(Gy.shape), Gy, Gz])
+            ret.append(Grid)
+        return ret
+
+    else: 
+        Nx = X.size
+        Ny = Y.size
+        Nz = Z.size
+
+        B2, B3, B1 = np.meshgrid(Y, Z, X)
+        #B1, B2, B3 = np.meshgrid(X, Y, Z) # seems more natural but doesnt work with vtk structured_grid format
+        B1 = B1.flatten(order='C')
+        B2 = B2.flatten(order='C')
+        B3 = B3.flatten(order='C')
+        return np.column_stack((B1, B2, B3))
+
+
+
 def paralelized_grids(X, Y, Z):
 
     Gy, Gz = np.meshgrid(Y,Z)
@@ -49,7 +76,7 @@ def grid_in_biot_savart(X, Y, Z):
 
     return Bgrid
 
-n = 1024 + 1
+n = 124 + 1
 print(n)
 #ar = np.arange(n)
 ar = np.linspace(0,1,n)
@@ -71,6 +98,12 @@ print(tm.time()-to)
 print(np.all(G4 == G1))
 
 '''
+print(G1.shape)
+print(len(G2l))
+print(G2l[0].shape)
+print(G2.shape)
+print(G3.shape)
+
 print(G1)
 print(G2l)
 print(G2)

@@ -33,9 +33,9 @@ conf = {
 
         'SWPC_cdf': storage + 'data/SWPC_SWMF_052811_2/GM_CDF/', # = SWPC_cdf_path
         'SWPC_derived': storage + 'data/SWPC_SWMF_052811_2-derived/',
-        'SCARR5_cdf': storage + 'data/SCARR5_GM_IO2/IO2/', # = run_path
-        'SCARR5_derived': storage + 'data/SCARR5_GM_IO2-derived/', # = run_path_derived
-        'SCARR1_magfile': storage + 'data/SCARR5_GM_IO2/IO2/',
+        'SCARR5_cdf': storage + 'data/SCARR5/GM/IO2/', # = run_path
+        'SCARR5_derived': storage + 'data/SCARR5-derived/', # = run_path_derived
+        #'SCARR1_magfile': storage + 'data/SCARR5_GM_IO2/IO2/',
         'SCARR1_cdf': storage + 'data/SCARR1/tmp/',
         'SCARR1_magfile': storage + 'data/SCARR1/MAG_FILES/',
         'SCARR1_derived': storage + 'data/SCARR1-derived/',

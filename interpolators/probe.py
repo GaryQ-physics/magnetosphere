@@ -28,7 +28,7 @@ def interpolate(filename, variable, Q, library)
         ii.interpolate(Q[:,0], Q[:,1], variable, filename)
 '''
 
-def probe(time, P, var=None, debug=False, dictionary=False, library='kameleonV'):
+def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleonV'):
     """
     library = 'kameleonV', 'kameleon', 'pycdf'
     """
@@ -36,10 +36,11 @@ def probe(time, P, var=None, debug=False, dictionary=False, library='kameleonV')
     if P.shape == (3, ):
         P = np.array([P])
 
-    if type(time) == str:
-        filename = time
-    else:
-        filename = util.time2filename(time) #!!!!!!
+    assert(filename[0] == '/')
+    #if type(time) == str:
+    #    filename = filename
+    #else:
+    #    filename = util.time2filename(filename) #!!!!!!
 
     if not os.path.exists(filename):
         raise ValueError('Not found: ' + filename)

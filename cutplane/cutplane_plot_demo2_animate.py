@@ -11,16 +11,18 @@ if not sys.version_info[0] == 3 and sys.version_info[1] >= 5:
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 
+run = 'SCARR5'
+
 # TODO: Generate list based on subdirectories (and exclude directory minmax.)
-vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
-#vars = ['p']
-delta = 0.1
-plot_type = 2
+variables = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
+#variables = ['p']
+delta = 0.125
+plot_type = 1
 pattern = 'type_{0:d}_delta_{1:.3f}'.format(plot_type, delta)
 #pattern = '{0:.3f}'.format(delta)
 
-for var in vars:
-    image_dir = conf['run_path_derived'] + "cutplanes/" + var + "/"
+for var in variables:
+    image_dir = conf[run + '_derived'] + "cutplanes/" + var + "/"
     image_path = Path(image_dir)
     
     print('Reading list of files in ' + image_dir)
@@ -44,7 +46,7 @@ for var in vars:
         k = k + 1
     
     print('Generating mp4 using {0:d} files'.format(len(image_list)))
-    outfile = conf['run_path_derived'] + "cutplanes/" + \
+    outfile = conf[run + '_derived'] + "cutplanes/" + \
                     var + "-" + pattern + '.mp4'
     print('Writing ' + outfile)
     imageio.mimwrite(outfile, image_list)
