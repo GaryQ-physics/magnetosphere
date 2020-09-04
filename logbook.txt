@@ -1,0 +1,36 @@
+logbook
+
+
+runs:
+
+    SWPC:
+
+        have plotted multiple files with cutplane_plot
+
+        have plotted dB vs time at stations and matches SWMF file, with bs_compare_SWMF_kameleon
+
+        
+
+
+    SCARR5:
+
+
+
+
+    SCARR1:
+
+
+
+    CARR_IMPULSE:
+
+        have plotted one file with cutplane_plot
+
+
+
+
+Notes:
+
+2020/09/03
+    cutplane_plot_demo5 is like _demo2 but parallelizes by files. Tested with SWPC
+
+

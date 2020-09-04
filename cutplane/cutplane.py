@@ -34,7 +34,7 @@ dz = 0.3
 
 
 
-def data_in_U(run, time, variable, u, v, U, mlat=0., mlon=0.):
+def data_in_U(run, time, variable, u, v, U, mlat=0., mlon=0., Vchar=0.125**3):
     """Data in U coordinates"""
 
     U1 = U[0]
@@ -58,11 +58,10 @@ def data_in_U(run, time, variable, u, v, U, mlat=0., mlon=0.):
         print('X.shape =' + str(X.shape))
         ret = bsk.dB_dV_slice(run, time, mlat, mlon, u, v, U, returnAll=True)
         if variable == 'dB_Magnitude':
-            print(ret[0])
             print('dB.shape =' + str(ret[0].shape))
-            return np.sqrt(np.einsum('ij,ij->i',ret[0], ret[0]))
+            return np.sqrt(np.einsum('ij,ij->i',Vchar*ret[0], Vchar*ret[0]))
         else:
-            dB_loc = bsk.toMAGLocalComponents(time, mlat, mlon, ret[0])
+            dB_loc = bsk.toMAGLocalComponents(time, mlat, mlon, Vchar*ret[0])
             if variable == 'dB_north':
                 return dB_loc[:, 0]
             if variable == 'dB_east':
@@ -76,11 +75,11 @@ def data_in_U(run, time, variable, u, v, U, mlat=0., mlon=0.):
         return probe(util.time2CDFfilename(run,time), X, var=variable, library='kameleon')
 
 
-def data2d(run, time, parameter, X, Y, U, debug=False):
+def data2d(run, time, parameter, X, Y, U, debug=False, mlat=0., mlon=0.):
 
     # grid of the corresponding values of variable. To be color plotted
     Z = data_in_U(run, time, parameter,
-                        X.flatten(), Y.flatten(), U)
+                        X.flatten(), Y.flatten(), U, mlat=mlat, mlon=mlon)
 
     return Z.reshape(X.shape)
 

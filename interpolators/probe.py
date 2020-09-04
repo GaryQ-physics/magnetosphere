@@ -8,25 +8,19 @@ from config import conf
 #from util import time2filename, filemeta
 import util
 
-'''
-def interpolate(filename, variable, Q, library)
-    if library == 'kameleonV':
-        return kameleonV.interpolate(filename, Q[:,0], Q[:,1], Q[:,2], variable)
+TESTANALYTIC = False
 
-    if library == 'kameleon':
-        kameleon = ccmc.Kameleon()
-        kameleon.open(filename)
-        interpolator = kameleon.createNewInterpolator()
+def J_analytic(X):
+    '''
+    M = #giv
+    amin = #giv
+    amax = #giv
+    a = amax-amin
+    w = #comp 
+    J ~ X cross w if amin<X<amax
+    '''
+    pass #X is Nx3
 
-        kameleon.loadVariable(variable)
-        arr = np.nan*np.empty((P.variable[0],))
-        for k in range(Q.shape[0]):
-            arr[k] = interpolator.interpolate(variable, Q[k,0], Q[k,1], Q[k,2])
-        return arr
-
-    if library == 'pycdf'
-        ii.interpolate(Q[:,0], Q[:,1], variable, filename)
-'''
 
 def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleonV'):
     """
@@ -62,11 +56,21 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
 
 
     ################### define interpolate(variable, Q) funtion within this probe
-    if library == 'kameleonV':
+    if TESTANALYTIC:
+        def interpolate(variable, Q):
+            J_an = J_analytic(Q)
+            if variable == 'jx':
+                return J_an[:, 0]
+            if variable == 'jy':
+                return J_an[:, 1]
+            if variable == 'jz':
+                return J_an[:, 2]
+
+    elif library == 'kameleonV':
         def interpolate(variable, Q):
             return kameleonV.interpolate(filename, Q[:,0], Q[:,1], Q[:,2], variable)
 
-    if library == 'kameleon':
+    elif library == 'kameleon':
         kameleon = ccmc.Kameleon()
         kameleon.open(filename)
         interpolator = kameleon.createNewInterpolator()
@@ -78,7 +82,7 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
                 arr[k] = interpolator.interpolate(variable, Q[k,0], Q[k,1], Q[k,2])
             return arr
 
-    if library == 'pycdf':
+    elif library == 'pycdf':
         def interpolate(variable, Q):
             return ii.interpolate(Q[:,0], Q[:,1], variable, filename)
     ###################

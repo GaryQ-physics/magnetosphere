@@ -66,7 +66,7 @@ def plot(run, time, parameter, arg3,
          xticks=None, yticks=None, zticks=None,
          dx=0.1, dy=0.1,
          dpi=100, showplot=True,
-         png=True, pngfile=None, debug=False):
+         png=True, pngfile=None, debug=False, mlat_dB=0., mlon_dB=0.):
 
     """
     # Plot p in x-z plane
@@ -95,20 +95,23 @@ def plot(run, time, parameter, arg3,
     xlabel = ''
     ylabel = ''
     title = run + ' %04d-%02d-%02dT%02d:%02d:%02d.%03d' % tuple(time)
+    if 'dB' in parameter:
+        import cxtransform as cx
+        title = title + '\nfor mlat=%.3f, mlon=%.3f, MLT=%.3f hrs'%(mlat_dB, mlon_dB, cx.MAGtoMLT(mlon_dB, time))
     if type(arg3) == str:
         if arg3 == 'xy':
-            xlabel = 'X [$R_E$]'
-            ylabel = 'Y [$R_E$]'
+            xlabel = '$X_GSM$ [$R_E$]'
+            ylabel = '$Y_GSM$ [$R_E$]'
             U1 = np.array([1, 0, 0])
             U2 = np.array([0, 1, 0])
         if arg3 == 'xz':
-            xlabel = 'X [$R_E$]'
-            ylabel = 'Z [$R_E$]'
+            xlabel = '$X_GSM$ [$R_E$]'
+            ylabel = '$Z_GSM$ [$R_E$]'
             U1 = np.array([1, 0, 0])
             U2 = np.array([0, 0, 1])
         if arg3 == 'yz':
-            xlabel = 'Y [$R_E$]'
-            ylabel = 'Z [$R_E$]'
+            xlabel = '$Y_GSM$ [$R_E$]'
+            ylabel = '$Z_GSM$ [$R_E$]'
             U1 = np.array([0, 1, 0])
             U2 = np.array([0, 0, 1])
     else:
@@ -154,6 +157,8 @@ def plot(run, time, parameter, arg3,
                 + '-ylims' + str(ylims[0]) + ',' + str(ylims[1]) \
                 + '.npy'
         cachedir = conf[run + '_derived'] + "cutplanes/cache/" + parameter + "/"
+        if 'dB' in parameter:
+            cachedir = cachedir + '_%.3f_%.3f/'%(mlat_dB, mlon_dB)
         if not os.path.exists(cachedir):
             os.makedirs(cachedir)
         npfile = filename.replace(conf[run + '_cdf'], cachedir) + ext
@@ -165,7 +170,8 @@ def plot(run, time, parameter, arg3,
             if debug:
                 print("Interpolating {0:s} onto {1:d}x{2:d} grid" \
                       .format(parameter,len(x_1d),len(y_1d)))
-            Z = data2d(run, time, parameter, X, Y, [U1, U2, U3], debug=debug)
+            Z = data2d(run, time, parameter, X, Y, [U1, U2, U3], 
+                            debug=debug, mlat=mlat_dB, mlon=mlon_dB)
             print("Writing " + npfile)
             np.save(npfile, Z)
             print("Wrote " + npfile)
@@ -194,8 +200,17 @@ def plot(run, time, parameter, arg3,
     meta = util.filemeta(filename)
 
     if 'dB' in parameter:
-        parameter_unit = 'nT/R_e**3'
-        parameter_label = parameter
+        #dB_param_dict = {'dB_Magnitude' : '$|\\frac{dB}{dV}|$',
+        #                 'dB_north' : '$\\frac{dB_N}{dV}$',
+        #                 'dB_east' : '$\\frac{dB_E}{dV}$', 
+        #                 'dB_down' : '$\\frac{dB_D}{dV}$'}
+        #parameter_unit = '$\\frac{nT}{R_E^3}$'
+        dB_param_dict = {'dB_Magnitude' : '$|dB|$',
+                         'dB_north' : '$dB_N$',
+                         'dB_east' : '$dB_E$', 
+                         'dB_down' : '$dB_D$'}
+        parameter_unit = '$nT$'
+        parameter_label = dB_param_dict[parameter] # get dictionary
     else:
         parameter_unit = meta["parameters"][parameter]['plot_unit']
         parameter_label = meta["parameters"][parameter]['plot_name']

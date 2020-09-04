@@ -19,7 +19,7 @@ from make_grid import make_grid, make_axes
 
 def integrate(run, time_fname, mlat, mlon, para=True,
         xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.125, 
-        tonpfile=False, returnAll=False):
+        tonpfile=False, returnAll=False, debug=True):
     """
 
     Returns (Btot)
@@ -90,98 +90,14 @@ def integrate(run, time_fname, mlat, mlon, para=True,
         Note if fineVolume=True, this is overidden to 0.
 
     """
-    ###### make X, Y, and Z ###########################
-    assert(not (fullVolume and spacepy))
 
-    if fineVolume:
-        L = 3.96875
-        d = 0.0625
-        N = 128
-        assert((L+L)/(N-1) == d)
-        assert((2*L)/(N-1) == d)
-        tolerance = 0.
-    if fullVolume:
-        xlims = (-224., 32.)
-        ylims = (-128., 128.)
-        zlims = (-128., 128.)
+    ax_list = make_axes(xlims, ylims, zlims, d)
+    Nx = ax_list[0].size
+    Ny = ax_list[1].size
+    Nz = ax_list[2].size
 
-    if L != None:
-        xlims = (-L, L)
-        ylims = (-L, L)
-        zlims = (-L, L)
-
-    if N != None:
-        Nx = N
-        Ny = N
-        Nz = N
-
-    if d != None:
-        dx = d
-        dy = d
-        dz = d
-
-
-    assert(xlims!=None and ylims!=None and zlims!=None)
-
-    if Nx != None:
-        X = np.linspace(xlims[0], xlims[1], Nx)
-    elif dx != None:
-        X = np.arange(xlims[0], xlims[1] + dx, dx)
-        #X = np.arange(xlims[0], xlims[1], dx, endpoint=True) doesnt work
-    else:
-        assert(False)
-
-    if Ny != None:
-        Y = np.linspace(ylims[0], ylims[1], Ny)
-    elif dy != None:
-        Y = np.arange(ylims[0], ylims[1] + dy, dy)
-    else:
-        assert(False)
-
-    if Nz != None:
-        Z = np.linspace(zlims[0], zlims[1], Nz)
-    elif dz != None:
-        Z = np.arange(zlims[0], zlims[1] + dz, dz)
-    else:
-        assert(False)
-
-    dx_check = X[1]-X[0]
-    dy_check = Y[1]-Y[0]
-    dz_check = Z[1]-Z[0]
-    x_range_check = X[-1]-X[0]
-    y_range_check = Y[-1]-Y[0]
-    z_range_check = Z[-1]-Z[0]
-    Nx_check = X.size
-    Ny_check = Y.size
-    Nz_check = Z.size
-
-    assert(Nx_check == Nx or Nx == None)
-    if dx != None:
-        assert(np.abs(dx_check - dx) <= tolerance)
-    assert(np.abs(xlims[1] - xlims[0] - x_range_check) <= tolerance)
-
-    assert(Ny_check == Ny or Ny == None)
-    if dy != None:
-        assert(np.abs(dy_check - dy) <= tolerance or dy == None)
-    assert(np.abs(ylims[1] - ylims[0] - y_range_check) <= tolerance)
-
-    assert(Nz_check == Nz or Nz == None)
-    if dz != None:
-        assert(np.abs(dz_check - dz) <= tolerance or dz == None)
-    assert(np.abs(zlims[1] - zlims[0] - z_range_check) <= tolerance)
-
-    ############################################
-
-    dx = dx_check
-    dy = dy_check
-    dz = dz_check
-
-    Nx = Nx_check
-    Ny = Ny_check
-    Nz = Nz_check
-
-    if Nx*Ny*Nz > 513**3:
-        raise ValueError("number of points exceeds 513**3, potentially may run out of memory")
+    if Nx*Ny*Nz > 257**3:
+        raise ValueError("number of points exceeds 257**3, potentially may run out of memory")
 
     if type(time_fname) == str:
         filename = os.path.split(time_fname)[1]
@@ -193,8 +109,6 @@ def integrate(run, time_fname, mlat, mlon, para=True,
     util.dlfile(filepath, debug=True)
 
     x0 = cx.MAGtoGSM([1., mlat, mlon], time, 'sph', 'car')
-    if print_output:
-        print(x0)
 
     import tempfile
     os.system('rm ' + tempfile.gettempdir() + '/*dB_array_slice*')
@@ -203,7 +117,7 @@ def integrate(run, time_fname, mlat, mlon, para=True,
         #Gy, Gz = np.meshgrid(Y,Z)
         #Gy = Gy.flatten(order='C')
         #Gz = Gz.flatten(order='C')
-        G_s = make_grid(make_axes(xlims, ylims, zlims, d), slices=True)
+        G_s = make_grid(ax_list, slices=True)
 
         def dBslice(i, debug=False):
             #Grid = np.column_stack([X[i]*np.ones(Gy.shape), Gy, Gz])
@@ -238,14 +152,18 @@ def integrate(run, time_fname, mlat, mlon, para=True,
         dB = np.column_stack(dB_slices).reshape((Nx*Ny*Nz,3)) # stitch together dB's in matching way
 
     else:
-        G = make_grid(make_axes(xlims, ylims, zlims, d), slices=False)
-        J_kameleon = probe(filepath, G, var = ['jx','jy','jz'], library='kameleon')
+        G = make_grid(ax_list, slices=False)
+        if debug:
+            print('done G')
+
+        J_kameleon = probe(filepath, G, var = ['jx','jy','jz'], library='kameleonV')
         J = J_kameleon*(phys['muA']/phys['m']**2)
         if debug:
-            print(G.shape)
-            print(J.shape)
+            print('done J')
 
-        dB = bs.deltaB('dB', x0, G, J, V_char = dx*dy*dz)
+        dB = bs.deltaB('dB', x0, G, J, V_char = d**3)
+        if debug:
+            print('done dB')
 
     if returnAll:
         return [dB, G, (Nx,Ny,Nz)]
@@ -318,6 +236,9 @@ def dB_dV_slice(run, time_fname, mlat, mlon, u, v, U, returnAll=False):
 
 
 def toMAGLocalComponents(time, mlat, mlon, dB):
+    if dB.shape == (3,):
+        return toMAGLocalComponents(time, mlat, mlon, np.array([dB]))[0,:]
+
     time = np.array(time, dtype=int)
 
     if len(time.shape) == 1 and len(dB.shape) > 1:
@@ -326,7 +247,7 @@ def toMAGLocalComponents(time, mlat, mlon, dB):
     # time is Nx6 and dB is Nx3  mlat, mlon are numbers
     N = time.shape[0]
     print('time.shape == ' + str(time.shape))
-    #assert(time.shape == (N,6))
+    assert(time.shape[0] == N)
     assert(dB.shape == (N,3))
     station_pos = cx.MAGtoGSM(np.array([1., mlat, mlon]), time, 'sph', 'car')
     assert( station_pos.shape == (N, 3) ) # check
@@ -345,10 +266,23 @@ def toMAGLocalComponents(time, mlat, mlon, dB):
     U2 = np.cross(U3, U1)
     assert(U1.shape == (N, 3)) #check
 
+    #print(U1)
+    #print(U2)
+    #print(U3)
+
     R = np.empty((N, 3, 3))
-    R[:,:,0] = U2
-    R[:,:,1] = U1
-    R[:,:,2] = -U3
+    R[:, :, 0] = U2
+    R[:, :, 1] = U1
+    R[:, :, 2] = -U3
+    
+    R = np.linalg.inv(R)
+    
+    #for i in range(N):
+        #R[i,:,0] = U2[i,:]
+        #R[i,:,1] = U1[i,:]
+        #R[i,:,2] = -U3[i,:]
+    #    M = np.column_stack([U2[i,:], U1[i,:], -U3[i,:]])
+    #    R[i, :, :] = np.linalg.inv(M)
 
     dB_rot = np.einsum('ijk,ik->ij', R, dB)
     return dB_rot

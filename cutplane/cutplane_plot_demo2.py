@@ -33,13 +33,10 @@ from config import conf
 
 from niceticks import niceticks
 import cutplane_plot as cp
-from util import filelist, CDFfilename2time, dlfile, time2datetime, filemeta
-#from events import eventlist
+import util
 
-run = "CARR_IMPULSE"
+run = "SWPC"
 #run = "SCARR5"
-
-#event_list = eventlist()
 
 debug         = True  # Show extra logging information
 para          = False  # Process in parallel using all CPUs
@@ -47,7 +44,7 @@ showplot      = False  # Show plot on screen. Set to false for long runs.
                        # Does not always work in Spyder/IPython, especially when
                        # para=True. Starting a new console sometimes fixes.
                        # TODO: Read PNG and display using PIL instead.
-plot_type     = 1
+plot_type     = 2
 
 # Testing options
 first_only    = False  # Do only low-res first processing
@@ -56,6 +53,8 @@ test_serial   = True   # Process few files in serial
 test_parallel = False  # Process few files in parallel
 
 variables = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
+
+
 
 opts = {
         'regen': True,       # Regenerate image even if found
@@ -80,9 +79,12 @@ if first_only and second_only:
 
 if test_serial:
     para = False
-    variables = ['p', 'dB_Magnitude', 'dB_north', 'dB_east', 'dB_down']
+
+    #variables = ['p', 'dB_Magnitude']
+    variables = ['jx','jy','jz','p', 'dB_Magnitude', 'dB_north', 'dB_east', 'dB_down']
+
     opts["nf"] = 2
-    opts["showplot"] = False
+    opts["showplot"] = True
 
 if test_parallel:
     para = True
@@ -95,6 +97,15 @@ if test_parallel:
 
 def process_var(var, opts):
 
+    if 'dB' in var:
+        var_name = var + '_mlat_%.3f_mlon_%.3f'%(opts['mlat_dB'], opts['mlon_dB'])
+    else:
+        var_name = var
+
+    filename_path = conf[run + "_derived"] + "cutplanes/" + var_name
+    if not os.path.exists(filename_path):
+        os.makedirs(filename_path)
+
     k = 1
     times = []
     minmax = {'min': np.nan*np.empty(len(files)),
@@ -106,22 +117,24 @@ def process_var(var, opts):
                     }
               }
 
-    if plot_type == 2:
-        dto = time2datetime(filename2time(files[0]))
-        dtf = time2datetime(filename2time(files[-1]))
+    if plot_type == 2: # todo: optimize
+        dto = util.time2datetime(util.CDFfilename2time(run, files[0]))
+        dtf = util.time2datetime(util.CDFfilename2time(run, files[-1]))
         dts = []
+        print('1st dts = ' + str(dts))
         data = {'ux': [], 'bz': [], 'n_events': []}
 
     for filename in files:
-
+        print('k = ' + str(k))
         if k > opts['nf']:
             break
 
-        filename_png = conf[run + "_derived"] + "cutplanes/" + var + "/" \
-                        + '{0:s}-{1:s}-type_{2:d}_delta_{3:.3f}.png' \
-                        .format(filename, var, plot_type, opts['delta'])
 
-        pkl = conf[run + "_derived"] + "cutplanes/minmax/" + var + '.pkl'
+        filename_png = conf[run + "_derived"] + "cutplanes/" + var_name + "/" \
+                        + '{0:s}-{1:s}-type_{2:d}_delta_{3:.3f}.png' \
+                        .format(filename, var_name, plot_type, opts['delta'])
+
+        pkl = conf[run + "_derived"] + "cutplanes/minmax/" + var_name + '.pkl'
 
         zticks = opts['zticks']
         if os.path.exists(pkl):
@@ -145,9 +158,9 @@ def process_var(var, opts):
             k = k + 1
             continue
 
-        times.append(CDFfilename2time(run, filename))
+        times.append(util.CDFfilename2time(run, filename))
 
-        dlfile(conf[run + '_cdf'] + filename, debug=debug)
+        util.dlfile(conf[run + '_cdf'] + filename, debug=debug)
 
         if plot_type == 1:
             info = cp.plot(run, times[-1], var, opts['plane'],
@@ -155,7 +168,8 @@ def process_var(var, opts):
                              xlims=opts['xlims'], ylims=opts['ylims'],
                              dpi=opts['dpi'], showplot=opts['showplot'],
                              zticks=zticks, logz=True,
-                             png=True, pngfile=filename_png, debug=debug)
+                             png=True, pngfile=filename_png, debug=debug,
+                             mlat_dB=opts['mlat_dB'], mlon_dB=opts['mlon_dB'])
         elif plot_type == 2:
 
             def set_ylims(p, axes=None):
@@ -191,9 +205,13 @@ def process_var(var, opts):
             #from pandas.plotting import register_matplotlib_converters
             #register_matplotlib_converters()
             
-            if len(dts) < 1:
+            print('2nd dts = ' + str(dts))
+            print('len(dts) = ' + str(len(dts)))
+            if len(dts) < 1: ##!!! just continues everything
+                k = k+1
                 continue
-            
+            print('3rd dts = ' + str(dts))
+
             from matplotlib import pyplot as plt
             from hapiclient.plot.datetick import datetick
             from cutplane import probe
@@ -207,10 +225,11 @@ def process_var(var, opts):
                              logz=True,
                              showplot=opts['showplot'],
                              zticks=zticks,
-                             debug=debug)
+                             debug=debug, 
+                             mlat_dB=opts['mlat_dB'], mlon_dB=opts['mlon_dB'])
             
             time = filename2time(filename)
-            dts.append(time2datetime(time))
+            dts.append(util.time2datetime(time))
             
             # Sample upstream solar wind
             # TODO: Generalize code to allow plotting arbitrary number
@@ -230,7 +249,7 @@ def process_var(var, opts):
             data['bz'].append(d['bz'])
             data['n_events'].append(d['n_events'])
 
-            meta = filemeta(filename)
+            meta = util.filemeta(filename)
         
             axes = fig.add_axes([0.07, 0.1, 0.9, 0.18])
             axes.plot(dts, data['bz'], 'k')
@@ -334,13 +353,13 @@ if not os.path.exists(filename_path):
 
 print('Image files will be written to subdirectory of\n' + filename_path)
 # Create directory for each variable
-for var in variables:
-    filename_path = conf[run + "_derived"] + "cutplanes/" + var
-    if not os.path.exists(filename_path):
-        os.makedirs(filename_path)
+#for var in variables:
+#    filename_path = conf[run + "_derived"] + "cutplanes/" + var
+#    if not os.path.exists(filename_path):
+#        os.makedirs(filename_path)
 
 
-files = filelist(run)
+files = list(util.get_available_slices(run)[0])
 
 print('{0:d} files found.'.format(len(files)))
 
@@ -357,6 +376,17 @@ for var in variables:
     # .copy to ensure thread safety.
     # Currently not needed b/c opts is not modified.
     Opts[var] = opts.copy()
+    if 'dB' in var:
+        import magnetometers as mg
+        if run == 'CARR_IMPULSE':
+            fixed_time = (2019,9,2,6,30,0)
+            pos = mg.GetMagnetometerLocation('colaba', fixed_time, 'MAG', 'sph')
+        Opts[var]['mlat_dB'] = 0. #pos[1]  # HERES WHERE MLAT MLON ARE SET
+        Opts[var]['mlon_dB'] = 0. #pos[2]
+    else:
+        Opts[var]['mlat_dB'] = None
+        Opts[var]['mlon_dB'] = None
+
 
 if not second_only:
     print('First processing.')
@@ -364,6 +394,7 @@ if not second_only:
         Opts[var]['delta'] = opts['delta1']
         Opts[var]['dpi'] = opts['dpi1']
 
+    print(Opts)
     process_all(Opts)
 
 if not first_only:
