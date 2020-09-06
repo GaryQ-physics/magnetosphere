@@ -236,5 +236,5 @@ def main(run):
         process(files, variables, para=para, process_type=2)
 
 if __name__ == '__main__':
-    main('SWPC')
+    main('DIPTSUR2')
 
