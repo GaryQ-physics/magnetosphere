@@ -72,7 +72,7 @@ def time2datetime(t):
     if len(t) == 7:
         return dt.datetime(int(t[0]), int(t[1]), int(t[2]), int(t[3]), int(t[4]), int(t[5]), int(t[6]))    
 
-
+'''
 def filename2time(filename): #TODO: finish
     """Extract time stamp from file name"""
     tstr = filename[11:] 
@@ -90,7 +90,7 @@ def time2filename(time, extension='.out.cdf', split=False):
         return filename
     return conf["run_path"] + filename
 
-'''
+
 def time2SWPCfile(time):
     import numpy as np
     t = np.array(time)
@@ -155,7 +155,7 @@ def get_available_station_times(run, station):
     if run == 'SWPC':
         if type(station) != str:
             raise ValueError('to get data from SWMF output for SWPC run, \
-                    need station to be a string for valid magnetometer station name')
+            need station to be a string for valid magnetometer station name')
         data, headers = r_ccmc.getdata([2006, station])
         times = np.array(data[:, 0:6], dtype=int)
 
@@ -169,9 +169,10 @@ def get_available_station_times(run, station):
     return times
 
 
+
 def get_available_slices(run):
     import numpy as np
-    a = np.loadtxt(conf[run+'_cdf'] + 'cdflist.txt', dtype=str)
+    a = np.loadtxt(conf[run+'_derived'] + 'cdflist.txt', dtype=str)
     files = a[:, 0]
     times = np.array(a[:, 1:], dtype=int)
     return files, times
