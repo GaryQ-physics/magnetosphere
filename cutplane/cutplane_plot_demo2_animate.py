@@ -11,22 +11,55 @@ if not sys.version_info[0] == 3 and sys.version_info[1] >= 5:
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 
-run = 'SCARR5'
+run = 'DIPTSUR2'
+
 
 # TODO: Generate list based on subdirectories (and exclude directory minmax.)
-variables = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
+#variables = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
 #variables = ['p']
 delta = 0.125
 plot_type = 1
 pattern = 'type_{0:d}_delta_{1:.3f}'.format(plot_type, delta)
 #pattern = '{0:.3f}'.format(delta)
 
+
+built_in_vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
+dB_vars = ['dB_Magnitude', 'dB_north', 'dB_east', 'dB_down']
+MAG_locations = [(0.,0.)] # list of (mlat, mlot) tuples
+
+if run == 'CARR_IMPULSE' or run == 'DIPTSUR2':
+    fixed_time = (2019,9,2,6,30,0)
+    pos = mg.GetMagnetometerLocation('colaba', fixed_time, 'MAG', 'sph')
+    MAG_locations.append((pos[1], pos[2]))
+
+variables = []
+for variable in built_in_vars:
+    vardict = {}
+    vardict['varname'] = variable
+    vardict['str_id'] = vardict['varname']
+    variables.append(vardict.copy())
+
+
+for variable in dB_vars:
+    for loc in MAG_locations:
+        if len(loc) != 2:
+            raise ValueError('MAG locations have two components, mlat, mlon (radius is earth surface)')
+        vardict = {}
+        vardict['varname'] = variable
+        vardict['zticks'] = None
+        vardict['mlat'] = loc[0]
+        vardict['mlon'] = loc[1]
+        vardict['str_id'] = variable + '_mlat_%.3f_mlon_%.3f'%(vardict['mlat'],vardict['mlon'])
+        variables.append(vardict.copy())
+
+
+
 for var in variables:
-    image_dir = conf[run + '_derived'] + "cutplanes/" + var + "/"
+    image_dir = conf[run + '_derived'] + "cutplanes/" + var['str_id'] + "/"
     image_path = Path(image_dir)
     
     print('Reading list of files in ' + image_dir)
-    file_pattern = '*' + '-' + var + '-' + pattern + ".png"
+    file_pattern = '*' + '-' + var['str_id'] + '-' + pattern + ".png"
     image_files = list(image_path.glob(file_pattern))
     if len(image_files) == 0:
         print('No files found that match pattern ' + file_pattern)
@@ -47,7 +80,7 @@ for var in variables:
     
     print('Generating mp4 using {0:d} files'.format(len(image_list)))
     outfile = conf[run + '_derived'] + "cutplanes/" + \
-                    var + "-" + pattern + '.mp4'
+                    var['str_id'] + "-" + pattern + '.mp4'
     print('Writing ' + outfile)
     imageio.mimwrite(outfile, image_list)
     print('Wrote ' + outfile)

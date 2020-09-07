@@ -11,6 +11,7 @@ import util
 TESTANALYTIC = False
 
 def J_analytic(X):
+
     '''
     M = #giv
     amin = #giv
@@ -19,7 +20,13 @@ def J_analytic(X):
     w = #comp 
     J ~ X cross w if amin<X<amax
     '''
-    pass #X is Nx3
+    Rsq = np.einsum('ij,ij->i', X, X)
+    Tr = np.logical_and(np.amin**2 < Rsq, Rsq < amax**2)
+    to_mult = Tr.astype(np.int) #https://www.python-course.eu/numpy_masking.php
+    j = np.cross(X, w) # in units of 
+    j = np.einsum('i,ij->ij', to_mult, j)
+
+    return j
 
 
 def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleonV'):
