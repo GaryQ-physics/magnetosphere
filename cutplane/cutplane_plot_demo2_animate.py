@@ -10,10 +10,9 @@ if not sys.version_info[0] == 3 and sys.version_info[1] >= 5:
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
-import magnetometers as mg
+
 
 run = 'DIPTSUR2'
-
 
 # TODO: Generate list based on subdirectories (and exclude directory minmax.)
 #variables = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
@@ -23,15 +22,9 @@ plot_type = 1
 pattern = 'type_{0:d}_delta_{1:.3f}'.format(plot_type, delta)
 #pattern = '{0:.3f}'.format(delta)
 
-
 built_in_vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
 dB_vars = ['dB_Magnitude', 'dB_north', 'dB_east', 'dB_down']
-MAG_locations = [(0.,0.)] # list of (mlat, mlot) tuples
-
-if run == 'CARR_IMPULSE' or run == 'DIPTSUR2':
-    fixed_time = (2019,9,2,6,30,0)
-    pos = mg.GetMagnetometerLocation('colaba', fixed_time, 'MAG', 'sph')
-    MAG_locations.append((pos[1], pos[2]))
+MAG_locations = [(0.,0.), (11.059, 146.897)] # list of (mlat, mlot) tuples
 
 variables = []
 for variable in built_in_vars:
