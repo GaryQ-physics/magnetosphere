@@ -9,7 +9,7 @@ from config import conf
 from niceticks import niceticks
 import cutplane_plot as cp
 import util
-
+import magnetometers as mg
 
 def configure_dict(var):
 
@@ -176,7 +176,7 @@ def main(run):
     MAG_locations = [(0.,0.)] # list of (mlat, mlot) tuples
 
     ###
-    if run == 'CARR_IMPULSE':
+    if run == 'CARR_IMPULSE' or run == 'DIPTSUR2':
         fixed_time = (2019,9,2,6,30,0)
         pos = mg.GetMagnetometerLocation('colaba', fixed_time, 'MAG', 'sph')
         MAG_locations.append((pos[1], pos[2]))
@@ -190,7 +190,7 @@ def main(run):
     if test_parallel:
         para = True
         built_in_vars = ['p', 'jy']
-        nf = 37
+        nf = None
         opts["showplot"] = False
     ###
 

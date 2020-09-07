@@ -39,6 +39,8 @@ Notes:
     moved location for calling cdflist.txt in util.get_available_slices from run_cdf to run_derived since no permission to write to run_cdf on sunspot
 
 
+2020/09/06
+    sunspot Permission denied to write to '/media/solar-backup/tmp/data/SCARR5' when config tries to mkdir SCARR5
 
 
 

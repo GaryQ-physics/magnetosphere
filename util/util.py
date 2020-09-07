@@ -454,7 +454,7 @@ def dlfile_SWPC(filename, debug=False):
 
 
 def filemeta(filename):
-    sys.path.append('/home/gary/magnetosphere/interpolators/kameleon/lib/python2.7/site-packages/ccmc')
+    sys.path.append(conf['interpolator'] + 'kameleon/lib/python2.7/site-packages/ccmc')
     import _CCMC as ccmc
 
     if type(filename) != str:

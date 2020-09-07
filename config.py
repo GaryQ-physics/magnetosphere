@@ -95,26 +95,26 @@ if not os.path.exists(conf['SWPC_derived']):
     os.makedirs(conf['SWPC_derived'])
     print('Created directory ' + conf['SWPC_derived'])
 
-if not os.path.exists(conf['SCARR5_cdf']):
-    os.makedirs(conf['SCARR5_cdf'])
-    print('Created directory ' + conf['SCARR5_cdf'])
+#if not os.path.exists(conf['SCARR5_cdf']):
+#    os.makedirs(conf['SCARR5_cdf'])
+#    print('Created directory ' + conf['SCARR5_cdf'])
 
-if not os.path.exists(conf['SCARR5_derived']):
-    os.makedirs(conf['SCARR5_derived'])
-    print('Created directory ' + conf['SCARR5_derived'])
+#if not os.path.exists(conf['SCARR5_derived']):
+#    os.makedirs(conf['SCARR5_derived'])
+#    print('Created directory ' + conf['SCARR5_derived'])
 
-if not os.path.exists(conf['SCARR1_cdf']):
-    os.makedirs(conf['SCARR1_cdf'])
-    print('Created directory ' + conf['SCARR1_cdf'])
+#if not os.path.exists(conf['SCARR1_cdf']):
+#    os.makedirs(conf['SCARR1_cdf'])
+#    print('Created directory ' + conf['SCARR1_cdf'])
 
-if not os.path.exists(conf['SCARR1_derived']):
-    os.makedirs(conf['SCARR1_derived'])
-    print('Created directory ' + conf['SCARR1_derived'])
+#if not os.path.exists(conf['SCARR1_derived']):
+#    os.makedirs(conf['SCARR1_derived'])
+#    print('Created directory ' + conf['SCARR1_derived'])
 
-if not os.path.exists(conf['CARR_IMPULSE_cdf']):
-    os.makedirs(conf['CARR_IMPULSE_cdf'])
-    print('Created directory ' + conf['CARR_IMPULSE_cdf'])
+#if not os.path.exists(conf['CARR_IMPULSE_cdf']):
+#    os.makedirs(conf['CARR_IMPULSE_cdf'])
+#    print('Created directory ' + conf['CARR_IMPULSE_cdf'])
 
-if not os.path.exists(conf['CARR_IMPULSE_derived']):
-    os.makedirs(conf['CARR_IMPULSE_derived'])
-    print('Created directory ' + conf['CARR_IMPULSE_derived'])
+#if not os.path.exists(conf['CARR_IMPULSE_derived']):
+#    os.makedirs(conf['CARR_IMPULSE_derived'])
+#    print('Created directory ' + conf['CARR_IMPULSE_derived'])
