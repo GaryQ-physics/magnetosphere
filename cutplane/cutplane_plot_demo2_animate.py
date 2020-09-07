@@ -10,6 +10,7 @@ if not sys.version_info[0] == 3 and sys.version_info[1] >= 5:
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
+import magnetometers as mg
 
 run = 'DIPTSUR2'
 
