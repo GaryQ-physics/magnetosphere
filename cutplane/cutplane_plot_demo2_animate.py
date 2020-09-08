@@ -22,9 +22,10 @@ plot_type = 1
 pattern = 'type_{0:d}_delta_{1:.3f}'.format(plot_type, delta)
 #pattern = '{0:.3f}'.format(delta)
 
-built_in_vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
+#built_in_vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
+built_in_vars = []
 dB_vars = ['dB_Magnitude', 'dB_north', 'dB_east', 'dB_down']
-MAG_locations = [(0.,0.), (11.059, 146.897)] # list of (mlat, mlot) tuples
+MAG_locations = [(11.017, 147.323), (11.059, 146.897)] # list of (mlat, mlot) tuples
 
 variables = []
 for variable in built_in_vars:
