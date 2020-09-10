@@ -121,7 +121,7 @@ def integrate(run, time_fname, mlat, mlon, para=True,
 
         def dBslice(i, debug=False):
             #Grid = np.column_stack([X[i]*np.ones(Gy.shape), Gy, Gz])
-            J_kameleon = probe(filepath, G_s[i], var = ['jx','jy','jz'], library='kameleonV')
+            J_kameleon = probe(filepath, G_s[i], var = ['jx','jy','jz'], library='kameleon')
             J = J_kameleon*(phys['muA']/phys['m']**2)
             if debug:
                 print(G_s[i].shape)
@@ -156,7 +156,7 @@ def integrate(run, time_fname, mlat, mlon, para=True,
         if debug:
             print('done G')
 
-        J_kameleon = probe(filepath, G, var = ['jx','jy','jz'], library='kameleonV')
+        J_kameleon = probe(filepath, G, var = ['jx','jy','jz'], library='kameleon')
         J = J_kameleon*(phys['muA']/phys['m']**2)
         if debug:
             print('done J')

@@ -154,5 +154,5 @@ def fromfile():
 
 
 if __name__ == '__main__':
-    #tofile('TESTANALYTIC', (2000,1,1,1,1,0), para=True)
-    fromfile()
+    tofile('TESTANALYTIC', (2000,1,1,1,1,0), para=True)
+    #fromfile()
