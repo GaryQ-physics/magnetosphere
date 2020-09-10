@@ -4,7 +4,7 @@ from config import conf
 import util
 import cutplane_plot_demo5 as cpd5
 #import cutplane_plot_demo2_animate as cpd2a
-import earth_surf_dB.py as es
+import earth_surf_dB as es
 
 
 util.generate_TESTANALYTIC_files()
