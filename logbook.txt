@@ -5,7 +5,7 @@ runs:
 
     SWPC:
 
-        have plotted multiple files with cutplane_plot
+        have plotted multiple files with cutplane_plot_demo2.py
 
         have plotted dB vs time at stations and matches SWMF file, with bs_compare_SWMF_kameleon
 
@@ -25,7 +25,9 @@ runs:
 
         have plotted one file with cutplane_plot
 
+    DIPTSUR2: (CARR_IMPULSE apears to be just one file from this)
 
+        plotted all files and made the video animations with cutplane_plot_demo5.py and cutplane_plot_demo2_animate.py
 
 
 Notes:
@@ -41,6 +43,46 @@ Notes:
 
 2020/09/06
     sunspot Permission denied to write to '/media/solar-backup/tmp/data/SCARR5' when config tries to mkdir SCARR5
+
+2020/09/08
+    despite sunspot and local being up to date with cutplane_plotting branch, got slightly different results for magnetometer location:
+        sunspot:
+
+        Python 2.7.18 |Anaconda, Inc.| (default, Apr 23 2020, 22:42:48) 
+        [GCC 7.3.0] on linux2
+        Type "help", "copyright", "credits" or "license" for more information.
+        >>> from config import conf
+        >>> import magnetometers as mg
+        >>> fixed_time = (2019,9,2,6,30,0)
+        >>> mg.GetMagnetometerLocation('colaba', fixed_time, 'MAG', 'sph')
+        [0.9999999999999999, 11.016639272301447, 147.323425223922]
+        >>> mg.GetMagnetometerLocation('colaba', (2019, 1,1,1,1,1), 'MAG', 'sph')
+        [0.9999999999999999, 11.016639272301447, 147.323425223922]
+
+        local:
+
+        Python 2.7.18 |Anaconda, Inc.| (default, Apr 23 2020, 22:42:48) 
+        [GCC 7.3.0] on linux2
+        Type "help", "copyright", "credits" or "license" for more information.
+        >>> from config import conf
+        >>> import magnetometers as mg
+        >>> fixed_time = (2019,9,2,6,30,0)
+        >>> mg.GetMagnetometerLocation('colaba', fixed_time, 'MAG', 'sph')
+        [1.0, 11.058617393065475, 146.89653169520292]
+        >>> mg.GetMagnetometerLocation('colaba', (2019, 1,1,1,1,1), 'MAG', 'sph')
+        [1.0, 11.058617393065475, 146.89653169520292]
+
+        working hypothesis: different versions of spacepy
+
+
+
+
+
+
+
+
+
+
 
 
 

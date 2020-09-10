@@ -42,3 +42,5 @@ phys = {
         'mu0_SI' : mu0_SI,
         'mu0' : mu0
     }
+
+phys['c'] = 299792458.*phys['m']/phys['s']

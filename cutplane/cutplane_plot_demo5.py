@@ -176,20 +176,20 @@ def main(run):
     MAG_locations = [(0.,0.)] # list of (mlat, mlot) tuples
 
     ###
-    if run == 'CARR_IMPULSE' or run == 'DIPTSUR2':
+    if run in ['CARR_IMPULSE', 'DIPTSUR2', 'TESTANALYTIC']:
         fixed_time = (2019,9,2,6,30,0)
         pos = mg.GetMagnetometerLocation('colaba', fixed_time, 'MAG', 'sph')
         MAG_locations.append((pos[1], pos[2]))
 
     if test_serial:
         para = False
-        built_in_vars = ['jx','jy','jz','p']
-        nf = 2
+        built_in_vars = ['jy']
+        nf = 4
         opts["showplot"] = False
 
     if test_parallel:
         para = True
-        built_in_vars = ['p', 'jy']
+        built_in_vars = ['jy']
         nf = None
         opts["showplot"] = False
     ###
@@ -236,5 +236,6 @@ def main(run):
         process(files, variables, para=para, process_type=2)
 
 if __name__ == '__main__':
-    main('DIPTSUR2')
+    #util.generate_TESTANALYTIC_files()
+    main('TESTANALYTIC')
 

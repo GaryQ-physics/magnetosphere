@@ -169,6 +169,13 @@ def get_available_station_times(run, station):
     return times
 
 
+def generate_TESTANALYTIC_files():
+    f = open(conf['TESTANALYTIC_derived'] + 'cdflist.txt', 'w')
+    times = [(2000, 1, 1, h, mi, 0, 0) for h in range(4) for mi in range(60) ]
+    for time in times:
+        tup = (tstr(time, length=7), ) + time
+        f.write('%s.cdf %d %d %d %d %d %d %d\n'%tup)
+
 
 def get_available_slices(run):
     import numpy as np
@@ -393,7 +400,17 @@ def dlfile(filename, debug=False):
     fdir, fname_split = os.path.split(filename)
     fdir = fdir + '/'
     assert(fdir in conf.values())
+
+
+
     if not os.path.exists(filename):
+        if fdir == conf['TESTANALYTIC_cdf']:
+            if debug: print('writting dummy ' + filename)
+            f = open(filename, 'w')
+            f.write('this is a dummy with full filename '+ filename)
+            f.close()
+            return None
+
         fileurl =  conf['mag_server_url'] + fdir.split('/data/')[-1] + fname_split
 
         if debug:

@@ -7,26 +7,39 @@ from config import conf
 
 #from util import time2filename, filemeta
 import util
+from units_and_constants import phys
 
-TESTANALYTIC = False
+TESTANALYTIC = True
 
 def J_analytic(X):
+    """
+    X
+        Nx3 array of N 3 vectors, assumed in units of R_e
+    """
 
-    '''
-    M = #giv
-    amin = #giv
-    amax = #giv
-    a = amax-amin
-    w = #comp 
-    J ~ X cross w if amin<X<amax
-    '''
+    M = np.array([0,0,1000.]) * phys['nT']*phys['R_e']**3
+
+    amin = 2. * phys['R_e']
+    amax = 3. * phys['R_e']
+    psi = M * 15./( phys['mu0']*(amax**5-amin**5) ) # psi = rho*omega (charge density * angular velocity)
+    if False:
+        B_inside = M*5*(amax**2-amin**2)/(amax**5-amin**5) # == (mu0/3)*(amax**2-amin**2)*psi
+        print(B_inside) # 1000.*5*(3**2-2**2)/(3**5-2**5) --> 118.48341232227489
+
     Rsq = np.einsum('ij,ij->i', X, X)
-    Tr = np.logical_and(np.amin**2 < Rsq, Rsq < amax**2)
+    Tr = np.logical_and(amin**2 < Rsq, Rsq < amax**2)
     to_mult = Tr.astype(np.int) #https://www.python-course.eu/numpy_masking.php
-    j = np.cross(X, w) # in units of 
-    j = np.einsum('i,ij->ij', to_mult, j)
+    j = np.cross(X, psi) # as pure number this is in units of muA/(R_e**2) since those are base units of phys
+    j = np.einsum('i,ij->ij', to_mult, j) # 
 
-    return j
+    j_kameleonUnits = j/( phys['muA']/(phys['m']**2) )
+
+    #print('HELLO\n\n\n\n\n\n')
+    #print(np.max(j_kameleonUnits))
+    #print(np.min(j_kameleonUnits))
+    #print(j_kameleonUnits)
+
+    return j_kameleonUnits
 
 
 def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleonV'):
@@ -129,7 +142,7 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
             if P.shape[0] == 1:
                 ret = ret.flatten()
 
-    if library == 'kameleon':
+    if library == 'kameleon' and not TESTANALYTIC:
         kameleon.close()
 
     return ret

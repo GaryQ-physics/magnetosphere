@@ -72,7 +72,11 @@ def data_in_U(run, time, variable, u, v, U, mlat=0., mlon=0., Vchar=0.125**3):
 # Since _CCMC used in file filemeta, in order to run plotting, cannot
 # pass library='kameleonV' since then both kameleon and kameleonV
 # library='kameleon' in the same shell.
-        return probe(util.time2CDFfilename(run,time), X, var=variable, library='kameleon')
+        ret = probe(util.time2CDFfilename(run,time), X, var=variable, library='kameleon')
+        #print('HELLO THERE\n\n\n\n\n\n\n\n\n\n')
+        #print(np.min(ret))
+        #print(np.max(ret))
+        return ret
 
 
 def data2d(run, time, parameter, X, Y, U, debug=False, mlat=0., mlon=0.):
@@ -80,6 +84,10 @@ def data2d(run, time, parameter, X, Y, U, debug=False, mlat=0., mlon=0.):
     # grid of the corresponding values of variable. To be color plotted
     Z = data_in_U(run, time, parameter,
                         X.flatten(), Y.flatten(), U, mlat=mlat, mlon=mlon)
+
+    #print('HELLO again\n\n\n\n\n\n\n\n\n\n')
+    #print(np.min(Z))
+    #print(np.max(Z))
 
     return Z.reshape(X.shape)
 

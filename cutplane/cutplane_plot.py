@@ -100,18 +100,18 @@ def plot(run, time, parameter, arg3,
         title = title + '\nfor mlat=%.3f, mlon=%.3f, MLT=%.3f hrs'%(mlat_dB, mlon_dB, cx.MAGtoMLT(mlon_dB, time))
     if type(arg3) == str:
         if arg3 == 'xy':
-            xlabel = '$X_GSM$ [$R_E$]'
-            ylabel = '$Y_GSM$ [$R_E$]'
+            xlabel = '$X_{GSM}$ [$R_E$]'
+            ylabel = '$Y_{GSM}$ [$R_E$]'
             U1 = np.array([1, 0, 0])
             U2 = np.array([0, 1, 0])
         if arg3 == 'xz':
-            xlabel = '$X_GSM$ [$R_E$]'
-            ylabel = '$Z_GSM$ [$R_E$]'
+            xlabel = '$X_{GSM}$ [$R_E$]'
+            ylabel = '$Z_{GSM}$ [$R_E$]'
             U1 = np.array([1, 0, 0])
             U2 = np.array([0, 0, 1])
         if arg3 == 'yz':
-            xlabel = '$Y_GSM$ [$R_E$]'
-            ylabel = '$Z_GSM$ [$R_E$]'
+            xlabel = '$Y_{GSM}$ [$R_E$]'
+            ylabel = '$Z_{GSM}$ [$R_E$]'
             U1 = np.array([0, 1, 0])
             U2 = np.array([0, 0, 1])
     else:
@@ -173,6 +173,10 @@ def plot(run, time, parameter, arg3,
             Z = data2d(run, time, parameter, X, Y, [U1, U2, U3], 
                             debug=debug, mlat=mlat_dB, mlon=mlon_dB)
             print("Writing " + npfile)
+            #print(Z)
+            #print(np.min(Z))
+            #print(np.max(Z))
+
             np.save(npfile, Z)
             print("Wrote " + npfile)
 
@@ -197,7 +201,16 @@ def plot(run, time, parameter, arg3,
                 lineU[k, 2] = np.dot(line[k, :], U3)
             linesU.append(lineU)
 
-    meta = util.filemeta(filename)
+    if run == 'TESTANALYTIC':
+            meta = {}
+            meta["parameters"] = {
+                'jx' : {'plot_unit':'$\\frac{\\mu A}{m^2}$', 'plot_name':'jx'},
+                'jy' : {'plot_unit':'$\\frac{\\mu A}{m^2}$', 'plot_name':'jy'},
+                'jz' : {'plot_unit':'$\\frac{\\mu A}{m^2}$', 'plot_name':'jz'}
+                                    }
+
+    else:
+        meta = util.filemeta(filename)
 
     if 'dB' in parameter:
         #dB_param_dict = {'dB_Magnitude' : '$|\\frac{dB}{dV}|$',

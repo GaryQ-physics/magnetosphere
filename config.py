@@ -1,5 +1,6 @@
 import os
 import sys
+import tempfile
 
 if os.path.exists('/Users/robertweigel/'):
     base = '/Users/robertweigel/git/students/gquaresi/magnetosphere/'
@@ -59,6 +60,9 @@ conf = {
 
         'SCARR5_raw': storage + 'data/SCARR5_GM_IO2/IO2/',
         'SCARR5_iono': storage + 'data/SCARR5_GM_IO2/IO2/',
+
+        'TESTANALYTIC_derived': tempfile.gettempdir() + '/',
+        'TESTANALYTIC_cdf': tempfile.gettempdir() + '/',
 
         'interpolator': base + 'interpolators/'
         }
