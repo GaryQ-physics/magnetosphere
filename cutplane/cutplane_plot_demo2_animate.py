@@ -80,3 +80,6 @@ def main(run):
         print('Writing ' + outfile)
         imageio.mimwrite(outfile, image_list)
         print('Wrote ' + outfile)
+
+if __name__ == '__main__':
+    main('TESTANALYTIC')
