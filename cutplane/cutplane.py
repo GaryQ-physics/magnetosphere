@@ -45,8 +45,8 @@ def data_in_U(run, time, variable, u, v, U, mlat=0., mlon=0., Vchar=0.125**3):
     else:
         X = np.einsum('i,j->ij', u, U1) + np.einsum('i,j->ij', v, U2)
     
-    if 'b' in variable:
-        filename = time2CDFfilename(run, time)
+    if 'bu' in variable:
+        filename = util.time2CDFfilename(run, time)
         B = fetch(filename, X, ['bx', 'by', 'bz'])
         if variable == 'bu1':
             return np.dot(B, U1)
