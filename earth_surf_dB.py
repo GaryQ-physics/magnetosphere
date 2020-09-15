@@ -128,6 +128,7 @@ def fromfile():
     Nlon = 37
 
     direct = tempfile.gettempdir() + '/'
+    direct = '/home/gary/temp/'
 
     surfB_north = np.fromfile(direct + 'surfB_north.bin')
     surfB_east = np.fromfile(direct + 'surfB_east.bin')
@@ -154,5 +155,5 @@ def fromfile():
 
 
 if __name__ == '__main__':
-    tofile('TESTANALYTIC', (2000,1,1,1,1,0), para=True)
-    #fromfile()
+    #tofile('TESTANALYTIC', (2000,1,1,1,1,0), para=True)
+    fromfile()

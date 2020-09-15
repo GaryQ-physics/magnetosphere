@@ -14,52 +14,50 @@ elif os.path.exists('/home/weigel/') and False:
 elif os.path.exists('/home/gary/'):
     base = '/home/gary/magnetosphere/'
     #kameleon = '/home/gary/magnetosphere/kameleon/lib/python2.7/site-packages/'
-    storage = base
-    sblake_storage = storage
+    storage = base +'data/'
 
 elif os.path.exists('/home/gquaresi/'):
     base = '/home/gquaresi/magnetosphere/'
     #kameleon = '/home/gquaresi/'
-    storage = '/media/solar-backup/tmp/'
-    sblake_storage = '/media/solar-backup/git-data/sblake/'
+    storage = '/media/solar-backup/git-data/sblake/'
 
 else:
     assert(False)
 
 
 conf = {
-        'data_path': base + 'data/',
+        #'data_path': base + 'data/',
         'run_url': 'http://mag.gmu.edu/git-data/sblake/SCARR5_GM_IO2/IO2/',
         'run_path': storage + 'data/SCARR5_GM_IO2/IO2/',
-        'run_path_derived': storage + 'data/SCARR5_GM_IO2-derived/',
+        'run_path_derived': storage + 'SCARR5_GM_IO2-derived/',
         'base': base,
-        'SWPC_raw': storage + 'data/SWPC_SWMF_052811_2/raw_output/',
-        'SWPC_cdf_path': storage + 'data/SWPC_SWMF_052811_2/GM_CDF/',
+        'SWPC_raw': storage + 'SWPC_SWMF_052811_2/raw_output/',
+        'SWPC_cdf_path': storage + 'SWPC_SWMF_052811_2/GM_CDF/',
 
-        'SWPC_cdf': storage + 'data/SWPC_SWMF_052811_2/GM_CDF/', # = SWPC_cdf_path
-        'SWPC_derived': storage + 'data/SWPC_SWMF_052811_2-derived/',
+        'SWPC_cdf': storage + 'SWPC_SWMF_052811_2/GM_CDF/', # = SWPC_cdf_path
+        'SWPC_derived': storage + 'SWPC_SWMF_052811_2-derived/',
 
-        'SCARR5_cdf': storage + 'data/SCARR5/GM/IO2/', # = run_path
-        'SCARR5_derived': storage + 'data/SCARR5-derived/', # = run_path_derived
-        'SCARR5_magfile': storage + 'data/SCARR5/MAG_FILES/',
+        'SCARR5_cdf': storage + 'SCARR5/GM/IO2/', # = run_path
+        'SCARR5_derived': storage + 'SCARR5-derived/', # = run_path_derived
+        'SCARR5_magfile': storage + 'SCARR5/MAG_FILES/',
 
-        'SCARR1_cdf': storage + 'data/SCARR1/tmp/',
-        'SCARR1_magfile': storage + 'data/SCARR1/MAG_FILES/',
-        'SCARR1_derived': storage + 'data/SCARR1-derived/',
+        'SCARR1_cdf': storage + 'SCARR1/tmp/',
+        'SCARR1_magfile': storage + 'SCARR1/MAG_FILES/',
+        'SCARR1_derived': storage + 'SCARR1-derived/',
 
-        'CARR_IMPULSE_cdf': storage + 'data/CARR_IMPULSE_3D/GM/IO2/',
-        'CARR_IMPULSE_derived': storage + 'data/CARR_IMPULSE_3D-derived/',
+        'CARR_IMPULSE_cdf': storage + 'CARR_IMPULSE_3D/GM/IO2/',
+        'CARR_IMPULSE_derived': storage + 'CARR_IMPULSE_3D-derived/',
 
-        'DIPTSUR2_cdf' : sblake_storage + 'DIPTSUR2/GM/IO2/',
-        'DIPTSUR2_derived' : sblake_storage + 'DIPTSUR2-derived/',
+        'DIPTSUR2_cdf' : storage + 'DIPTSUR2/GM/IO2/',
+        'DIPTSUR2_derived' : storage + 'DIPTSUR2-derived/',
 
         'mag_server_url': 'http://mag.gmu.edu/git-data/sblake/',
 
-        'SWPC_raw': storage + 'data/SWPC_SWMF_052811_2/raw_output/',
-        'SWPC_iono': storage + 'data/SWPC_SWMF_052811_2/IONO-2D_CDF/',
+        'SWPC_raw': storage + 'SWPC_SWMF_052811_2/raw_output/',
+        'SWPC_iono': storage + 'SWPC_SWMF_052811_2/IONO-2D_CDF/',
 
-        'SCARR5_raw': storage + 'data/SCARR5_GM_IO2/IO2/',
-        'SCARR5_iono': storage + 'data/SCARR5_GM_IO2/IO2/',
+        #'SCARR5_raw': storage + 'SCARR5_GM_IO2/IO2/',
+        #'SCARR5_iono': storage + 'SCARR5_GM_IO2/IO2/',
 
         'TESTANALYTIC_derived': tempfile.gettempdir() + '/',
         'TESTANALYTIC_cdf': tempfile.gettempdir() + '/',

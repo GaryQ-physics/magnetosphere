@@ -429,7 +429,39 @@ def dlfile(filename, debug=False):
         return ret
     return None
 
-def dlfile_test(filename, debug=False):
+def dlfile_test(filename, debug=True):
+
+    assert(filename[0] == '/')
+    fdir, fname_split = os.path.split(filename)
+    fdir = fdir + '/'
+    assert(fdir in conf.values())
+
+    if not os.path.exists(filename):
+        if fdir == conf['TESTANALYTIC_cdf']:
+            if debug: print('writting dummy ' + filename)
+            print("f = open(%s, 'w')"%filename)
+            print("f.write('this is a dummy with full filename '+ filename")
+            print("f.close()")
+            return None
+
+        fileurl =  conf['mag_server_url'] + fdir.split('/data/')[-1] + fname_split
+
+        if debug:
+            print('Downloading ' + fileurl)
+            print('to')
+        fname_tmp = filename + ".tmp"
+        if debug:
+            print(fname_tmp)
+        print("ret = urlretrieve(fileurl, fname_tmp)")
+        ret = 1
+        if debug:
+            print('Downloaded ' + fileurl)
+        print("os.rename(%s, %s)"%(fname_tmp,filename))
+        if debug:
+            print('Renamed *.tmp')
+        return ret
+    return None
+
     assert(filename[0] == '/')
     fdir, fname_split = os.path.split(filename)
     fdir = fdir + '/'
