@@ -100,7 +100,8 @@ def tofile(run, time, para=False):
         os.system('mv %s %s'%(outname,fname))
         array.tofile(outname)
 
-    direct = tempfile.gettempdir() + '/'
+    subdir = '%04d%02d%02dT%02d%02d%02d/' % tuple(util.tpad(time, length=6))
+    direct = conf[run+'_derived'] + subdir
 
     safenumpy_tofile(surfB_north, direct + 'surfB_north.bin')
     safenumpy_tofile(surfB_east,  direct + 'surfB_east.bin')
@@ -123,12 +124,12 @@ def tofile(run, time, para=False):
 
     #plot(LON, LAT, surfB_north)
 
-def fromfile():
+def fromfile(run, time):
     Nlat = 19
     Nlon = 37
 
-    direct = tempfile.gettempdir() + '/'
-    direct = '/home/gary/temp/'
+    subdir = '%04d%02d%02dT%02d%02d%02d/' % tuple(util.tpad(time, length=6))
+    direct = conf[run+'_derived'] + subdir
 
     surfB_north = np.fromfile(direct + 'surfB_north.bin')
     surfB_east = np.fromfile(direct + 'surfB_east.bin')

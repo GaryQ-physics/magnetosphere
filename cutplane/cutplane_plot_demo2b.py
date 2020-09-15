@@ -189,7 +189,8 @@ def main(run):
 
     if test_parallel:
         para = True
-        built_in_vars = ['jy']
+        built_in_vars = ['bx','by','bz','ux','uy','uz','jx','jz','rho','e']
+        dB_vars = []
         nf = None
         opts["showplot"] = False
     ###

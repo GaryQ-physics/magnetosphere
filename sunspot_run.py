@@ -2,14 +2,14 @@
 
 from config import conf
 import util
-import cutplane_plot_demo5 as cpd5
+import cutplane_plot_demo2b as cpd2b
 #import cutplane_plot_demo2_animate as cpd2a
 import earth_surf_dB as es
 
 
-util.generate_TESTANALYTIC_files()
-cpd5.main('TESTANALYTIC')
+#util.generate_TESTANALYTIC_files()
+cpd2b.main('DIPTSUR2')
 
-#cpd2a.main('TESTANALYTIC')
+#cpd2a.main('DI')
 
-es.tofile('TESTANALYTIC', (2000,1,1,1,1,0), para=True)
+es.tofile('DIPTSUR2', (2019,9,2,6,30,0,0), para=True)
