@@ -150,8 +150,8 @@ def main(run):
     # Testing options
     first_only    = False  # Do only low-res first processing
     second_only   = False  # Execute only high-res second processing
-    test_serial   = False   # Process few files in serial
-    test_parallel = True  # Process few files in parallel
+    test_serial   = True   # Process few files in serial
+    test_parallel = False  # Process few files in parallel
 
     opts = {
             'run' : run,
@@ -183,7 +183,8 @@ def main(run):
 
     if test_serial:
         para = False
-        built_in_vars = ['jy']
+        #built_in_vars = ['jy']
+        built_in_vars = ['bx','by','bz','ux','uy','uz','jx','jz','rho','e']
         nf = 4
         opts["showplot"] = False
 
