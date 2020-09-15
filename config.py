@@ -26,7 +26,7 @@ else:
 
 
 conf = {
-        #'data_path': base + 'data/',
+        'storage': storage,
         'run_url': 'http://mag.gmu.edu/git-data/sblake/SCARR5_GM_IO2/IO2/',
         'run_path': storage + 'data/SCARR5_GM_IO2/IO2/',
         'run_path_derived': storage + 'SCARR5_GM_IO2-derived/',

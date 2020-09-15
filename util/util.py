@@ -364,44 +364,11 @@ def urlretrieve(url, fname):
 
             
 def dlfile(filename, debug=False):
-    '''
-    ''
-    fname_split = os.path.split(filename)[1]
-    fname_full = conf['run_path'] + fname_split
-    fileurl = conf['run_url'] + fname_split
 
-    return urlretrieve(fileurl, fname_full)
-    ''
-    if type(filename) != str:
-        filename = time2filename(filename)
-    
-    filename = os.path.split(filename)[1]
-    
-    fname_full = conf['run_path'] + filename
-    if not os.path.exists(fname_full):
-        fileurl = conf['run_url'] + filename
-        if debug:
-            print('Downloading ' + fileurl)
-            print('to')
-        fname_tmp = fname_full + ".tmp"
-        if debug:
-            print(fname_tmp)
-        # TODO: Catch download error
-        ret = urlretrieve(fileurl, fname_tmp)
-        if debug:
-            print('Downloaded ' + fileurl)
-        os.rename(fname_tmp, fname_full)
-        if debug:
-            print('Renamed *.tmp')
-        return ret
-    return None
-    '''
     assert(filename[0] == '/')
     fdir, fname_split = os.path.split(filename)
     fdir = fdir + '/'
     assert(fdir in conf.values())
-
-
 
     if not os.path.exists(filename):
         if fdir == conf['TESTANALYTIC_cdf']:
@@ -411,7 +378,7 @@ def dlfile(filename, debug=False):
             f.close()
             return None
 
-        fileurl =  conf['mag_server_url'] + fdir.split('/data/')[-1] + fname_split
+        fileurl =  filename.replace(conf['storage'], conf['mag_server_url'], 1)
 
         if debug:
             print('Downloading ' + fileurl)
@@ -444,7 +411,7 @@ def dlfile_test(filename, debug=True):
             print("f.close()")
             return None
 
-        fileurl =  conf['mag_server_url'] + fdir.split('/data/')[-1] + fname_split
+        fileurl =  filename.replace(conf['storage'], conf['mag_server_url'], 1)
 
         if debug:
             print('Downloading ' + fileurl)
@@ -469,37 +436,6 @@ def dlfile_test(filename, debug=True):
     if not os.path.exists(filename):
         print('file doesnt exits')
     return conf['mag_server_url'] + fdir.split('/data/')[-1] + fname_split
-
-'''
-def dlfile_SWPC(filename, debug=False):
-    ''
-    fname_split = os.path.split(filename)[1]
-    fname_full = conf['run_path'] + fname_split
-    fileurl = conf['run_url'] + fname_split
-
-    return urlretrieve(fileurl, fname_full)
-
-    ''
-    
-    fname_full = conf['SWPC_cdf_path'] + filename
-    if not os.path.exists(fname_full):
-        fileurl = 'http://mag.gmu.edu/git-data/sblake/SWPC_SWMF_052811_2/GM_CDF/' + filename
-        if debug:
-            print('Downloading ' + fileurl)
-            print('to')
-        fname_tmp = fname_full + ".tmp"
-        if debug:
-            print(fname_tmp)
-        # TODO: Catch download error
-        ret = urlretrieve(fileurl, fname_tmp)
-        if debug:
-            print('Downloaded ' + fileurl)
-        os.rename(fname_tmp, fname_full)
-        if debug:
-            print('Renamed *.tmp')
-        return ret
-    return None
-'''
 
 
 def filemeta(filename):
