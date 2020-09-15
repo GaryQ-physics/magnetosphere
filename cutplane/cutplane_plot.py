@@ -97,7 +97,7 @@ def plot(run, time, parameter, arg3,
     title = run + ' %04d-%02d-%02dT%02d:%02d:%02d.%03d' % tuple(time)
     if 'dB' in parameter:
         import cxtransform as cx
-        title = title + '\nfor mlat=%.3f, mlon=%.3f, MLT=%.3f hrs'%(mlat_dB, mlon_dB, cx.MAGtoMLT(mlon_dB, time))
+        title = title + '\nat mlat=%.3f, mlon=%.3f, MLT=%.3f hrs'%(mlat_dB, mlon_dB, cx.MAGtoMLT(mlon_dB, time))
     if type(arg3) == str:
         if arg3 == 'xy':
             xlabel = '$X_{GSM}$ [$R_E$]'

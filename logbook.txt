@@ -76,13 +76,9 @@ Notes:
 
 TODO:
 
-ian
 
 \Delta |B|_{exact} - \Delta |B|_Biot)/\Delta |B|_{exact}
 
-dump to -derived on susnpot /sbla/
-
-cutplane_plot_demo5.pu - 2b.py
 
 check mag grid files for DIPSURE2 (compare)
     want plot of earth surf at 6:30 using :
@@ -90,7 +86,9 @@ check mag grid files for DIPSURE2 (compare)
         surf_deltaB
         png on drive
 
-jx jz movie for Dipsure and all others 
+jx jz movie for Diptsur2 and all other vars
+
+traceback spacepy coord trans difference
 
 
 
