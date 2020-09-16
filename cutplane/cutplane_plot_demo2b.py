@@ -150,8 +150,8 @@ def main(run):
     # Testing options
     first_only    = False  # Do only low-res first processing
     second_only   = False  # Execute only high-res second processing
-    test_serial   = True   # Process few files in serial
-    test_parallel = False  # Process few files in parallel
+    test_serial   = False   # Process few files in serial
+    test_parallel = True  # Process few files in parallel
 
     opts = {
             'run' : run,

@@ -103,12 +103,16 @@ def tofile(run, time, para=False):
     subdir = '%04d%02d%02dT%02d%02d%02d/' % tuple(util.tpad(time, length=6))
     direct = conf[run+'_derived'] + subdir
 
+    if not os.path.exists(direct):
+        os.makedirs(direct)
+
+    print('writing files')
     safenumpy_tofile(surfB_north, direct + 'surfB_north.bin')
     safenumpy_tofile(surfB_east,  direct + 'surfB_east.bin')
     safenumpy_tofile(surfB_down,  direct + 'surfB_down.bin')
     safenumpy_tofile(LON, direct + 'LON.bin')
     safenumpy_tofile(LAT, direct + 'LAT.bin')
-
+    print('wrote files')
 
     surfB_north = surfB_north.reshape((Nlat, Nlon))
     surfB_east = surfB_east.reshape((Nlat, Nlon))
