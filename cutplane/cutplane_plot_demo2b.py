@@ -238,6 +238,6 @@ def main(run):
         process(files, variables, para=para, process_type=2)
 
 if __name__ == '__main__':
-    #util.generate_TESTANALYTIC_files()
+    #util.generate_TESTANALYTIC_cdflist()
     main('TESTANALYTIC')
 

@@ -59,8 +59,8 @@ conf = {
         #'SCARR5_raw': storage + 'SCARR5_GM_IO2/IO2/',
         #'SCARR5_iono': storage + 'SCARR5_GM_IO2/IO2/',
 
-        'TESTANALYTIC_derived': tempfile.gettempdir() + '/',
-        'TESTANALYTIC_cdf': tempfile.gettempdir() + '/',
+        'TESTANALYTIC_cdf' : storage + 'TESTANALYTIC/GM/IO2/',
+        'TESTANALYTIC_derived' : storage + 'TESTANALYTIC-derived/',
 
         'interpolator': base + 'interpolators/'
         }

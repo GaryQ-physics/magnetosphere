@@ -7,7 +7,7 @@ import cutplane_plot_demo2b as cpd2b
 import earth_surf_dB as es
 
 
-#util.generate_TESTANALYTIC_files()
+#util.generate_TESTANALYTIC_cdflist()
 cpd2b.main('DIPTSUR2')
 
 #cpd2a.main('DI')

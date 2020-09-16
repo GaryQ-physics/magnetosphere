@@ -155,10 +155,19 @@ def fromfile(run, time):
     print(LON)
 
 
+    analytic_M = 1000.*5.*(3.**2-2.**2)/(3.**5-2.**5)
+    err = (surfB_Magnitude - analytic_M)/analytic_M
+
+    plot(LON, LAT, surfB_north, title='$deltaB_N$')
     plot(LON, LAT, surfB_east, title='$deltaB_E$')
     plot(LON, LAT, surfB_Magnitude, title='$deltaB_{Magnitude}$')
+    plot(LON, LAT, err, title='$\\frac {\Delta |B|_{exact} - \Delta |B|_{Biot})}{\Delta |B|_{exact}}$')
 
 
 if __name__ == '__main__':
     #tofile('TESTANALYTIC', (2000,1,1,1,1,0), para=True)
-    fromfile()
+    #fromfile('TESTANALYTIC', (2000,1,1,1,1,0))
+    #fromfile('DIPTSUR2', (2019,9,2,6,30,0))
+    tofile('CARR_IMPULSE', (2019,9,2,6,30,0), para=True)
+    tofile('DIPTSUR2', (2019,9,2,6,30,0), para=True)
+

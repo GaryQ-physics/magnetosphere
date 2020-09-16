@@ -169,7 +169,7 @@ def get_available_station_times(run, station):
     return times
 
 
-def generate_TESTANALYTIC_files():
+def generate_TESTANALYTIC_cdflist():
     f = open(conf['TESTANALYTIC_derived'] + 'cdflist.txt', 'w')
     times = [(2000, 1, 1, h, mi, 0, 0) for h in range(4) for mi in range(60) ]
     for time in times:
