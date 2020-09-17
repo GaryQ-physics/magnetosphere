@@ -8,6 +8,7 @@ from config import conf
 import biot_savart_kameleon_interpolated_grid as bsk
 import util
 import cxtransform as cx
+import read_mag_grid_files as rmg
 
 def plot(LON, LAT, data, title):
     import matplotlib.pyplot as plt
@@ -45,9 +46,7 @@ def plot(LON, LAT, data, title):
     plt.show()
 
 
-def tofile(run, time, para=False):
-    xlims=(-16., 16.); ylims=(-16., 16.); zlims=(-16., 16.); d=0.25
-    #xlims=(-48., 16.); ylims=(-32., 32.); zlims=(-32., 32.); d=0.25
+def tofile(run, time, para=False, xlims=(-16., 16.), ylims=(-16., 16.), zlims=(-16., 16.), d=0.25):
 
     Nlat = 19
     Nlon = 37
@@ -103,13 +102,16 @@ def tofile(run, time, para=False):
     subdir = '%04d%02d%02dT%02d%02d%02d/' % tuple(util.tpad(time, length=6))
     direct = conf[run+'_derived'] + subdir
 
+    tup = xlims+ylims+zlims+(d,)
+    tag = '_{0:07.2f}_{1:07.2f}_{2:07.2f}_{3:07.2f}_{4:07.2f}_{5:07.2f}_{6:.5f}_'.format(*tup)
+
     if not os.path.exists(direct):
         os.makedirs(direct)
 
     print('writing files')
-    safenumpy_tofile(surfB_north, direct + 'surfB_north.bin')
-    safenumpy_tofile(surfB_east,  direct + 'surfB_east.bin')
-    safenumpy_tofile(surfB_down,  direct + 'surfB_down.bin')
+    safenumpy_tofile(surfB_north, direct + 'surfB' + tag + 'north.bin')
+    safenumpy_tofile(surfB_east,  direct + 'surfB' + tag + 'east.bin')
+    safenumpy_tofile(surfB_down,  direct + 'surfB' + tag + 'down.bin')
     safenumpy_tofile(LON, direct + 'LON.bin')
     safenumpy_tofile(LAT, direct + 'LAT.bin')
     print('wrote files')
@@ -126,7 +128,10 @@ def tofile(run, time, para=False):
     print(LON)
 
 
-    #plot(LON, LAT, surfB_north)
+def magfile(run, time):
+    fname = rmg.time2mag_grid_file(time)
+    data, headers = rmg.getdata(conf[run+'_cdf'] + fname)
+
 
 def fromfile(run, time):
     Nlat = 19
@@ -167,7 +172,9 @@ def fromfile(run, time):
 if __name__ == '__main__':
     #tofile('TESTANALYTIC', (2000,1,1,1,1,0), para=True)
     #fromfile('TESTANALYTIC', (2000,1,1,1,1,0))
-    #fromfile('DIPTSUR2', (2019,9,2,6,30,0))
-    tofile('CARR_IMPULSE', (2019,9,2,6,30,0), para=True)
-    tofile('DIPTSUR2', (2019,9,2,6,30,0), para=True)
+    #fromfile('CARR_IMPULSE', (2019,9,2,6,30,0))
+    #tofile('CARR_IMPULSE', (2019,9,2,6,30,0), para=True)
+    #tofile('DIPTSUR2', (2019,9,2,6,30,0), para=True)
+    tofile('DIPTSUR2', (2019,9,2,6,30,0), para=True, xlims=(0., 16.), ylims=(-16., 16.), zlims=(-16., 16.), d=0.25)
+    tofile('DIPTSUR2', (2019,9,2,6,30,0), para=True, xlims=(-32., 0.), ylims=(-16., 16.), zlims=(-16., 16.), d=0.25)
 
