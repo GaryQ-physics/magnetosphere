@@ -79,7 +79,7 @@ def main(run, time, location): # loc in MAG sph
         d = region['d']
 
         dB, G, Ntup = bsk.integrate(run, time, location[1], location[2], para=False,
-            xlims=xlims, ylims=ylims, zlims=zlims, d=d, returnAll=False)
+            xlims=xlims, ylims=ylims, zlims=zlims, d=d, returnAll=True)
         deltaB = np.sum(dB, axis=0)
         deltaB_loc = bsk.toMAGLocalComponents(time, location[1], location[2], deltaB)
 
