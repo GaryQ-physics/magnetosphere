@@ -88,7 +88,7 @@ def main(run, time, location): # loc in MAG sph
         positive = np.empty(3)
         negative = np.empty(3)
         for comp in range(3):
-            tr = dB_loc[:, comp]>0:
+            tr = dB_loc[:, comp]>0
             positive_contrs = dB_loc[:,comp][tr]
             negative_contrs = dB_loc[:,comp][np.logical_not(tr)]
             positive[comp] =  np.sum(positive_contrs)
@@ -114,18 +114,6 @@ def main(run, time, location): # loc in MAG sph
         f.write('\n\n')
 
         f.close
-
-
-
-
-
-
-    print('\n\n')
-    print('time = ' + str(time))
-    print('mlat %d, mlon %d'%(location[1], location[2]))
-    print('quadrant\n' + str(region))
-    print('deltaB_loc/nT = ' + str(deltaB_loc))
-    print('\n\n')
 
 
 
