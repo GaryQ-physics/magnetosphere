@@ -241,16 +241,14 @@ def toMAGLocalComponents(time, mlat, mlon, dB):
 
     time = np.array(time, dtype=int)
 
-    if len(time.shape) == 1 and len(dB.shape) > 1:
-        time = np.repeat([time], dB.shape[0], axis = 0)
+    if len(time.shape) == 1:
+        time = np.array([time])
 
-    # time is Nx6 and dB is Nx3  mlat, mlon are numbers
     N = time.shape[0]
-    print('time.shape == ' + str(time.shape))
-    assert(time.shape[0] == N)
-    assert(dB.shape == (N,3))
+    M = dB.shape[0]
+    assert(dB.shape == (M,3))
+
     station_pos = cx.MAGtoGSM(np.array([1., mlat, mlon]), time, 'sph', 'car')
-    assert( station_pos.shape == (N, 3) ) # check
 
     Pole = cx.MAGtoGSM(np.array([0., 0., 1.]), time, 'car', 'car')
 
@@ -276,6 +274,15 @@ def toMAGLocalComponents(time, mlat, mlon, dB):
     R[:, :, 2] = -U3
     
     R = np.linalg.inv(R)
+    assert(R.shape == (N,3,3))
+
+    if N == 1:
+        R = np.repeat(R, dB.shape[0], axis=0)
+    elif N == M:
+        pass
+    else:
+        raise ValueError('dimensions of time and dB dont match')
+
     
     #for i in range(N):
         #R[i,:,0] = U2[i,:]

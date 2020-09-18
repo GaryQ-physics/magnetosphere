@@ -71,14 +71,20 @@ Notes:
 
         working hypothesis: different versions of spacepy
 
+2020/17/09
+    new script quadrants.py
+    ran quadrants.py for DIPTSUR2
+    made spacepy test script for issue in 2020/09/08, it has same difference
+    most up to date -derived folders now on sunspot /media/solar-backup/git-data/sblake
+    full length anamations with cutplane_plot for DIPTSUR2, all variable, only xy plane though.
+    earth surf numpy binary files now written to -derived
+    DIPTSUR2 earth surf at 6:30
+
+
 
 
 
 TODO:
-
-
-\Delta |B|_{exact} - \Delta |B|_Biot)/\Delta |B|_{exact}
-
 
 check mag grid files for DIPSURE2 (compare)
     want plot of earth surf at 6:30 using :
@@ -86,11 +92,14 @@ check mag grid files for DIPSURE2 (compare)
         surf_deltaB
         png on drive
 
-jx jz movie for Diptsur2 and all other vars
 
-traceback spacepy coord trans difference
+####traceback spacepy coord trans difference
 
+change TESTANALYTIC so shell is inside 1Re
 
+test the -> loc rotation against something analytic
+
+bsk return each slices seperately the pos_contr and neg_contr
 
 
 

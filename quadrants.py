@@ -94,26 +94,27 @@ def main(run, time, location): # loc in MAG sph
             positive[comp] =  np.sum(positive_contrs)
             negative[comp] =  np.sum(negative_contrs)
 
-        assert(np.all(positive + negative == deltaB_loc))
+        #assert(np.max(np.abs(positive + negative - deltaB_loc))<1e-6)
+        print(np.max(np.abs(positive + negative - deltaB_loc)))
         return [positive, negative, deltaB_loc]
 
     for region in regions:
 
         ret = bla(region)
 
-        #f = open('/home/gary/temp/quads.py','a')
-        f = open('/media/solar-backup/tmp/quads.py','a')
+        f = open('/home/gary/temp/quads.txt','a')
+        #f = open('/media/solar-backup/tmp/quads.txt','a')
 
         f.write('\n\n')
         f.write('time = ' + str(time))
-        f.write('mlat %d, mlon %d'%(location[1], location[2]))
-        f.write('octant(GSM):\n' + str(region))
-        f.write('net positive contributions = '+str(ret[0])+'  (north, east, down)')
-        f.write('net negative contributions = '+str(ret[1])+'  (north, east, down)')
-        f.write('deltaB_loc/nT = ' + str(ret[2]))
+        f.write('\nmlat %f, mlon %f'%(location[1], location[2]))
+        f.write('\noctant(GSM):\n' + str(region))
+        f.write('\nnet positive contributions = '+str(ret[0])+'  (north, east, down)')
+        f.write('\nnet negative contributions = '+str(ret[1])+'  (north, east, down)')
+        f.write('\ndeltaB_loc/nT = ' + str(ret[2]))
         f.write('\n\n')
 
-        f.close
+        f.close()
 
 
 

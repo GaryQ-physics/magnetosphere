@@ -1,5 +1,7 @@
 import spacepy.coordinates as sc
 from spacepy.time import Ticktock
+import spacepy
+print(spacepy.__version__)
 
 #time = (2019, 1,1,1,1,1)
 time = (2019,9,2,6,30,0)
