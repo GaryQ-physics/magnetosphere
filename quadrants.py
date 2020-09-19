@@ -125,8 +125,8 @@ def getquadrants(run, time, location, fwrite=True): # loc in MAG sph
 
 def main(run, location): # loc in MAG sph
 
-    nf = 2
-    para = False
+    nf = None
+    para = True
 
     files = list(util.get_available_slices(run)[0])
     if nf is not None:
@@ -149,14 +149,14 @@ def main(run, location): # loc in MAG sph
             time = util.CDFfilename2time(run, filename)
             values.append(getquadrants(run, time, location, fwrite=False))
 
-        values = np.array(values)
-
-    assert(len(values.shape) == 3)
-    outname = 'quadrants_values_%dx%dx%d.bin'%values.shape
+    values = np.array(values)
+    print(values)
+    assert(len(values.shape) == 4)
+    outname = 'quadrants_values_%dx%dx%dx%d.bin'%values.shape
 
     values.tofile(outname)
 
-    print(values)
+    #print(values)
     print(values.shape)
     print('DONE')
 
