@@ -74,23 +74,48 @@ Notes:
 2020/17/09
     new script quadrants.py
     ran quadrants.py for DIPTSUR2
-    made spacepy test script for issue in 2020/09/08, it has same difference
     most up to date -derived folders now on sunspot /media/solar-backup/git-data/sblake
     full length anamations with cutplane_plot for DIPTSUR2, all variable, only xy plane though.
     earth surf numpy binary files now written to -derived
     DIPTSUR2 earth surf at 6:30
 
+    made spacepy test script for issue in 2020/09/08:
 
+        (python2.7) gary@gary-Inspiron-5567:~/magnetosphere$ python spacepy_coord_trans_test.py 
+        This unreleased version of SpacePy is not supported by the SpacePy team.
+        UNRELEASED
+        [1.0, 11.058617393065475, 146.89653169520292]
+        expected on local
+
+        (base) gary@gary-Inspiron-5567:~/magnetosphere$ python spacepy_coord_trans_test.py 
+        This unreleased version of SpacePy is not supported by the SpacePy team.
+        UNRELEASED
+        [0.9999999999999999, 11.016639272301447, 147.323425223922]
+        expected on sunspot
+
+
+        (python2.7) gquaresi@sunspot ~/magnetosphere $ python spacepy_coord_trans_test.py 
+        0.2.1
+        [0.9999999999999999, 11.016639272301447, 147.323425223922]
+        expected on sunspot
+
+        (base) gquaresi@sunspot ~/magnetosphere $ python spacepy_coord_trans_test.py 
+        Traceback (most recent call last):
+          File "spacepy_coord_trans_test.py", line 1, in <module>
+            import spacepy.coordinates as sc
+        ModuleNotFoundError: No module named 'spacepy'
 
 
 
 TODO:
 
+paraview contour surfaces for dB_north
+
 check mag grid files for DIPSURE2 (compare)
     want plot of earth surf at 6:30 using :
         maggrid files
         surf_deltaB
-        png on drive
+        png on google drive
 
 
 ####traceback spacepy coord trans difference
@@ -100,6 +125,19 @@ change TESTANALYTIC so shell is inside 1Re
 test the -> loc rotation against something analytic
 
 bsk return each slices seperately the pos_contr and neg_contr
+
+
+
+
+new pyth2.7 env: pip install spacepy
+
+another new pyth2.7 env: install from git
+
+
+
+
+
+
 
 
 

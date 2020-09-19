@@ -12,7 +12,7 @@ import magnetometers as mg
 
 
 
-def main(run, time, location): # loc in MAG sph
+def getquadrants(run, time, location, fwrite=True): # loc in MAG sph
 
     q1 = {'xlims': (0., 32.),
           'ylims': (0., 32.),
@@ -98,28 +98,71 @@ def main(run, time, location): # loc in MAG sph
         print(np.max(np.abs(positive + negative - deltaB_loc)))
         return [positive, negative, deltaB_loc]
 
+    toret = []
+
     for region in regions:
 
         ret = bla(region)
 
-        f = open('/home/gary/temp/quads.txt','a')
-        #f = open('/media/solar-backup/tmp/quads.txt','a')
+        if fwrite:
+            f = open('/home/gary/temp/quads.txt','a')
+            #f = open('/media/solar-backup/tmp/quads.txt','a')
 
-        f.write('\n\n')
-        f.write('time = ' + str(time))
-        f.write('\nmlat %f, mlon %f'%(location[1], location[2]))
-        f.write('\noctant(GSM):\n' + str(region))
-        f.write('\nnet positive contributions = '+str(ret[0])+'  (north, east, down)')
-        f.write('\nnet negative contributions = '+str(ret[1])+'  (north, east, down)')
-        f.write('\ndeltaB_loc/nT = ' + str(ret[2]))
-        f.write('\n\n')
+            f.write('\n\n')
+            f.write('time = ' + str(time))
+            f.write('\nmlat %f, mlon %f'%(location[1], location[2]))
+            f.write('\noctant(GSM):\n' + str(region))
+            f.write('\nnet positive contributions = '+str(ret[0])+'  (north, east, down)')
+            f.write('\nnet negative contributions = '+str(ret[1])+'  (north, east, down)')
+            f.write('\ndeltaB_loc/nT = ' + str(ret[2]))
+            f.write('\n\n')
 
-        f.close()
+            f.close()
 
+        toret.append(ret)
+
+    return np.array(toret)
+
+def main(run, location): # loc in MAG sph
+
+    nf = 2
+    para = False
+
+    files = list(util.get_available_slices(run)[0])
+    if nf is not None:
+        files = files[:nf]
+
+    if para:
+        from joblib import Parallel, delayed
+        import multiprocessing
+        num_cores = multiprocessing.cpu_count()
+        if num_cores is not None and num_cores > len(files):
+            num_cores = len(files)
+        print('Parallel processing {0:d} file(s) using {1:d} cores'\
+              .format(len(files), num_cores))
+        values = Parallel(n_jobs=num_cores)(\
+            delayed(getquadrants)(run, util.CDFfilename2time(run, filename), location, fwrite=False) for filename in files)
+
+    else:
+        values = []
+        for filename in files:
+            time = util.CDFfilename2time(run, filename)
+            values.append(getquadrants(run, time, location, fwrite=False))
+
+        values = np.array(values)
+
+    assert(len(values.shape) == 3)
+    outname = 'quadrants_values_%dx%dx%d.bin'%values.shape
+
+    values.tofile(outname)
+
+    print(values)
+    print(values.shape)
+    print('DONE')
 
 
 if __name__=='__main__':
     run = 'DIPTSUR2'
-    time = (2019,9,2,6,30,0)
-    location = mg.GetMagnetometerLocation('colaba', time, 'MAG', 'sph')
-    main(run, time, location)
+    #time = (2019,9,2,6,30,0)
+    location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
+    main(run, location)
