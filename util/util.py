@@ -145,12 +145,20 @@ def timelist(listtxt='ls-1.txt'):
     return times
 '''
 
-def safenumpy_tofile(array, outname):
+def safeprep_fileout(outname):
+    if not outname[-4] == '.':
+        raise ValueError('invalid extension')
+    extension = outname[-4:]
     fname = outname
     while os.path.exists(fname):
-        fname = fname + '-old.bin'
-    os.system('mv %s %s'%(outname,fname))
+        fname = fname + '-old' + extension
+    if outname != fname:
+        os.system('mv %s %s'%(outname,fname))
+
+def safenumpy_tofile(array, outname):
+    safeprep_fileout(outname):
     array.tofile(outname)
+
 
 def get_available_station_times(run, station):
     import numpy as np

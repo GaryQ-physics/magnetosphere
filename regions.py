@@ -2,7 +2,7 @@ import os
 import sys
 import numpy as np
 import tempfile
-
+import pickle
 
 from config import conf
 import biot_savart_kameleon_interpolated_grid as bsk
@@ -10,6 +10,14 @@ import util
 import cxtransform as cx
 import magnetometers as mg
 
+def getfull():
+    q = {'xlims': (-32., 0.),
+         'ylims': (-32., 0.),
+         'zlims': (-32., 0.),
+         'd': 0.25
+            }
+
+    return (q,)
 
 def getoctants():
     q1 = {'xlims': (0., 32.),
@@ -68,12 +76,17 @@ def getoctants():
 
             }
 
-    return [q1, q2, q3, q4, q5, q6, q7, q8]
+    return (q1, q2, q3, q4, q5, q6, q7, q8)
 
 
-def signedintegrate(run, time, location, fwrite=True): # loc in MAG sph
+def signedintegrate(run, time, location, regions='octants'): # loc in MAG sph
 
-    regions = getoctants()
+    if regions == 'octants':
+        regions = getoctants()
+    elif regions == 'full':
+        regions = getfull()
+    elif isinstance(regions, str):
+        raise ValueError ("regions must be 'octants', 'full', or custom tuple of dictionaries")
 
     def bla(region):
         xlims = region['xlims']
@@ -103,29 +116,28 @@ def signedintegrate(run, time, location, fwrite=True): # loc in MAG sph
 
     toret = []
 
-    for region in regions:
-
-        ret = bla(region)
-
-        if fwrite:
-            f = open('/home/gary/temp/quads.txt','a')
-            #f = open('/media/solar-backup/tmp/quads.txt','a')
-
-            f.write('\n\n')
-            f.write('time = ' + str(time))
-            f.write('\nmlat %f, mlon %f'%(location[1], location[2]))
-            f.write('\noctant(GSM):\n' + str(region))
-            f.write('\nnet positive contributions = '+str(ret[0])+'  (north, east, down)')
-            f.write('\nnet negative contributions = '+str(ret[1])+'  (north, east, down)')
-            f.write('\ndeltaB_loc/nT = ' + str(ret[2]))
-            f.write('\n\n')
-
-            f.close()
-
+    for i in range(len(regions)):
+        ret = bla(regions[i])
         toret.append(ret)
 
     return np.array(toret)
 
+''' 
+if fwrite:
+    f = open('/home/gary/temp/quads.txt','a')
+    #f = open('/media/solar-backup/tmp/quads.txt','a')
+
+    f.write('\n\n')
+    f.write('time = ' + str(time))
+    f.write('\nmlat %f, mlon %f'%(location[1], location[2]))
+    f.write('\noctant(GSM):\n' + str(region))
+    f.write('\nnet positive contributions = '+str(ret[0])+'  (north, east, down)')
+    f.write('\nnet negative contributions = '+str(ret[1])+'  (north, east, down)')
+    f.write('\ndeltaB_loc/nT = ' + str(ret[2]))
+    f.write('\n\n')
+
+    f.close()
+'''
 
 def compidx(comp):
     if comp=='north':
@@ -134,11 +146,23 @@ def compidx(comp):
         return 1
     if comp=='down':
         return 2
+    raise ValueError ("component must be 'north', 'east', or 'down'")
 
 
-def plot(filename, shape, comp='north'):
+def plot(pkl, comp, show=False):
+    with open(pkl, 'rb') as handle:
+        result = pickle.load(handle)
+
+    nf = result['nf']
+    shape = result['shape']
+    location = result['location']
+    regions  = result['regions']
+    values = result['values']
+    values = values.reshape(shape)
 
     times = util.get_available_slices(run)[1]
+    if nf is not None:
+        times = times[:nf, :]
     assert(times.shape[0] == shape[0])
 
     import datetime
@@ -146,13 +170,10 @@ def plot(filename, shape, comp='north'):
     for i in range(times.shape[0]):
         dtimes.append(datetime.datetime(times[i,0],times[i,1],times[i,2],times[i,3],times[i,4],times[i,5]))
 
-    values = np.fromfile('quadrants_values_%dx%dx%dx%d.bin'%shape).reshape(shape)
-
-    regions = getoctants()
     types = ['positive', 'negative', 'deltaB_loc'] #!!!!!!!!!!
-
     for i in range(len(regions)):
-        title = 'dB_' + comp + str(regions[i])
+        title = 'dB_' + comp + bla \
+                +'\n' +str(regions[i])
 
         from hapiclient.plot.datetick import datetick
 
@@ -179,14 +200,14 @@ def plot(filename, shape, comp='north'):
         plt.title(title)
         plt.legend()
 
-        #plt.show()
+        if show: plt.show()
         plt.savefig('quadrants_%d.png'%(i))
         plt.clf()
 
 
 def main(run, location): # loc in MAG sph
 
-    nf = None
+    nf = 4
     para = True
 
     files = list(util.get_available_slices(run)[0])
@@ -216,18 +237,23 @@ def main(run, location): # loc in MAG sph
         for time in list(times):
             values.append(signedintegrate(run, time, location, fwrite=False))
 
-
     values = np.array(values)
-    print(values)
     assert(len(values.shape) == 4)
+
+    result = {}
+
     direct = conf[run +'_derived'] + 'regions/'
     if not os.path.exists(direct):
         os.makedirs(direct)
-    outname = direct + 'quadrants_values_%dx%dx%dx%d.bin'%values.shape
 
-    util.safenumpy_tofile(values, outname)
+    pkl = direct + '{mlat_{0:.3f}_mlon_{1:.3f}_nf_{2:d}.pkl' \
+                    .format(location[1], location[2], nf)
 
-    #print(values)
+    print('writing to ' + pkl)
+    util.safeprep_fileout(pkl)
+    with open(pkl, 'wb') as handle:
+        pickle.dump(result, handle)
+
     print(values.shape)
     print('DONE')
 
@@ -235,8 +261,9 @@ def main(run, location): # loc in MAG sph
 
 
 if __name__=='__main__':
-    run = 'DIPTSUR2'
+    run = 'SCARR5'
     #time = (2019,9,2,6,30,0)
     location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
-    #main(run, location)
-    plot('quadrants_values_698x8x3x3.bin', (698,8,3,3), comp='north')
+    main(run, location, regions='full')
+    plot(pkl, 'north')
+    #plot('quadrants_values_698x8x3x3.bin', (698,8,3,3), comp='north')
