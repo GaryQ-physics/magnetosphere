@@ -145,7 +145,12 @@ def timelist(listtxt='ls-1.txt'):
     return times
 '''
 
-
+def safenumpy_tofile(array, outname):
+    fname = outname
+    while os.path.exists(fname):
+        fname = fname + '-old.bin'
+    os.system('mv %s %s'%(outname,fname))
+    array.tofile(outname)
 
 def get_available_station_times(run, station):
     import numpy as np

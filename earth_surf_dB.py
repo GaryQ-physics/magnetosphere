@@ -92,13 +92,6 @@ def tofile(run, time, para=False, xlims=(-16., 16.), ylims=(-16., 16.), zlims=(-
     surfB_east = surfB[:,1]
     surfB_down = surfB[:,2]
 
-    def safenumpy_tofile(array, outname):
-        fname = outname
-        while os.path.exists(fname):
-            fname = fname + '-old.bin'
-        os.system('mv %s %s'%(outname,fname))
-        array.tofile(outname)
-
     subdir = '%04d%02d%02dT%02d%02d%02d/' % tuple(util.tpad(time, length=6))
     direct = conf[run+'_derived'] + subdir
 
@@ -109,11 +102,11 @@ def tofile(run, time, para=False, xlims=(-16., 16.), ylims=(-16., 16.), zlims=(-
         os.makedirs(direct)
 
     print('writing files')
-    safenumpy_tofile(surfB_north, direct + 'surfB' + tag + 'north.bin')
-    safenumpy_tofile(surfB_east,  direct + 'surfB' + tag + 'east.bin')
-    safenumpy_tofile(surfB_down,  direct + 'surfB' + tag + 'down.bin')
-    safenumpy_tofile(LON, direct + 'LON.bin')
-    safenumpy_tofile(LAT, direct + 'LAT.bin')
+    util.safenumpy_tofile(surfB_north, direct + 'surfB' + tag + 'north.bin')
+    util.safenumpy_tofile(surfB_east,  direct + 'surfB' + tag + 'east.bin')
+    util.safenumpy_tofile(surfB_down,  direct + 'surfB' + tag + 'down.bin')
+    util.safenumpy_tofile(LON, direct + 'LON.bin')
+    util.safenumpy_tofile(LAT, direct + 'LAT.bin')
     print('wrote files')
 
     surfB_north = surfB_north.reshape((Nlat, Nlon))
