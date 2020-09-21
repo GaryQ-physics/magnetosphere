@@ -156,7 +156,7 @@ def safeprep_fileout(outname):
         os.system('mv %s %s'%(outname,fname))
 
 def safenumpy_tofile(array, outname):
-    safeprep_fileout(outname):
+    safeprep_fileout(outname)
     array.tofile(outname)
 
 

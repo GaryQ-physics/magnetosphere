@@ -11,9 +11,9 @@ import cxtransform as cx
 import magnetometers as mg
 
 def getfull():
-    q = {'xlims': (-32., 0.),
-         'ylims': (-32., 0.),
-         'zlims': (-32., 0.),
+    q = {'xlims': (-16., 16.),
+         'ylims': (-16., 16.),
+         'zlims': (-16., 16.),
          'd': 0.25
             }
 
@@ -158,7 +158,8 @@ def plot(pkl, comp, show=False):
     location = result['location']
     regions  = result['regions']
     values = result['values']
-    values = values.reshape(shape)
+    assert(values.shape == shape)
+    #values = values.reshape(shape)
 
     times = util.get_available_slices(run)[1]
     if nf is not None:
@@ -172,7 +173,7 @@ def plot(pkl, comp, show=False):
 
     types = ['positive', 'negative', 'deltaB_loc'] #!!!!!!!!!!
     for i in range(len(regions)):
-        title = 'dB_' + comp + bla \
+        title = 'dB_%s_'%(comp) + 'mlat_{0:.3f}_mlon_{1:.3f}'.format(location[1], location[2]) \
                 +'\n' +str(regions[i])
 
         from hapiclient.plot.datetick import datetick
@@ -201,13 +202,20 @@ def plot(pkl, comp, show=False):
         plt.legend()
 
         if show: plt.show()
-        plt.savefig('quadrants_%d.png'%(i))
+        plt.savefig(conf[run+'_derived'] + 'regions/regions_%d.png'%(i))
         plt.clf()
 
 
-def main(run, location): # loc in MAG sph
+def main(run, location, regions='octants', tag=''): # loc in MAG sph
 
-    nf = 4
+    if regions == 'octants':
+        regions = getoctants()
+    elif regions == 'full':
+        regions = getfull()
+    elif isinstance(regions, str):
+        raise ValueError ("regions must be 'octants', 'full', or custom tuple of dictionaries")
+
+    nf = None
     para = True
 
     files = list(util.get_available_slices(run)[0])
@@ -227,7 +235,7 @@ def main(run, location): # loc in MAG sph
               .format(len(files), num_cores))
         values = Parallel(n_jobs=num_cores)(\
             #delayed(signedintegrate)(run, util.CDFfilename2time(run, filename), location, fwrite=False) for filename in files)
-            delayed(signedintegrate)(run, time, location, fwrite=False) for time in list(times))
+            delayed(signedintegrate)(run, time, location, regions=regions) for time in list(times))
 
     else:
         values = []
@@ -235,19 +243,28 @@ def main(run, location): # loc in MAG sph
         #    time = util.CDFfilename2time(run, filename)
         #    values.append(signedintegrate(run, time, location, fwrite=False))
         for time in list(times):
-            values.append(signedintegrate(run, time, location, fwrite=False))
+            values.append(signedintegrate(run, time, location, regions=regions))
 
     values = np.array(values)
     assert(len(values.shape) == 4)
 
-    result = {}
+    result =   {'nf' : nf,
+                'shape' : values.shape,
+                'location' : location,
+                'regions' : regions,
+                'values' : values
+                }
 
     direct = conf[run +'_derived'] + 'regions/'
     if not os.path.exists(direct):
         os.makedirs(direct)
 
-    pkl = direct + '{mlat_{0:.3f}_mlon_{1:.3f}_nf_{2:d}.pkl' \
-                    .format(location[1], location[2], nf)
+    if nf is None:
+        nfstr = str(len(files))
+    else:
+        nfstr = str(nf)
+    pkl = direct + 'mlat_{0:.3f}_mlon_{1:.3f}_nf_{2:s}-{3:s}.pkl' \
+                    .format(location[1], location[2], nfstr, tag)
 
     print('writing to ' + pkl)
     util.safeprep_fileout(pkl)
@@ -257,13 +274,14 @@ def main(run, location): # loc in MAG sph
     print(values.shape)
     print('DONE')
 
-    return outname
+    return pkl
 
 
 if __name__=='__main__':
-    run = 'SCARR5'
-    #time = (2019,9,2,6,30,0)
-    location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
-    main(run, location, regions='full')
-    plot(pkl, 'north')
-    #plot('quadrants_values_698x8x3x3.bin', (698,8,3,3), comp='north')
+    run = 'DIPTSUR2'
+    if True:
+        #time = (2019,9,2,6,30,0)
+        location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
+        main(run, location, regions='octants', tag='octants') 
+    else:
+        plot('/home/gary/magnetosphere/data/SCARR5-derived/regions/mlat_11.059_mlon_146.897_nf_12-octants.pkl', 'north')
