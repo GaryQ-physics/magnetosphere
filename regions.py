@@ -79,7 +79,7 @@ def getoctants():
     return (q1, q2, q3, q4, q5, q6, q7, q8)
 
 
-def signedintegrate(run, time, location, regions='octants'): # loc in MAG sph
+def signedintegrate(run, time, location, regions='octants', fwrite=False): # loc in MAG sph
 
     if regions == 'octants':
         regions = getoctants()
@@ -112,6 +112,7 @@ def signedintegrate(run, time, location, regions='octants'): # loc in MAG sph
 
         #assert(np.max(np.abs(positive + negative - deltaB_loc))<1e-6)
         print(np.max(np.abs(positive + negative - deltaB_loc)))
+        assert(np.max(np.abs(positive + negative - deltaB_loc)) < 1e-9)
         return [positive, negative, deltaB_loc]
 
     toret = []
@@ -119,6 +120,22 @@ def signedintegrate(run, time, location, regions='octants'): # loc in MAG sph
     for i in range(len(regions)):
         ret = bla(regions[i])
         toret.append(ret)
+
+        if fwrite:
+            #f = open('/home/gary/temp/regs-local.txt','a')
+            f = open('/media/solar-backup/tmp/regs-sunspot.txt','a')
+
+            f.write('\n\n')
+            f.write('time = ' + str(time))
+            f.write('\nmlat %f, mlon %f'%(location[1], location[2]))
+            f.write('\noctant(GSM):\n' + str(regions[i]))
+            f.write('\nnet positive contributions = '+str(ret[0])+'  (north, east, down)')
+            f.write('\nnet negative contributions = '+str(ret[1])+'  (north, east, down)')
+            f.write('\ndeltaB_loc/nT = ' + str(ret[2]))
+            f.write('\n\n')
+
+            f.close()
+
 
     return np.array(toret)
 
@@ -149,7 +166,9 @@ def compidx(comp):
     raise ValueError ("component must be 'north', 'east', or 'down'")
 
 
-def plot(pkl, comp, show=False):
+def plot(run, pkl, comp, show=False, tag=''):
+    pkl = conf[run+'_derived'] + 'regions/' + pkl
+
     with open(pkl, 'rb') as handle:
         result = pickle.load(handle)
 
@@ -202,7 +221,7 @@ def plot(pkl, comp, show=False):
         plt.legend()
 
         if show: plt.show()
-        plt.savefig(conf[run+'_derived'] + 'regions/regions_%d.png'%(i))
+        plt.savefig(conf[run+'_derived'] + 'regions/%s_region_%d.png'%(tag,i))
         plt.clf()
 
 
@@ -279,9 +298,16 @@ def main(run, location, regions='octants', tag=''): # loc in MAG sph
 
 if __name__=='__main__':
     run = 'DIPTSUR2'
-    if True:
+
+    time = (2019,9,2,6,30,0)
+    location = mg.GetMagnetometerLocation('colaba', time, 'MAG', 'sph')
+    signedintegrate(run, time, location, regions='quadrants', fwrite=True)
+    signedintegrate(run, time, location, regions='full', fwrite=True)
+
+    if False:
         #time = (2019,9,2,6,30,0)
         location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
         main(run, location, regions='octants', tag='octants') 
     else:
-        plot('/home/gary/magnetosphere/data/SCARR5-derived/regions/mlat_11.059_mlon_146.897_nf_12-octants.pkl', 'north')
+        #plot(run, 'mlat_11.017_mlon_147.323_nf_698-octants.pkl', 'north', tag='north')
+        print('else')

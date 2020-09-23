@@ -123,7 +123,24 @@ def tofile(run, time, para=False, xlims=(-16., 16.), ylims=(-16., 16.), zlims=(-
 
 def magfile(run, time):
     fname = rmg.time2mag_grid_file(time)
-    data, headers = rmg.getdata(conf[run+'_cdf'] + fname)
+    data, headers, csyst = rmg.getdata(run, time)
+
+    assert(headers[0] == 'Lon')
+    assert(headers[1] == 'Lat') #OPOSITE ORDER!
+
+    if csyst == 'MAG':
+        mlat = data[:,1] 
+        mlon = data[:,0]
+    elif csyst == 'GEO':
+        lat = data[:,1]
+        lon = data[:,0]
+        ret = cx.GEOtoMAG(np.column_stack([np.ones(lat.shape), lat, lon]), time, 'sph', 'sph')
+        mlat = ret[:,1]
+        mlon = ret[:,2]
+
+
+
+
 
 
 def fromfile(run, time):

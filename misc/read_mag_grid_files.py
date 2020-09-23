@@ -73,15 +73,11 @@ def mag_grid_file2time(filename):
     f = 0
     return [y, m, d, h, M, s, f]
 
-def getdata(filename, debug=True):
+def getdata(run, time, debug=True):
     """
 
     Parameters
-    ----------
-    filename : string or tuple/list/array
-        if tuple/list/array, it's treated as time and converted to filename str
-    debug : boolean, OPTIONAL
-        DESCRIPTION. The default is True.
+    ----------!!!!!
 
     Returns
     -------
@@ -93,30 +89,30 @@ def getdata(filename, debug=True):
     if the file doesnt exist, it is downloaded form mag.gmu.edu
     
     """
-    '''
-    if type(filename) != str:
-        filename = time2mag_grid_file(filename)
-    if not os.path.exists(conf['run_path'] + filename):
-        urlretrieve(conf['run_url'] + filename, conf['run_path'] + filename)
-        if debug:
-            print('Downloading' + filename)
-    fname = conf['run_path'] + filename
-    '''
 
-    if type(filename) != str:
-        filename = conf['run_path'] + time2mag_grid_file(filename)
+    filename = conf[run + '_cdf'] + time2mag_grid_file(time)
 
-    assert(filename[0] == '/')
     if not os.path.exists(filename):
-        #urlretrieve(conf['run_url'] + filename, conf['run_path'] + filename)
         dlfile(filename)
         if debug:
             print('Downloading' + filename)
 
     data = np.genfromtxt(filename, skip_header=4)
-    headers = np.loadtxt(filename, dtype=str, skiprows=3, max_rows=1)
 
-    return [data, headers]
+    f = open(filename, 'r')
+    first = f.readline()
+    second = f.readline()
+    third = f.readline()
+    headerline = f.readline()
+    f.close()
+
+    headers = headerline[:-1].split(' ')
+    assert(first[:19] == 'Magnetometer grid (')
+    csyst = first[19:22]
+
+    #headers = np.loadtxt(filename, dtype=str, skiprows=3, max_rows=1)
+
+    return [data, headers, csyst]
 
 def analyzedata(filename, MLAT, MLON, debug=True):
     """
