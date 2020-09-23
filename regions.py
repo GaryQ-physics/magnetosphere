@@ -10,7 +10,7 @@ import util
 import cxtransform as cx
 import magnetometers as mg
 
-def getfull(pm=32.):
+def getfull(pm=16.):
     q = {'xlims': (-pm, pm),
          'ylims': (-pm, pm),
          'zlims': (-pm, pm),
@@ -29,19 +29,19 @@ def getoctants():
 
     q2 = {'xlims': (0., 32.),
           'ylims': (0., 32.),
-          'zlims': (-32., 0.),
+          'zlims': (-32., -0.25),
           'd': 0.25
 
             }
 
     q3 = {'xlims': (0., 32.),
-          'ylims': (-32., 0),
+          'ylims': (-32., -0.25),
           'zlims': (0., 32.),
           'd': 0.25
 
             }
 
-    q4 = {'xlims': (-32., 0.),
+    q4 = {'xlims': (-32., -0.25),
           'ylims': (0., 32.),
           'zlims': (0., 32.),
           'd': 0.25
@@ -49,29 +49,29 @@ def getoctants():
             }
 
     q5 = {'xlims': (0., 32.),
-          'ylims': (-32., 0.),
-          'zlims': (-32., 0.),
+          'ylims': (-32., -0.25),
+          'zlims': (-32., -0.25),
           'd': 0.25
 
             }
 
-    q6 = {'xlims': (-32., 0.),
+    q6 = {'xlims': (-32., -0.25),
           'ylims': (0., 32.),
-          'zlims': (-32., 0.),
+          'zlims': (-32., -0.25),
           'd': 0.25
 
             }
 
-    q7 = {'xlims': (-32., 0.),
-          'ylims': (-32., 0.),
+    q7 = {'xlims': (-32., -0.25),
+          'ylims': (-32., -0.25),
           'zlims': (0., 32.),
           'd': 0.25
 
             }
 
-    q8 = {'xlims': (-32., 0.),
-          'ylims': (-32., 0.),
-          'zlims': (-32., 0.),
+    q8 = {'xlims': (-32., -0.25),
+          'ylims': (-32., -0.25),
+          'zlims': (-32., -0.25),
           'd': 0.25
 
             }
@@ -122,8 +122,10 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False): # loc
         toret.append(ret)
 
         if fwrite:
-            #f = open('/home/gary/temp/regs-local.txt','a')
-            f = open('/tmp/regs-sunspot.txt','a')
+            if os.path.exists('/home/gary/'):
+                f = open('/home/gary/temp/regs-local.txt','a')
+            else:
+                f = open('/tmp/regs-sunspot.txt','a')
 
             f.write('\n\n')
             f.write('time = ' + str(time))
@@ -139,22 +141,6 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False): # loc
 
     return np.array(toret)
 
-''' 
-if fwrite:
-    f = open('/home/gary/temp/quads.txt','a')
-    #f = open('/media/solar-backup/tmp/quads.txt','a')
-
-    f.write('\n\n')
-    f.write('time = ' + str(time))
-    f.write('\nmlat %f, mlon %f'%(location[1], location[2]))
-    f.write('\noctant(GSM):\n' + str(region))
-    f.write('\nnet positive contributions = '+str(ret[0])+'  (north, east, down)')
-    f.write('\nnet negative contributions = '+str(ret[1])+'  (north, east, down)')
-    f.write('\ndeltaB_loc/nT = ' + str(ret[2]))
-    f.write('\n\n')
-
-    f.close()
-'''
 
 def compidx(comp):
     if comp=='north':
@@ -166,7 +152,7 @@ def compidx(comp):
     raise ValueError ("component must be 'north', 'east', or 'down'")
 
 
-def plot(run, pkl, comp, show=False, tag=''):
+def plot(run, pkl, comp, show=False, tag='', totxt=False):
     pkl = conf[run+'_derived'] + 'regions/' + pkl
 
     with open(pkl, 'rb') as handle:
@@ -194,19 +180,28 @@ def plot(run, pkl, comp, show=False, tag=''):
     for i in range(len(regions)):
         title = 'dB_%s_'%(comp) + 'mlat_{0:.3f}_mlon_{1:.3f}'.format(location[1], location[2]) \
                 +'\n' +str(regions[i])
+        outname = conf[run+'_derived'] + 'regions/%s_region_%d.png'%(tag,i)
 
         from hapiclient.plot.datetick import datetick
 
         import matplotlib.pyplot as plt
         import datetime
 
+        if totxt:
+            print('writing txt ' + outname + '.txt')
+            txt = open(outname + '.txt', 'w')
+            txt.write('title is:\n')
+            txt.write(title +'\n')
+            txt.write('year month day hour minute second milisecond value(label)\n')
         for j in range(3):
             #print('plot add line   dtimes vs values[:, i, %d, compidx(comp)]'%(j))
             #print('with legend %s'%(types[j]))
             #print(dtimes)
             #print(values[:, i, j, compidx(comp)])
             plt.plot(dtimes, values[:, i, j, compidx(comp)], label=types[j])
-
+            if totxt:
+                txt.write('\nlabel=%s\n'%(types[j]))
+                np.savetxt(txt, np.column_stack([ times, values[:, i, j, compidx(comp)] ]), fmt='%.5f')
         print('export png for %d with title %s'%(i,title))
 
 
@@ -221,8 +216,9 @@ def plot(run, pkl, comp, show=False, tag=''):
         plt.legend()
 
         if show: plt.show()
-        plt.savefig(conf[run+'_derived'] + 'regions/%s_region_%d.png'%(tag,i))
+        plt.savefig(outname)
         plt.clf()
+        if totxt: txt.close()
 
 
 def main(run, location, regions='octants', tag=''): # loc in MAG sph
@@ -297,18 +293,49 @@ def main(run, location, regions='octants', tag=''): # loc in MAG sph
 
 
 if __name__=='__main__':
-    run = 'DIPTSUR2'
+    run = 'TESTANALYTIC'
 
     time = (2019,9,2,6,30,0)
     location = mg.GetMagnetometerLocation('colaba', time, 'MAG', 'sph')
-    #signedintegrate(run, time, location, regions='octants', fwrite=True)
-    signedintegrate(run, time, location, regions='full', fwrite=True)
+    signedintegrate(run, time, location, regions='octants', fwrite=True)
+    #signedintegrate(run, time, location, regions='full', fwrite=True)
 
-    if False:
+
+    pm = 16.
+    reg =  {'xlims': (-pm, pm),
+            'ylims': (-pm, pm),
+            'zlims': (-pm, pm),
+            'd': 0.25
+            }
+
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True)
+
+
+    pm = 32.
+    reg =  {'xlims': (-pm, pm),
+            'ylims': (-pm, pm),
+            'zlims': (-pm, pm),
+            'd': 0.25
+            }
+
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True)
+
+
+    pm = 31.875
+    reg =  {'xlims': (-pm, pm),
+            'ylims': (-pm, pm),
+            'zlims': (-pm, pm),
+            'd': 0.25
+            }
+
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True)
+
+
+    if True:
         #time = (2019,9,2,6,30,0)
         location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
         main(run, location, regions='octants', tag='octants') 
     else:
-        #plot(run, 'mlat_11.017_mlon_147.323_nf_698-octants.pkl', 'north', tag='north')
+        #plot(run, 'mlat_11.017_mlon_147.323_nf_698-octants.pkl', 'north', tag='north', totxt=True)
         print('else')
 

@@ -25,11 +25,11 @@ Note:
 
 import spacepy.pybats.bats as bats
 
-from util import time2filename
+import util
 time = [2003, 11, 20, 7, 0]
 
 # read original data file
-filename = time2filename(time, extension='.out')
+filename = util.time2CDFfilename('SCARR5',time)[:-5]
 data3d = bats.Bats2d(filename)
 
 # get the cell coordinates and associated values of J components

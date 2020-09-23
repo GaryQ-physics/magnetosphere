@@ -9,7 +9,7 @@ from config import conf
 import util
 from units_and_constants import phys
 
-TESTANALYTIC = False
+TESTANALYTIC = True
 
 def J_analytic(X):
     """
