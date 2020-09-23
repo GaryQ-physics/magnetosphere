@@ -10,10 +10,10 @@ import util
 import cxtransform as cx
 import magnetometers as mg
 
-def getfull():
-    q = {'xlims': (-16., 16.),
-         'ylims': (-16., 16.),
-         'zlims': (-16., 16.),
+def getfull(pm=32.):
+    q = {'xlims': (-pm, pm),
+         'ylims': (-pm, pm),
+         'zlims': (-pm, pm),
          'd': 0.25
             }
 
@@ -123,7 +123,7 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False): # loc
 
         if fwrite:
             #f = open('/home/gary/temp/regs-local.txt','a')
-            f = open('/media/solar-backup/tmp/regs-sunspot.txt','a')
+            f = open('/tmp/regs-sunspot.txt','a')
 
             f.write('\n\n')
             f.write('time = ' + str(time))
@@ -301,7 +301,7 @@ if __name__=='__main__':
 
     time = (2019,9,2,6,30,0)
     location = mg.GetMagnetometerLocation('colaba', time, 'MAG', 'sph')
-    signedintegrate(run, time, location, regions='quadrants', fwrite=True)
+    #signedintegrate(run, time, location, regions='octants', fwrite=True)
     signedintegrate(run, time, location, regions='full', fwrite=True)
 
     if False:
@@ -311,3 +311,4 @@ if __name__=='__main__':
     else:
         #plot(run, 'mlat_11.017_mlon_147.323_nf_698-octants.pkl', 'north', tag='north')
         print('else')
+
