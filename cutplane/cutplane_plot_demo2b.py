@@ -88,6 +88,7 @@ def process(files, variables, para=False, process_type=1, debug=True):
     # type(vars) == list
     for var in variables:
         # type(var) == dict
+        configure_dict(var)
         times = []
 
         pkl_path = conf[var['run']+"_derived"] + "cutplanes/minmax/"
@@ -100,14 +101,12 @@ def process(files, variables, para=False, process_type=1, debug=True):
             var['dpi'] = var['dpi1']
             var['xlims'] = var['xlimsO']
             var['ylims'] = var['ylimsO']
-            configure_dict(var)
 
         if process_type == 2:
             var['delta'] = var['delta2']
             var['dpi'] = var['dpi2']
             var['xlims'] = var['xlimsO']
             var['ylims'] = var['ylimsO']
-            configure_dict(var)
 
             minmax = {'min': np.nan*np.empty(len(files)),
                       'max': np.nan*np.empty(len(files)),
@@ -139,7 +138,6 @@ def process(files, variables, para=False, process_type=1, debug=True):
             var['dpi'] = var['dpi2']
             var['xlims'] = var['xlimsI']
             var['ylims'] = var['ylimsI']
-            configure_dict(var)
 
         def wrap(fname, fileid):
             process_one(fname, var, fileid=fileid, pkl=pkl)
