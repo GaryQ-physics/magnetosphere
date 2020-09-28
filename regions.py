@@ -79,7 +79,7 @@ def getoctants():
     return (q1, q2, q3, q4, q5, q6, q7, q8)
 
 
-def signedintegrate(run, time, location, regions='octants', fwrite=False): # loc in MAG sph
+def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=None): # loc in MAG sph
 
     if regions == 'octants':
         regions = getoctants()
@@ -95,7 +95,7 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False): # loc
         d = region['d']
 
         dB, G, Ntup = bsk.integrate(run, time, location[1], location[2], para=False,
-            xlims=xlims, ylims=ylims, zlims=zlims, d=d, returnAll=True)
+            xlims=xlims, ylims=ylims, zlims=zlims, d=d, returnAll=True, rmin=rmin)
         deltaB = np.sum(dB, axis=0)
         deltaB_loc = bsk.toMAGLocalComponents(time, location[1], location[2], deltaB)
 
@@ -123,14 +123,15 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False): # loc
 
         if fwrite:
             if os.path.exists('/home/gary/'):
-                f = open('/home/gary/temp/regs-local.txt','a')
+                f = open('/home/gary/temp/regs.txt','a')
             else:
-                f = open('/tmp/regs-sunspot.txt','a')
+                f = open('/tmp/regs.txt','a')
 
             f.write('\n\n')
+            f.write('run = %s\n'%(run))
             f.write('time = ' + str(time))
             f.write('\nmlat %f, mlon %f'%(location[1], location[2]))
-            f.write('\noctant(GSM):\n' + str(regions[i]))
+            f.write('\noctant(GSM):with rmin '+str(rmin)+':\n' + str(regions[i]))
             f.write('\nnet positive contributions = '+str(ret[0])+'  (north, east, down)')
             f.write('\nnet negative contributions = '+str(ret[1])+'  (north, east, down)')
             f.write('\ndeltaB_loc/nT = ' + str(ret[2]))
@@ -293,23 +294,9 @@ def main(run, location, regions='octants', tag=''): # loc in MAG sph
 
 
 if __name__=='__main__':
-    run = 'TESTANALYTIC'
-
-    time = (2019,9,2,6,30,0)
-    location = mg.GetMagnetometerLocation('colaba', time, 'MAG', 'sph')
-    signedintegrate(run, time, location, regions='octants', fwrite=True)
-    #signedintegrate(run, time, location, regions='full', fwrite=True)
-
-
-    pm = 16.
-    reg =  {'xlims': (-pm, pm),
-            'ylims': (-pm, pm),
-            'zlims': (-pm, pm),
-            'd': 0.25
-            }
-
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True)
-
+    run = 'IMP10_RUN_SAMPLE'
+    time = (2019,9,2,7,0,0)
+    location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
 
     pm = 32.
     reg =  {'xlims': (-pm, pm),
@@ -317,9 +304,31 @@ if __name__=='__main__':
             'zlims': (-pm, pm),
             'd': 0.25
             }
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=0.)
 
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True)
+    pm = 32.
+    reg =  {'xlims': (-pm, pm),
+            'ylims': (-pm, pm),
+            'zlims': (-pm, pm),
+            'd': 0.25
+            }
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.)
 
+    pm = 32.
+    reg =  {'xlims': (-pm, pm),
+            'ylims': (-pm, pm),
+            'zlims': (-pm, pm),
+            'd': 0.25
+            }
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.5)
+
+    pm = 32.
+    reg =  {'xlims': (-pm, pm),
+            'ylims': (-pm, pm),
+            'zlims': (-pm, pm),
+            'd': 0.25
+            }
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.75)
 
     pm = 31.875
     reg =  {'xlims': (-pm, pm),
@@ -327,15 +336,63 @@ if __name__=='__main__':
             'zlims': (-pm, pm),
             'd': 0.25
             }
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=0.)
 
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True)
+    pm = 31.875
+    reg =  {'xlims': (-pm, pm),
+            'ylims': (-pm, pm),
+            'zlims': (-pm, pm),
+            'd': 0.25
+            }
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.)
+
+    pm = 31.875
+    reg =  {'xlims': (-pm, pm),
+            'ylims': (-pm, pm),
+            'zlims': (-pm, pm),
+            'd': 0.25
+            }
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.5)
+
+    pm = 31.875
+    reg =  {'xlims': (-pm, pm),
+            'ylims': (-pm, pm),
+            'zlims': (-pm, pm),
+            'd': 0.25
+            }
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.75)
 
 
-    if True:
+    if False:
+        #time = (2019,9,2,6,30,0)
+        signedintegrate(run, time, location, regions='octants', fwrite=True)
+        #signedintegrate(run, time, location, regions='full', fwrite=True)
+
+
+        pm = 16.
+        reg =  {'xlims': (-pm, pm),
+                'ylims': (-pm, pm),
+                'zlims': (-pm, pm),
+                'd': 0.25
+                }
+
+        signedintegrate(run, time, location, regions=(reg,), fwrite=True)
+
+
+        pm = 32.
+        reg =  {'xlims': (-pm, pm),
+                'ylims': (-pm, pm),
+                'zlims': (-pm, pm),
+                'd': 0.25
+                }
+
+        signedintegrate(run, time, location, regions=(reg,), fwrite=True)
+
         #time = (2019,9,2,6,30,0)
         location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
         main(run, location, regions='octants', tag='octants') 
     else:
+        #plot(run, 'mlat_11.059_mlon_146.897_nf_240-octants.pkl', 'north', tag='north', totxt=True)
         #plot(run, 'mlat_11.017_mlon_147.323_nf_698-octants.pkl', 'north', tag='north', totxt=True)
         print('else')
 

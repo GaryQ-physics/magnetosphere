@@ -31,10 +31,12 @@ def process_one(filename, var, fileid=0, pkl='', debug=True):
     if not os.path.exists(filename_path):
         os.makedirs(filename_path)
 
-    filename_png = filename_path \
-                    + '{0:s}-{1:s}-type_{2:d}_delta_{3:.3f}.png' \
-                    .format(filename, var['str_id'], 1, var['delta'])
-
+    filename_png = filename_path + \
+            '{0:s}-{1:s}-type_{2:d}_delta_{3:.4f}_\
+            xlims_{4:.5f},{5:.5f}_ylims_{6:.5f},{7:.5f}.png'\
+            .format(filename, var['str_id'], 1, var['delta'],\
+            var['xlims'][0], var['xlims'][1],\
+            var['ylims'][0], var['ylims'][1])
 
     zticks = var['zticks']
     if os.path.exists(pkl):
@@ -93,7 +95,20 @@ def process(files, variables, para=False, process_type=1, debug=True):
             os.makedirs(pkl_path)
         pkl = pkl_path + var['str_id'] + '.pkl'
 
+        if process_type == 1:
+            var['delta'] = var['delta1']
+            var['dpi'] = var['dpi1']
+            var['xlims'] = var['xlimsO']
+            var['ylims'] = var['ylimsO']
+            configure_dict(var)
+
         if process_type == 2:
+            var['delta'] = var['delta2']
+            var['dpi'] = var['dpi2']
+            var['xlims'] = var['xlimsO']
+            var['ylims'] = var['ylimsO']
+            configure_dict(var)
+
             minmax = {'min': np.nan*np.empty(len(files)),
                       'max': np.nan*np.empty(len(files)),
                       'probe': {
@@ -118,6 +133,13 @@ def process(files, variables, para=False, process_type=1, debug=True):
 
             with open(pkl, 'wb') as handle:
                 pickle.dump(minmax, handle)
+
+        if process_type == 3:
+            var['delta'] = var['delta3']
+            var['dpi'] = var['dpi2']
+            var['xlims'] = var['xlimsI']
+            var['ylims'] = var['ylimsI']
+            configure_dict(var)
 
         def wrap(fname, fileid):
             process_one(fname, var, fileid=fileid, pkl=pkl)
@@ -148,8 +170,10 @@ def main(run):
                            # TODO: Read PNG and display using PIL instead.
 
     # Testing options
-    first_only    = False  # Do only low-res first processing
-    second_only   = False  # Execute only high-res second processing
+    #low_only    = False  # Do only low-res first processing
+    #high_only   = False  # Execute only high-res second processing
+    process_types = [1, 2, 3]
+
     test_serial   = False   # Process few files in serial
     test_parallel = True  # Process few files in parallel
 
@@ -157,14 +181,16 @@ def main(run):
             'run' : run,
             'regen': True,       # Regenerate image even if found
             'plane': 'xz',       # Cut plane to plot
-            'xlims': [-30, 15],  # Horizontal axis limits in R_E
-            'ylims': [-20, 20],  # Vertical axis limits in R_E
+            'xlimsO': [-30, 15], # zoomed out Horizontal axis limits in R_E
+            'ylimsO': [-20, 20], # zoomed out Vertical axis limits in R_E
+            'xlimsI': [-7.53125, 7.53125], # zoomed in Horizontal axis limits in R_E
+            'ylimsI': [-7.53125, 7.53125], # zoomed in Vertical axis limits in R_E
             'zticks': None,      # z-axis ticks for variable
-            #'nf': None,          # Number of files to process. None => all files
             'dpi1': 96,          # Make multiple of 16 (for mimwrite animation)
             'dpi2': 96*3,        # Make multiple of 16 (for mimwrite animation)
             'delta1': 0.5,       # Low-res cut plane resolution in R_E
             'delta2': 0.125,     # High-res cut plane resolution in R_E
+            'delta3': 0.0625,    # Zoomed cut plane resolution in R_E
             'showplot': showplot,# Show the plot on screen
             'mlat' : None,
             'mlon' : None
@@ -176,8 +202,8 @@ def main(run):
     MAG_locations = [(0.,0.)] # list of (mlat, mlot) tuples
 
     ###
-    if run in ['CARR_IMPULSE', 'DIPTSUR2', 'TESTANALYTIC']:
-        fixed_time = (2019,9,2,6,30,0)
+    if run in ['CARR_IMPULSE', 'DIPTSUR2', 'TESTANALYTIC', 'IMP10_RUN_SAMPLE']:
+        fixed_time = (2019,9,2,6,30,0) # only the year 2019 matters
         pos = mg.GetMagnetometerLocation('colaba', fixed_time, 'MAG', 'sph')
         MAG_locations.append((pos[1], pos[2]))
 
@@ -190,10 +216,11 @@ def main(run):
 
     if test_parallel:
         para = True
-        built_in_vars = ['bx','by','bz','ux','uy','uz','jx','jz','rho','e']
-        dB_vars = []
+        #built_in_vars = ['bx','by','bz','ux','uy','uz','jx','jz','rho','e']
+        #dB_vars = []
         nf = None
         opts["showplot"] = False
+        process_types = [3]
     ###
 
     files = list(util.get_available_slices(run)[0])
@@ -219,25 +246,12 @@ def main(run):
             vardict['mlon'] = loc[1]
             variables.append(vardict.copy())
 
-    if not second_only:
-        print('First processing.')
-        for var in variables:
-            var['delta'] = var['delta1']
-            var['dpi'] = var['dpi1']
-            configure_dict(var)
+    for process_type in process_types:
+        print('%d processing'%(process_type))
+        process(files, variables, para=para, process_type=process_type)
 
-        process(files, variables, para=para, process_type=1)
-
-    if not first_only:
-        print('Second processing.')        
-        for var in variables:
-            var['delta'] = var['delta2']
-            var['dpi'] = var['dpi2']
-            configure_dict(var)
-
-        process(files, variables, para=para, process_type=2)
 
 if __name__ == '__main__':
     #util.generate_TESTANALYTIC_cdflist()
-    main('TESTANALYTIC')
+    main('DIPTSUR2')
 

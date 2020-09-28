@@ -6,8 +6,10 @@ from config import conf
 import spacepy.pybats.bats as bats
 
 # read in the 3d magnetosphere
-filename = conf['run_path'] + "3d__var_3_e20031120-070000-000.out"
+#filename = conf['run_path'] + "3d__var_3_e20031120-070000-000.out"
 #filename = conf['SWPC_raw'] + "3d__var_1_t00000000_n0002500.out"
+
+filename = conf['SCARR5'+'_cdf'] + "3d__var_3_e20031120-070000-000.out"
 data3d = bats.Bats2d(filename)
 
 

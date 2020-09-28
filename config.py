@@ -19,7 +19,7 @@ elif os.path.exists('/home/gary/'):
 elif os.path.exists('/home/gquaresi/'):
     base = '/home/gquaresi/magnetosphere/'
     #kameleon = '/home/gquaresi/'
-    storage = '/media/solar-backup/git-data/sblake/'
+    storage = '/media/sunspot/git-data/sblake/'
 
 else:
     assert(False)
@@ -61,6 +61,9 @@ conf = {
 
         'TESTANALYTIC_cdf' : storage + 'TESTANALYTIC/GM/IO2/',
         'TESTANALYTIC_derived' : storage + 'TESTANALYTIC-derived/',
+
+        'IMP10_RUN_SAMPLE_cdf' : storage + 'IMP10_RUN_SAMPLE/GM/IO2/',
+        'IMP10_RUN_SAMPLE_derived' : storage + 'IMP10_RUN_SAMPLE-derived/',
 
         'interpolator': base + 'interpolators/'
         }

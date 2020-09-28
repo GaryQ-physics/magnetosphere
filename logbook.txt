@@ -139,9 +139,8 @@ another new pyth2.7 env: install from git
 
 
 
-
-
-
+xlims--40,20_ylims--15,15
+('special_parameter_R', 'FLOAT: special_parameter_R: 1.39999998')
 
 
 

@@ -19,7 +19,7 @@ from make_grid import make_grid, make_axes
 
 def integrate(run, time_fname, mlat, mlon, para=True,
         xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.125, 
-        tonpfile=False, returnAll=False, debug=True):
+        tonpfile=False, returnAll=False, debug=True, rmin=None):
     """
 
     Returns (Btot)
@@ -123,6 +123,10 @@ def integrate(run, time_fname, mlat, mlon, para=True,
             #Grid = np.column_stack([X[i]*np.ones(Gy.shape), Gy, Gz])
             J_kameleon = probe(filepath, G_s[i], var = ['jx','jy','jz'], library='kameleon')
             J = J_kameleon*(phys['muA']/phys['m']**2)
+
+            if rmin is not None:
+                J[np.einsum('ij,ij->i',G_s[i], G_s[i]) < rmin**2] = 0.
+
             if debug:
                 print(G_s[i].shape)
                 print(J.shape)
@@ -158,6 +162,10 @@ def integrate(run, time_fname, mlat, mlon, para=True,
 
         J_kameleon = probe(filepath, G, var = ['jx','jy','jz'], library='kameleon')
         J = J_kameleon*(phys['muA']/phys['m']**2)
+
+        if rmin is not None:
+            J[np.einsum('ij,ij->i', G, G) < rmin**2] = 0.
+
         if debug:
             print('done J')
 

@@ -131,30 +131,64 @@ def magfile(run, time):
     if csyst == 'MAG':
         mlat = data[:,1] 
         mlon = data[:,0]
+        ret = cx.MAGtoGEO(np.column_stack([np.ones(mlat.shape), mlat, mlon]), time, 'sph', 'sph')
+        lat = ret[:,1]
+        lon = ret[:,2]
     elif csyst == 'GEO':
         lat = data[:,1]
         lon = data[:,0]
-        ret = cx.GEOtoMAG(np.column_stack([np.ones(lat.shape), lat, lon]), time, 'sph', 'sph')
-        mlat = ret[:,1]
-        mlon = ret[:,2]
 
+    print('data.shape = '+ str(data.shape))
+    assert(headers[5] == 'dBnMhd')
+    assert(headers[6] == 'dBeMhd')
+    assert(headers[7] == 'dBdMhd')
 
+    surfB_north = data[:,5]
+    surfB_east = data[:,6]
+    surfB_down = data[:,7]
+
+    subdir = '%04d%02d%02dT%02d%02d%02d/' % tuple(util.tpad(time, length=6))
+    direct = conf[run+'_derived'] + subdir + 'magfile/'
+
+    tag = '_magfile_'
+
+    if not os.path.exists(direct):
+        os.makedirs(direct)
+
+    print('writing files')
+    util.safenumpy_tofile(surfB_north, direct + 'surfB' + tag + 'north.bin')
+    util.safenumpy_tofile(surfB_east,  direct + 'surfB' + tag + 'east.bin')
+    util.safenumpy_tofile(surfB_down,  direct + 'surfB' + tag + 'down.bin')
+    util.safenumpy_tofile(lon, direct + 'lon.bin')
+    util.safenumpy_tofile(lat, direct + 'lat.bin')
+    print('wrote files')
 
 
 
 
 def fromfile(run, time):
-    Nlat = 19
-    Nlon = 37
+
 
     subdir = '%04d%02d%02dT%02d%02d%02d/' % tuple(util.tpad(time, length=6))
     direct = conf[run+'_derived'] + subdir
 
-    surfB_north = np.fromfile(direct + 'surfB_north.bin')
-    surfB_east = np.fromfile(direct + 'surfB_east.bin')
-    surfB_down = np.fromfile(direct + 'surfB_down.bin')
-    LON = np.fromfile(direct + 'LON.bin')
-    LAT = np.fromfile(direct + 'LAT.bin')
+    if False:
+        Nlat = 19
+        Nlon = 37
+        surfB_north = np.fromfile(direct + 'surfB_north.bin')
+        surfB_east = np.fromfile(direct + 'surfB_east.bin')
+        surfB_down = np.fromfile(direct + 'surfB_down.bin')
+        LON = np.fromfile(direct + 'LON.bin')
+        LAT = np.fromfile(direct + 'LAT.bin')
+    else:
+        Nlat = 63000
+        Nlon = 63000
+        direct = direct + 'magfile/'
+        surfB_north = np.fromfile(direct + 'surfB_magfile_north.bin')
+        surfB_east = np.fromfile(direct + 'surfB_magfile_east.bin')
+        surfB_down = np.fromfile(direct + 'surfB_magfile_down.bin')
+        LON = np.fromfile(direct + 'lon.bin')
+        LAT = np.fromfile(direct + 'lat.bin')
 
     surfB_north = surfB_north.reshape((Nlat, Nlon))
     surfB_east = surfB_east.reshape((Nlat, Nlon))
@@ -185,6 +219,7 @@ if __name__ == '__main__':
     #fromfile('CARR_IMPULSE', (2019,9,2,6,30,0))
     #tofile('CARR_IMPULSE', (2019,9,2,6,30,0), para=True)
     #tofile('DIPTSUR2', (2019,9,2,6,30,0), para=True)
-    tofile('DIPTSUR2', (2019,9,2,6,30,0), para=True, xlims=(0., 16.), ylims=(-16., 16.), zlims=(-16., 16.), d=0.25)
-    tofile('DIPTSUR2', (2019,9,2,6,30,0), para=True, xlims=(-32., 0.), ylims=(-16., 16.), zlims=(-16., 16.), d=0.25)
+    #tofile('DIPTSUR2', (2019,9,2,6,30,0), para=True, xlims=(0., 16.), ylims=(-16., 16.), zlims=(-16., 16.), d=0.25)
+    #tofile('DIPTSUR2', (2019,9,2,6,30,0), para=True, xlims=(-32., 0.), ylims=(-16., 16.), zlims=(-16., 16.), d=0.25)
+    fromfile('IMP10_RUN_SAMPLE', (2019,9,2,7,0,0))
 
