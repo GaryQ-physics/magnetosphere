@@ -13,7 +13,7 @@ import magnetometers as mg
 
 #https://stackoverflow.com/questions/16779497/how-to-set-memory-limit-for-thread-or-process-in-python
 import resource
-soft, hard = 32*10**30, 32*10**30
+soft, hard = 72*2**30, 72*2**30
 resource.setrlimit(resource.RLIMIT_AS,(soft, hard))
 
 def getfull(pm=16.):
