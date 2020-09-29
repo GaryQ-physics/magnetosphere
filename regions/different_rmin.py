@@ -14,8 +14,8 @@ resource.setrlimit(resource.RLIMIT_AS,(soft, hard))
 
 para = True
 serial = False
-run = 'IMP10_RUN_SAMPLE'
-time = (2019,9,2,7,0,0)
+run = 'DIPTSUR2'
+time = (2019,9,2,6,30,0,0)
 location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
 
 rs = 0.03125*np.arange(32,36)
@@ -45,7 +45,7 @@ elif serial:
     for r in list(rs):
         dBs.append(regions.signedintegrate(run, time, location, regions=(reg,), fwrite=False, rmin=r))
 
-pkl = 'different_rmin.pkl'
+pkl = run + 'different_rmin.pkl'
 
 if para or serial:
     dBs = np.array(dBs)
