@@ -123,6 +123,16 @@ def dirlist(rootdir, **kwargs):
     from util import dirlist
     dl = dirlist('.', regex='\.py$') # Find files ending in .py
     print(dl)
+
+    import os
+    import util
+
+    direct = '/home/gary/magnetosphere/data/DIPTSUR2-derived/cutplanes'
+
+    files = util.dirlist(direct, regex='            ', fullpath=True)
+
+    for f in files:
+        os.system('mv %s %s'%(f.replace('            ', '\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ '), f.replace('            ', '')))
     
     """
     import re
@@ -132,9 +142,21 @@ def dirlist(rootdir, **kwargs):
         for file in files:
             if 'regex' in kwargs:
                 if re.search(kwargs['regex'], file):
-                    file_keep.append(file)
+                    if 'fullpath' in kwargs:
+                        if kwargs['fullpath']:
+                            file_keep.append(subdir+'/'+file)
+                        else:
+                            file_keep.append(file)
+                    else:
+                        file_keep.append(file)
             else:
-                file_keep.append(file)
+                if 'fullpath' in kwargs:
+                    if kwargs['fullpath']:
+                        file_keep.append(subdir+'/'+file)
+                    else:
+                        file_keep.append(file)
+                else:
+                    file_keep.append(file)
     return file_keep
 
 '''

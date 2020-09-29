@@ -31,12 +31,12 @@ def process_one(filename, var, fileid=0, pkl='', debug=True):
     if not os.path.exists(filename_path):
         os.makedirs(filename_path)
 
-    filename_png = filename_path + \
-            '{0:s}-{1:s}-type_{2:d}_delta_{3:.4f}_\
-            xlims_{4:.5f},{5:.5f}_ylims_{6:.5f},{7:.5f}.png'\
-            .format(filename, var['str_id'], 1, var['delta'],\
-            var['xlims'][0], var['xlims'][1],\
-            var['ylims'][0], var['ylims'][1])
+    filename_png = ('{0:s}-{1:s}-type_{2:d}_delta_{3:.4f}_'
+                    'xlims_{4:.5f},{5:.5f}_ylims_{6:.5f},{7:.5f}.png'
+                    .format(filename, var['str_id'], 1, var['delta'],
+                    var['xlims'][0], var['xlims'][1],
+                    var['ylims'][0], var['ylims'][1]) )
+    filename_png = filename_path + filename_png
 
     zticks = var['zticks']
     if os.path.exists(pkl):
