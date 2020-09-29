@@ -18,7 +18,7 @@ run = 'DIPTSUR2'
 time = (2019,9,2,6,30,0,0)
 location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
 
-rs = 0.03125*np.arange(32,36)
+rs = 0.03125*np.arange(32,96)
 
 pm = 31.875
 reg =  {'xlims': (-pm, pm),
