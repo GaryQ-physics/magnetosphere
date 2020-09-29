@@ -4,11 +4,17 @@ import numpy as np
 import tempfile
 import pickle
 
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 import biot_savart_kameleon_interpolated_grid as bsk
 import util
 import cxtransform as cx
 import magnetometers as mg
+
+#https://stackoverflow.com/questions/16779497/how-to-set-memory-limit-for-thread-or-process-in-python
+import resource
+soft, hard = 32*10**30, 32*10**30
+resource.setrlimit(resource.RLIMIT_AS,(soft, hard))
 
 def getfull(pm=16.):
     q = {'xlims': (-pm, pm),
@@ -304,66 +310,66 @@ if __name__=='__main__':
             'zlims': (-pm, pm),
             'd': 0.25
             }
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=0.)
-
-    pm = 32.
-    reg =  {'xlims': (-pm, pm),
-            'ylims': (-pm, pm),
-            'zlims': (-pm, pm),
-            'd': 0.25
-            }
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.)
-
-    pm = 32.
-    reg =  {'xlims': (-pm, pm),
-            'ylims': (-pm, pm),
-            'zlims': (-pm, pm),
-            'd': 0.25
-            }
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.5)
-
-    pm = 32.
-    reg =  {'xlims': (-pm, pm),
-            'ylims': (-pm, pm),
-            'zlims': (-pm, pm),
-            'd': 0.25
-            }
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.75)
-
-    pm = 31.875
-    reg =  {'xlims': (-pm, pm),
-            'ylims': (-pm, pm),
-            'zlims': (-pm, pm),
-            'd': 0.25
-            }
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=0.)
-
-    pm = 31.875
-    reg =  {'xlims': (-pm, pm),
-            'ylims': (-pm, pm),
-            'zlims': (-pm, pm),
-            'd': 0.25
-            }
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.)
-
-    pm = 31.875
-    reg =  {'xlims': (-pm, pm),
-            'ylims': (-pm, pm),
-            'zlims': (-pm, pm),
-            'd': 0.25
-            }
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.5)
-
-    pm = 31.875
-    reg =  {'xlims': (-pm, pm),
-            'ylims': (-pm, pm),
-            'zlims': (-pm, pm),
-            'd': 0.25
-            }
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.75)
-
+    print(signedintegrate(run, time, location, regions=(reg,), fwrite=False, rmin=0.))
 
     if False:
+
+        pm = 32.
+        reg =  {'xlims': (-pm, pm),
+                'ylims': (-pm, pm),
+                'zlims': (-pm, pm),
+                'd': 0.25
+                }
+        signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.)
+
+        pm = 32.
+        reg =  {'xlims': (-pm, pm),
+                'ylims': (-pm, pm),
+                'zlims': (-pm, pm),
+                'd': 0.25
+                }
+        signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.5)
+
+        pm = 32.
+        reg =  {'xlims': (-pm, pm),
+                'ylims': (-pm, pm),
+                'zlims': (-pm, pm),
+                'd': 0.25
+                }
+        signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.75)
+
+        pm = 31.875
+        reg =  {'xlims': (-pm, pm),
+                'ylims': (-pm, pm),
+                'zlims': (-pm, pm),
+                'd': 0.25
+                }
+        signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=0.)
+
+        pm = 31.875
+        reg =  {'xlims': (-pm, pm),
+                'ylims': (-pm, pm),
+                'zlims': (-pm, pm),
+                'd': 0.25
+                }
+        signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.)
+
+        pm = 31.875
+        reg =  {'xlims': (-pm, pm),
+                'ylims': (-pm, pm),
+                'zlims': (-pm, pm),
+                'd': 0.25
+                }
+        signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.5)
+
+        pm = 31.875
+        reg =  {'xlims': (-pm, pm),
+                'ylims': (-pm, pm),
+                'zlims': (-pm, pm),
+                'd': 0.25
+                }
+        signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.75)
+
         #time = (2019,9,2,6,30,0)
         signedintegrate(run, time, location, regions='octants', fwrite=True)
         #signedintegrate(run, time, location, regions='full', fwrite=True)

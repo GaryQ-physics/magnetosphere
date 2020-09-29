@@ -112,7 +112,9 @@ Notes:
     regions.py should replace bs_compare_SWMF_kameleon.py eventually
     ran regions for DIPTSUR2 (all files) on sunspot
 
-
+2020/28/09
+    cuplane_plot_demo2b.py now has zoomed in option (process_type=3)
+    ran above for DIPTSUR2 without rerunning process_type=1,2
 
 
 TODO:
@@ -130,22 +132,16 @@ change TESTANALYTIC so shell is inside 1Re
 
 test the -> loc rotation against something analytic
 
-bsk return each slices seperately the pos_contr and neg_contr
-
-new pyth2.7 env: pip install spacepy
-
-another new pyth2.7 env: install from git
 
 
 
 
-xlims--40,20_ylims--15,15
 ('special_parameter_R', 'FLOAT: special_parameter_R: 1.39999998')
 
 
 
 
-/media/solar-backup/git-data/sblake
+
 
 
 
