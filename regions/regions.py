@@ -129,7 +129,7 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
 
         if fwrite:
             if os.path.exists('/home/gary/'):
-                f = open('/home/gary/temp/regs.txt','a')
+                f = open('/home/gary/temp/' + run + 'regs.txt','a')
             else:
                 f = open('/tmp/regs.txt','a')
 
@@ -304,13 +304,17 @@ if __name__=='__main__':
     time = (2019,9,2,7,0,0)
     location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
 
-    pm = 32.
+    pm = 31.875
     reg =  {'xlims': (-pm, pm),
             'ylims': (-pm, pm),
             'zlims': (-pm, pm),
             'd': 0.25
             }
-    print(signedintegrate(run, time, location, regions=(reg,), fwrite=False, rmin=0.))
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=0.)
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.475)
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.525)
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.55)
+
 
     if False:
 
