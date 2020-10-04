@@ -11,10 +11,6 @@ import util
 import cxtransform as cx
 import magnetometers as mg
 
-#https://stackoverflow.com/questions/16779497/how-to-set-memory-limit-for-thread-or-process-in-python
-import resource
-soft, hard = 72*2**30, 72*2**30
-resource.setrlimit(resource.RLIMIT_AS,(soft, hard))
 
 def getfull(pm=16.):
     q = {'xlims': (-pm, pm),
@@ -94,7 +90,7 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
     elif isinstance(regions, str):
         raise ValueError ("regions must be 'octants', 'full', or custom tuple of dictionaries")
 
-    def bla(region):
+    def compute(region):
         xlims = region['xlims']
         ylims = region['ylims']
         zlims = region['zlims']
@@ -116,15 +112,22 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
             positive[comp] =  np.sum(positive_contrs)
             negative[comp] =  np.sum(negative_contrs)
 
-        #assert(np.max(np.abs(positive + negative - deltaB_loc))<1e-6)
         print(np.max(np.abs(positive + negative - deltaB_loc)))
         assert(np.max(np.abs(positive + negative - deltaB_loc)) < 1e-9)
-        return [positive, negative, deltaB_loc]
+
+        # index k runs from: 
+                # k=0 -> 'positive'
+                # k=1 -> 'negative'
+                # k=2 -> 'deltaB_loc' = 'positive' + 'negative'
+        # index l runs from: 
+                # l=0 -> 'north'
+                # l=1 -> 'east'
+                # l=2 -> 'down'
+        return [positive, negative, deltaB_loc] # indexed by above (k,l)
 
     toret = []
-
     for i in range(len(regions)):
-        ret = bla(regions[i])
+        ret = compute(regions[i])
         toret.append(ret)
 
         if fwrite:
@@ -132,7 +135,6 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
                 f = open('/home/gary/temp/' + run + 'regs.txt','a')
             else:
                 f = open('/tmp/regs.txt','a')
-
             f.write('\n\n')
             f.write('run = %s\n'%(run))
             f.write('time = ' + str(time))
@@ -142,48 +144,63 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
             f.write('\nnet negative contributions = '+str(ret[1])+'  (north, east, down)')
             f.write('\ndeltaB_loc/nT = ' + str(ret[2]))
             f.write('\n\n')
-
             f.close()
 
-
-    return np.array(toret)
-
-
-def compidx(comp):
-    if comp=='north':
-        return 0
-    if comp=='east':
-        return 1
-    if comp=='down':
-        return 2
-    raise ValueError ("component must be 'north', 'east', or 'down'")
+    # index j runs from:
+            # j = 0 -> 1st region
+            # ...
+            # j = n-1 -> nth region
+    # index k runs from: 
+            # k=0 -> 'positive'
+            # k=1 -> 'negative'
+            # k=2 -> 'deltaB_loc' = 'positive' + 'negative'
+    # index l runs from: 
+            # l=0 -> 'north'
+            # l=1 -> 'east'
+            # l=2 -> 'down'
+    return np.array(toret) # indexed by above (j,k,l)
 
 
 def plot(run, pkl, comp, show=False, tag='', totxt=False):
+    if isinstance(comp, int):
+        icomp = comp
+        comp = str(comp)
+    elif comp=='north':
+        icomp = 0
+    elif comp=='east':
+        icomp = 1
+    elif comp=='down':
+        icomp = 2
+    else:
+        raise ValueError ("component must be 'north', 'east', 'down', or integer")
+
     pkl = conf[run+'_derived'] + 'regions/' + pkl
 
     with open(pkl, 'rb') as handle:
         result = pickle.load(handle)
 
-    nf = result['nf']
-    shape = result['shape']
+    #result['shape_README']
     location = result['location']
     regions  = result['regions']
-    values = result['values']
-    assert(values.shape == shape)
-    #values = values.reshape(shape)
+    deltaBs = result['deltaBs']
+    times = result['times']
 
-    times = util.get_available_slices(run)[1]
-    if nf is not None:
-        times = times[:nf, :]
-    assert(times.shape[0] == shape[0])
+    assert(deltaBs.shape[0] == times.shape[0])
+
+    timesfull = util.get_available_slices(run)[1]
+    if not np.all(timesfull == times):
+        print('WARNING: appears to be time missmatch. Might not include all files of run')
+
+    #if nf is not None:
+    #    times = times[:nf, :]
+    #assert(times.shape[0] == shape[0])
 
     import datetime
     dtimes = []
     for i in range(times.shape[0]):
         dtimes.append(datetime.datetime(times[i,0],times[i,1],times[i,2],times[i,3],times[i,4],times[i,5]))
 
-    types = ['positive', 'negative', 'deltaB_loc'] #!!!!!!!!!!
+    types = ('positive', 'negative', 'deltaB_loc') #!!!!!!!!!!
     for i in range(len(regions)):
         title = 'dB_%s_'%(comp) + 'mlat_{0:.3f}_mlon_{1:.3f}'.format(location[1], location[2]) \
                 +'\n' +str(regions[i])
@@ -201,14 +218,10 @@ def plot(run, pkl, comp, show=False, tag='', totxt=False):
             txt.write(title +'\n')
             txt.write('year month day hour minute second milisecond value(label)\n')
         for j in range(3):
-            #print('plot add line   dtimes vs values[:, i, %d, compidx(comp)]'%(j))
-            #print('with legend %s'%(types[j]))
-            #print(dtimes)
-            #print(values[:, i, j, compidx(comp)])
-            plt.plot(dtimes, values[:, i, j, compidx(comp)], label=types[j])
+            plt.plot(dtimes, deltaBs[:, i, j, icomp], label=types[j])
             if totxt:
                 txt.write('\nlabel=%s\n'%(types[j]))
-                np.savetxt(txt, np.column_stack([ times, values[:, i, j, compidx(comp)] ]), fmt='%.5f')
+                np.savetxt(txt, np.column_stack([ times, deltaBs[:, i, j, icomp] ]), fmt='%.5f')
         print('export png for %d with title %s'%(i,title))
 
 
@@ -228,7 +241,7 @@ def plot(run, pkl, comp, show=False, tag='', totxt=False):
         if totxt: txt.close()
 
 
-def main(run, location, regions='octants', tag=''): # loc in MAG sph
+def signedintegrate_timeseries(run, location, regions='octants', tag=''): # location in MAG sph
 
     if regions == 'octants':
         regions = getoctants()
@@ -255,26 +268,72 @@ def main(run, location, regions='octants', tag=''): # loc in MAG sph
             num_cores = len(files)
         print('Parallel processing {0:d} file(s) using {1:d} cores'\
               .format(len(files), num_cores))
-        values = Parallel(n_jobs=num_cores)(\
-            #delayed(signedintegrate)(run, util.CDFfilename2time(run, filename), location, fwrite=False) for filename in files)
+        deltaBs = Parallel(n_jobs=num_cores)(\
             delayed(signedintegrate)(run, time, location, regions=regions) for time in list(times))
 
     else:
-        values = []
-        #for filename in files:
-        #    time = util.CDFfilename2time(run, filename)
-        #    values.append(signedintegrate(run, time, location, fwrite=False))
+        deltaBs = []
         for time in list(times):
-            values.append(signedintegrate(run, time, location, regions=regions))
+            deltaBs.append(signedintegrate(run, time, location, regions=regions))
 
-    values = np.array(values)
-    assert(len(values.shape) == 4)
+    # index i runs from:
+            # i = 0 -> 1st time there's a datafile in cdflist.txt
+            # ...
+            # i = N-1 -> Nth time there's a datafile in cdflist.txt
+    # index j runs from:
+            # j = 0 -> 1st region
+            # ...
+            # j = n-1 -> nth region
+    # index k runs from: 
+            # k=0 -> 'positive'
+            # k=1 -> 'negative'
+            # k=2 -> 'deltaB_loc' = 'positive' + 'negative'
+    # index l runs from: 
+            # l=0 -> 'north'
+            # l=1 -> 'east'
+            # l=2 -> 'down'
+    deltaBs = np.array(deltaBs) # indexed by above (i,j,k,l)
+    assert(len(deltaBs.shape) == 4)
+    assert(deltaBs.shape[0] == times.shape[0])
 
-    result =   {'nf' : nf,
-                'shape' : values.shape,
+    README_string = \
+    ('"deltaBs" indexed (i,j,k,l) as follows:\n'
+     ' index i runs from:\n'
+     '       i = 0 -> 1st time there is a datafile in cdflist.txt\n'
+     '       ...\n'
+     '       i = N-1 -> Nth time there is a datafile in cdflist.txt\n'
+     ' index j runs from:\n'
+     '       j = 0 -> 1st region\n'
+     '       ...\n'
+     '       j = n-1 -> nth region\n'
+     ' index k runs from:\n'
+     '       k=0 -> positive_contribution\n'
+     '       k=1 -> negative_contribution\n'
+     '       k=2 -> full_deltaB = positive_contribution + negative_contribution\n'
+     ' index l runs from:\n'
+     '       l=0 -> north component\n'
+     '       l=1 -> east component\n'
+     '       l=2 -> down component\n'
+     '\n'
+     '"times" indexed (i,j) as follows:\n'
+     ' index i runs from:\n'
+     '       i = 0 -> 1st time there is a datafile in cdflist.txt\n'
+     '       ...\n'
+     '       i = N-1 -> Nth time there is a datafile in cdflist.txt\n'
+     ' index j runs from:\n'
+     '       j = 0 -> year\n'
+     '       j = 1 -> month\n'
+     '       j = 2 -> day\n'
+     '       j = 3 -> hours\n'
+     '       j = 4 -> minutes\n'
+     '       j = 5 -> seconds\n'
+     '       j = 6 -> miliseconds\n')
+
+    result =   {'README' : README_string,
                 'location' : location,
                 'regions' : regions,
-                'values' : values
+                'deltaBs' : deltaBs,
+                'times' : times
                 }
 
     direct = conf[run +'_derived'] + 'regions/'
@@ -293,16 +352,17 @@ def main(run, location, regions='octants', tag=''): # loc in MAG sph
     with open(pkl, 'wb') as handle:
         pickle.dump(result, handle)
 
-    print(values.shape)
+    print(deltaBs.shape)
     print('DONE')
 
     return pkl
 
 
-if __name__=='__main__':
+def main():
     run = 'IMP10_RUN_SAMPLE'
     time = (2019,9,2,7,0,0)
     location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
+
 
     pm = 31.875
     reg =  {'xlims': (-pm, pm),
@@ -315,94 +375,13 @@ if __name__=='__main__':
     signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.525)
     signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.55)
 
-
     if False:
-
-        pm = 32.
-        reg =  {'xlims': (-pm, pm),
-                'ylims': (-pm, pm),
-                'zlims': (-pm, pm),
-                'd': 0.25
-                }
-        signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.)
-
-        pm = 32.
-        reg =  {'xlims': (-pm, pm),
-                'ylims': (-pm, pm),
-                'zlims': (-pm, pm),
-                'd': 0.25
-                }
-        signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.5)
-
-        pm = 32.
-        reg =  {'xlims': (-pm, pm),
-                'ylims': (-pm, pm),
-                'zlims': (-pm, pm),
-                'd': 0.25
-                }
-        signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.75)
-
-        pm = 31.875
-        reg =  {'xlims': (-pm, pm),
-                'ylims': (-pm, pm),
-                'zlims': (-pm, pm),
-                'd': 0.25
-                }
-        signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=0.)
-
-        pm = 31.875
-        reg =  {'xlims': (-pm, pm),
-                'ylims': (-pm, pm),
-                'zlims': (-pm, pm),
-                'd': 0.25
-                }
-        signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.)
-
-        pm = 31.875
-        reg =  {'xlims': (-pm, pm),
-                'ylims': (-pm, pm),
-                'zlims': (-pm, pm),
-                'd': 0.25
-                }
-        signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.5)
-
-        pm = 31.875
-        reg =  {'xlims': (-pm, pm),
-                'ylims': (-pm, pm),
-                'zlims': (-pm, pm),
-                'd': 0.25
-                }
-        signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.75)
-
-        #time = (2019,9,2,6,30,0)
-        signedintegrate(run, time, location, regions='octants', fwrite=True)
-        #signedintegrate(run, time, location, regions='full', fwrite=True)
-
-
-        pm = 16.
-        reg =  {'xlims': (-pm, pm),
-                'ylims': (-pm, pm),
-                'zlims': (-pm, pm),
-                'd': 0.25
-                }
-
-        signedintegrate(run, time, location, regions=(reg,), fwrite=True)
-
-
-        pm = 32.
-        reg =  {'xlims': (-pm, pm),
-                'ylims': (-pm, pm),
-                'zlims': (-pm, pm),
-                'd': 0.25
-                }
-
-        signedintegrate(run, time, location, regions=(reg,), fwrite=True)
-
-        #time = (2019,9,2,6,30,0)
         location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
-        main(run, location, regions='octants', tag='octants') 
+        signedintegrate_timeseries(run, location, regions='octants', tag='octants') 
     else:
         #plot(run, 'mlat_11.059_mlon_146.897_nf_240-octants.pkl', 'north', tag='north', totxt=True)
         #plot(run, 'mlat_11.017_mlon_147.323_nf_698-octants.pkl', 'north', tag='north', totxt=True)
         print('else')
 
+if __name__=='__main__':
+    main()

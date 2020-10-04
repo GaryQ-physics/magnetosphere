@@ -1,26 +1,30 @@
 import os
 import sys
 import tempfile
+import resource
 
 if os.path.exists('/Users/robertweigel/'):
     base = '/Users/robertweigel/git/students/gquaresi/magnetosphere/'
-    #kameleon = '/Users/robertweigel/kameleon/lib/python2.7/site-packages/'
+
 if os.path.exists('/Users/weigel/'):
     base = '/Users/weigel/git/magnetosphere/'
-    #kameleon = '/Users/weigel/kameleon/lib/python2.7/site-packages/'
+
 elif os.path.exists('/home/weigel/') and False:
     base = '/home/weigel/git/magnetosphere/'
-    #kameleon = '/home/weigel/kameleon/lib/python2.7/site-packages/'
+
 elif os.path.exists('/home/gary/'):
     base = '/home/gary/magnetosphere/'
-    #kameleon = '/home/gary/magnetosphere/kameleon/lib/python2.7/site-packages/'
     storage = base +'data/'
+    #https://stackoverflow.com/questions/16779497/how-to-set-memory-limit-for-thread-or-process-in-python
+    soft, hard = 10*2**30, 10*2**30
+    resource.setrlimit(resource.RLIMIT_AS,(soft, hard))
 
 elif os.path.exists('/home/gquaresi/'):
     base = '/home/gquaresi/magnetosphere/'
-    #kameleon = '/home/gquaresi/'
     storage = '/media/sunspot/git-data/sblake/'
-
+    #https://stackoverflow.com/questions/16779497/how-to-set-memory-limit-for-thread-or-process-in-python
+    soft, hard = 72*2**30, 72*2**30
+    resource.setrlimit(resource.RLIMIT_AS,(soft, hard))
 else:
     assert(False)
 
