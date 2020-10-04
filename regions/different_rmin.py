@@ -7,7 +7,7 @@ import regions
 import cxtransform as cx
 import magnetometers as mg
 
-run = 'IMP10_RUN_SAMPLE'
+run = 'DIPTSUR2'
 
 pkl = run + '_different_rmin.pkl'
 para = False
@@ -93,32 +93,34 @@ else:
     Rbody = None
 
 
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
 
-plt.plot(rs, normdiff)
-if Rcurrents is not None:
-    plt.vline(Rcurrents, 0., 450., label='Rcurrents')
-if Rbody is not None:
-    plt.vline(Rbody, 0., 450., label='Rbody')
-plt.title(title)
-plt.xlabel('rmin $R_E$')
-plt.ylabel('$|dB_{calculated} - dB_{swmf}|$ [nT]')
-print('saving ' + pkl + '-normdiff.png')
-plt.savefig(pkl + '-normdiff.png')
-plt.clf()
+    plt.plot(rs, normdiff)
+    if Rcurrents is not None:
+        plt.vline(Rcurrents, 0., 450., label='Rcurrents')
+    if Rbody is not None:
+        plt.vline(Rbody, 0., 450., label='Rbody')
+    plt.title(title)
+    plt.xlabel('rmin $R_E$')
+    plt.ylabel('$|dB_{calculated} - dB_{swmf}|$ [nT]')
+    print('saving ' + pkl + '-normdiff.png')
+    plt.savefig(pkl + '-normdiff.png')
+    plt.clf()
 
-plt.plot(rs, normdiff)
-if Rcurrents is not None:
-    plt.vline(Rcurrents, 0., 450., label='Rcurrents')
-if Rbody is not None:
-    plt.vline(Rbody, 0., 450., label='Rbody')
-plt.title(title)
-plt.xlabel('rmin $R_E$')
-plt.ylabel('$|dB_{calculated}| - |dB_{swmf}|$ [nT]')
-print('saving ' + pkl + '-diffnorm.png')
-plt.savefig(pkl + '-diffnorm.png')
-plt.clf()
-
+    plt.plot(rs, normdiff)
+    if Rcurrents is not None:
+        plt.vline(Rcurrents, 0., 450., label='Rcurrents')
+    if Rbody is not None:
+        plt.vline(Rbody, 0., 450., label='Rbody')
+    plt.title(title)
+    plt.xlabel('rmin $R_E$')
+    plt.ylabel('$|dB_{calculated}| - |dB_{swmf}|$ [nT]')
+    print('saving ' + pkl + '-diffnorm.png')
+    plt.savefig(pkl + '-diffnorm.png')
+    plt.clf()
+except:
+    print('Failed to plot. Can run again with para = False and serial = False to skip computation')
 
 
 
