@@ -81,19 +81,25 @@ title = title + '\nat mlat=%.3f, mlon=%.3f, MLT=%.3f hrs'%(location[1], location
 if os.path.exists(conf[run + '_cdf'] + '../../PARAM.in'):
     f = open(conf[run + '_cdf'] + '../../PARAM.in', 'r')
     lines = f.readlines()
+    Rcurrents = None
+    Rbody = None
     for line in lines:
         if 'Rcurrents' in line:
             Rcurrents = float(line.split(' ')[0])
-            break
+        if 'Rbody' in line:
+            Rbody = float(line.split(' ')[0])
 else:
     Rcurrents = None
+    Rbody = None
 
 
 import matplotlib.pyplot as plt
 
 plt.plot(rs, normdiff)
 if Rcurrents is not None:
-    plt.vline(Rcurrents, 0., 450.)
+    plt.vline(Rcurrents, 0., 450., label='Rcurrents')
+if Rbody is not None:
+    plt.vline(Rbody, 0., 450., label='Rbody')
 plt.title(title)
 plt.xlabel('rmin $R_E$')
 plt.ylabel('$|dB_{calculated} - dB_{swmf}|$ [nT]')
@@ -103,7 +109,9 @@ plt.clf()
 
 plt.plot(rs, normdiff)
 if Rcurrents is not None:
-    plt.vline(Rcurrents, 0., 450.)
+    plt.vline(Rcurrents, 0., 450., label='Rcurrents')
+if Rbody is not None:
+    plt.vline(Rbody, 0., 450., label='Rbody')
 plt.title(title)
 plt.xlabel('rmin $R_E$')
 plt.ylabel('$|dB_{calculated}| - |dB_{swmf}|$ [nT]')
