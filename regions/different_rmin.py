@@ -3,6 +3,8 @@ import sys
 import numpy as np
 import pickle
 
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
+from config import conf
 import regions
 import cxtransform as cx
 import magnetometers as mg
@@ -10,7 +12,7 @@ import magnetometers as mg
 run = 'DIPTSUR2'
 
 pkl = run + '_different_rmin.pkl'
-para = False
+para = True
 serial = False
 rs = 0.03125*np.arange(32,96)
 
@@ -53,10 +55,13 @@ if para or serial:
     with open(pkl, 'wb') as handle:
         pickle.dump(dBs, handle)
 
-if (not para) and (not serial) and os.path.exists(pkl):
-    with open(pkl, 'rb') as handle:
-        print("Reading " + pkl)
-        dBs = pickle.load(handle)
+if (not para) and (not serial):
+    if os.path.exists(pkl):
+        with open(pkl, 'rb') as handle:
+            print("Reading " + pkl)
+            dBs = pickle.load(handle)
+    else:
+        raise ValueError('Cannot find needed pickle file')
 
 print(dBs[:,0,2,:])
 print(dBs.shape)
