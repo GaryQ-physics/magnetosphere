@@ -108,7 +108,10 @@ def integrate(run, time_fname, mlat, mlon, para=True,
 
     util.dlfile(filepath, debug=True)
 
-    x0 = cx.MAGtoGSM([1., mlat, mlon], time, 'sph', 'car')
+    if mlon is None:
+        x0 = mlat
+    else:
+        x0 = cx.MAGtoGSM([1., mlat, mlon], time, 'sph', 'car')
 
     import tempfile
     os.system('rm ' + tempfile.gettempdir() + '/*dB_array_slice*')

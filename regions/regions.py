@@ -12,7 +12,7 @@ import cxtransform as cx
 import magnetometers as mg
 
 
-def getfull(pm=16.):
+def getfull(pm=16.125):
     q = {'xlims': (-pm, pm),
          'ylims': (-pm, pm),
          'zlims': (-pm, pm),
@@ -22,58 +22,58 @@ def getfull(pm=16.):
     return (q,)
 
 def getoctants():
-    q1 = {'xlims': (0., 32.),
-          'ylims': (0., 32.),
-          'zlims': (0., 32.),
+    q1 = {'xlims': (0.125, 31.875),
+          'ylims': (0.125, 31.875),
+          'zlims': (0.125, 31.875),
           'd': 0.25
 
             }
 
-    q2 = {'xlims': (0., 32.),
-          'ylims': (0., 32.),
-          'zlims': (-32., -0.25),
+    q2 = {'xlims': (0.125, 31.875),
+          'ylims': (0.125, 31.875),
+          'zlims': (-31.875, -0.125),
           'd': 0.25
 
             }
 
-    q3 = {'xlims': (0., 32.),
-          'ylims': (-32., -0.25),
-          'zlims': (0., 32.),
+    q3 = {'xlims': (0.125, 31.875),
+          'ylims': (-31.875, -0.125),
+          'zlims': (0.125, 31.875),
           'd': 0.25
 
             }
 
-    q4 = {'xlims': (-32., -0.25),
-          'ylims': (0., 32.),
-          'zlims': (0., 32.),
+    q4 = {'xlims': (-31.875, -0.125),
+          'ylims': (0.125, 31.875),
+          'zlims': (0.125, 31.875),
           'd': 0.25
 
             }
 
-    q5 = {'xlims': (0., 32.),
-          'ylims': (-32., -0.25),
-          'zlims': (-32., -0.25),
+    q5 = {'xlims': (0.125, 31.875),
+          'ylims': (-31.875, -0.125),
+          'zlims': (-31.875, -0.125),
           'd': 0.25
 
             }
 
-    q6 = {'xlims': (-32., -0.25),
-          'ylims': (0., 32.),
-          'zlims': (-32., -0.25),
+    q6 = {'xlims': (-31.875, -0.125),
+          'ylims': (0.125, 31.875),
+          'zlims': (-31.875, -0.125),
           'd': 0.25
 
             }
 
-    q7 = {'xlims': (-32., -0.25),
-          'ylims': (-32., -0.25),
-          'zlims': (0., 32.),
+    q7 = {'xlims': (-31.875, -0.125),
+          'ylims': (-31.875, -0.125),
+          'zlims': (0.125, 31.875),
           'd': 0.25
 
             }
 
-    q8 = {'xlims': (-32., -0.25),
-          'ylims': (-32., -0.25),
-          'zlims': (-32., -0.25),
+    q8 = {'xlims': (-31.875, -0.125),
+          'ylims': (-31.875, -0.125),
+          'zlims': (-31.875, -0.125),
           'd': 0.25
 
             }
@@ -81,7 +81,7 @@ def getoctants():
     return (q1, q2, q3, q4, q5, q6, q7, q8)
 
 
-def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=None): # loc in MAG sph
+def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=None, locationtype='MAG'): # loc in MAG sph
 
     if regions == 'octants':
         regions = getoctants()
@@ -96,13 +96,24 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
         zlims = region['zlims']
         d = region['d']
 
-        dB, G, Ntup = bsk.integrate(run, time, location[1], location[2], para=False,
-            xlims=xlims, ylims=ylims, zlims=zlims, d=d, returnAll=True, rmin=rmin)
-        deltaB = np.sum(dB, axis=0)
-        deltaB_loc = bsk.toMAGLocalComponents(time, location[1], location[2], deltaB)
+        if locationtype == 'MAG':
+            dB, G, Ntup = bsk.integrate(run, time, location[1], location[2], para=False,
+                xlims=xlims, ylims=ylims, zlims=zlims, d=d, returnAll=True, rmin=rmin)
 
-        dB_loc = bsk.toMAGLocalComponents(time, location[1], location[2], dB)
+            dB_loc = bsk.toMAGLocalComponents(time, location[1], location[2], dB)
+            #deltaB = np.sum(dB, axis=0)
+            #deltaB_loc = bsk.toMAGLocalComponents(time, location[1], location[2], deltaB)
 
+        elif locationtype == 'GSM':
+            dB, G, Ntup = bsk.integrate(run, time, location, None, para=False,
+                xlims=xlims, ylims=ylims, zlims=zlims, d=d, returnAll=True, rmin=rmin)
+
+            dB_loc = dB
+            #deltaB = np.sum(dB, axis=0)
+            #deltaB_loc = deltaB
+
+
+        full_deltaB = np.sum(dB_loc, axis=0)
         positive = np.empty(3)
         negative = np.empty(3)
         for comp in range(3):
@@ -112,8 +123,8 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
             positive[comp] =  np.sum(positive_contrs)
             negative[comp] =  np.sum(negative_contrs)
 
-        print(np.max(np.abs(positive + negative - deltaB_loc)))
-        assert(np.max(np.abs(positive + negative - deltaB_loc)) < 1e-9)
+        print(np.max(np.abs(positive + negative - full_deltaB)))
+        assert(np.max(np.abs(positive + negative - full_deltaB)) < 1e-9)
 
         # index k runs from: 
                 # k=0 -> 'positive'
@@ -123,7 +134,7 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
                 # l=0 -> 'north'
                 # l=1 -> 'east'
                 # l=2 -> 'down'
-        return [positive, negative, deltaB_loc] # indexed by above (k,l)
+        return [positive, negative, full_deltaB] # indexed by above (k,l)
 
     toret = []
     for i in range(len(regions)):
@@ -138,7 +149,8 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
             f.write('\n\n')
             f.write('run = %s\n'%(run))
             f.write('time = ' + str(time))
-            f.write('\nmlat %f, mlon %f'%(location[1], location[2]))
+            #f.write('\nmlat %f, mlon %f'%(location[1], location[2]))
+            f.write('\nlocation %f, %f, %f'%(location[0],location[1], location[2]))
             f.write('\noctant(GSM):with rmin '+str(rmin)+':\n' + str(regions[i]))
             f.write('\nnet positive contributions = '+str(ret[0])+'  (north, east, down)')
             f.write('\nnet negative contributions = '+str(ret[1])+'  (north, east, down)')
@@ -241,7 +253,7 @@ def plot(run, pkl, comp, show=False, tag='', totxt=False):
         if totxt: txt.close()
 
 
-def signedintegrate_timeseries(run, location, regions='octants', tag=''): # location in MAG sph
+def signedintegrate_timeseries(run, location, regions='octants', tag='', rmin=None, locationtype='MAG'): # location in MAG sph
 
     if regions == 'octants':
         regions = getoctants()
@@ -269,12 +281,12 @@ def signedintegrate_timeseries(run, location, regions='octants', tag=''): # loca
         print('Parallel processing {0:d} file(s) using {1:d} cores'\
               .format(len(files), num_cores))
         deltaBs = Parallel(n_jobs=num_cores)(\
-            delayed(signedintegrate)(run, time, location, regions=regions) for time in list(times))
+            delayed(signedintegrate)(run, time, location, regions=regions, rmin=rmin, locationtype=locationtype) for time in list(times))
 
     else:
         deltaBs = []
         for time in list(times):
-            deltaBs.append(signedintegrate(run, time, location, regions=regions))
+            deltaBs.append(signedintegrate(run, time, location, regions=regions, rmin=rmin, locationtype=locationtype))
 
     # index i runs from:
             # i = 0 -> 1st time there's a datafile in cdflist.txt
@@ -296,6 +308,15 @@ def signedintegrate_timeseries(run, location, regions='octants', tag=''): # loca
     assert(len(deltaBs.shape) == 4)
     assert(deltaBs.shape[0] == times.shape[0])
 
+    if locationtype == 'MAG':
+        comp0 = 'north'
+        comp1 = 'east'
+        comp2 = 'down'
+    elif locationtype == 'GSM':
+        comp0 = 'x_GSM'
+        comp1 = 'y_GSM'
+        comp2 = 'z_GSM'   
+
     README_string = \
     ('"deltaBs" indexed (i,j,k,l) as follows:\n'
      ' index i runs from:\n'
@@ -311,9 +332,9 @@ def signedintegrate_timeseries(run, location, regions='octants', tag=''): # loca
      '       k=1 -> negative_contribution\n'
      '       k=2 -> full_deltaB = positive_contribution + negative_contribution\n'
      ' index l runs from:\n'
-     '       l=0 -> north component\n'
-     '       l=1 -> east component\n'
-     '       l=2 -> down component\n'
+     '       l=0 -> {0:s} component\n'
+     '       l=1 -> {1:s} component\n'
+     '       l=2 -> {2:s} component\n'
      '\n'
      '"times" indexed (i,j) as follows:\n'
      ' index i runs from:\n'
@@ -327,7 +348,7 @@ def signedintegrate_timeseries(run, location, regions='octants', tag=''): # loca
      '       j = 3 -> hours\n'
      '       j = 4 -> minutes\n'
      '       j = 5 -> seconds\n'
-     '       j = 6 -> miliseconds\n')
+     '       j = 6 -> miliseconds\n'.format(comp0,comp1,comp2))
 
     result =   {'README' : README_string,
                 'location' : location,
@@ -344,8 +365,13 @@ def signedintegrate_timeseries(run, location, regions='octants', tag=''): # loca
         nfstr = str(len(files))
     else:
         nfstr = str(nf)
-    pkl = direct + 'mlat_{0:.3f}_mlon_{1:.3f}_nf_{2:s}-{3:s}.pkl' \
-                    .format(location[1], location[2], nfstr, tag)
+
+    if locationtype == 'MAG':
+        pkl = direct + 'mlat_{0:.3f}_mlon_{1:.3f}_nf_{2:s}-{3:s}.pkl' \
+                        .format(location[1], location[2], nfstr, tag)
+    elif locationtype == 'GSM':
+        pkl = direct + 'GSM_x_{0:.3f}_y_{1:.3f}_z_{2:.3f}_nf_{3:s}-{4:s}.pkl' \
+                    .format(location[0], location[1], location[2], nfstr, tag)
 
     print('writing to ' + pkl)
     util.safeprep_fileout(pkl)
@@ -359,10 +385,10 @@ def signedintegrate_timeseries(run, location, regions='octants', tag=''): # loca
 
 
 def main():
-    run = 'IMP10_RUN_SAMPLE'
-    time = (2019,9,2,7,0,0)
-    location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
-
+    run = 'DIPTSUR2'
+    time = (2000,1,1,1,1,0)
+    #location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
+    location = np.array([2.,0.,0.])
 
     pm = 31.875
     reg =  {'xlims': (-pm, pm),
@@ -370,14 +396,14 @@ def main():
             'zlims': (-pm, pm),
             'd': 0.25
             }
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=0.)
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.475)
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.525)
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.55)
+    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
+    #signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.475)
+    #signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.525)
+    #signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.7)
 
     if False:
-        location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
-        signedintegrate_timeseries(run, location, regions='octants', tag='octants') 
+        #location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
+        signedintegrate_timeseries(run, location, regions='octants', tag='octants', rmin=0., locationtype='GSM') 
     else:
         #plot(run, 'mlat_11.059_mlon_146.897_nf_240-octants.pkl', 'north', tag='north', totxt=True)
         #plot(run, 'mlat_11.017_mlon_147.323_nf_698-octants.pkl', 'north', tag='north', totxt=True)

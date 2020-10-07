@@ -12,7 +12,7 @@ import magnetometers as mg
 run = 'DIPTSUR2'
 
 pkl = run + '_different_rmin.pkl'
-para = True
+para = False
 serial = False
 rs = 0.03125*np.arange(32,96)
 
@@ -97,15 +97,16 @@ else:
     Rcurrents = None
     Rbody = None
 
-
 try:
     import matplotlib.pyplot as plt
 
     plt.plot(rs, normdiff)
+    plt.hlines(1., 0., 3., colors='k')
     if Rcurrents is not None:
-        plt.vline(Rcurrents, 0., 450., label='Rcurrents')
+        plt.vlines(Rcurrents, 0., 450., label='Rcurrents', colors='r')
     if Rbody is not None:
-        plt.vline(Rbody, 0., 450., label='Rbody')
+        plt.vlines(Rbody, 0., 450., label='Rbody', colors='g')
+    plt.legend()
     plt.title(title)
     plt.xlabel('rmin $R_E$')
     plt.ylabel('$|dB_{calculated} - dB_{swmf}|$ [nT]')
@@ -113,11 +114,13 @@ try:
     plt.savefig(pkl + '-normdiff.png')
     plt.clf()
 
-    plt.plot(rs, normdiff)
+    plt.plot(rs, diffnorm)
+    plt.hlines(1., 0., 3., colors='k')
     if Rcurrents is not None:
-        plt.vline(Rcurrents, 0., 450., label='Rcurrents')
+        plt.vlines(Rcurrents, 0., 450., label='Rcurrents', colors='r')
     if Rbody is not None:
-        plt.vline(Rbody, 0., 450., label='Rbody')
+        plt.vlines(Rbody, 0., 450., label='Rbody', colors='g')
+    plt.legend()
     plt.title(title)
     plt.xlabel('rmin $R_E$')
     plt.ylabel('$|dB_{calculated}| - |dB_{swmf}|$ [nT]')

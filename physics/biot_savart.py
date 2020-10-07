@@ -15,8 +15,11 @@ def deltaB(variable, x0, X, J, V_char = 1.):
     X0 = np.repeat([x0], X.shape[0], axis=0)
     R = X0 - X
 
+    rcut = 1.733*np.cbrt(V_char) # np.sqrt(3) == 1.7320508075688772
     Rcubed = (R[:,0]**2 + R[:,1]**2 + R[:,2]**2)**1.5
-    divRcubed = 1./Rcubed
+    #divRcubed = 1./Rcubed
+    #https://stackoverflow.com/questions/26248654/how-to-return-0-with-divide-by-zero/40022737
+    divRcubed = np.divide(1., Rcubed, out=np.zeros_like(Rcubed), where=(Rcubed >= rcut**3))
 
     dB = (phys['mu0']/(4*np.pi))*( np.cross(J, R)*divRcubed[:,np.newaxis] ) #https://stackoverflow.com/questions/5795700/multiply-numpy-array-of-scalars-by-array-of-vectors
 
