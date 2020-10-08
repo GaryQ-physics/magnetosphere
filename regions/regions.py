@@ -142,6 +142,15 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
         toret.append(ret)
 
         if fwrite:
+            if locationtype == 'MAG':
+                comp0 = 'north'
+                comp1 = 'east'
+                comp2 = 'down'
+            elif locationtype == 'GSM':
+                comp0 = 'x_GSM'
+                comp1 = 'y_GSM'
+                comp2 = 'z_GSM'
+
             if os.path.exists('/home/gary/'):
                 f = open('/home/gary/temp/' + run + 'regs.txt','a')
             else:
@@ -152,9 +161,9 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
             #f.write('\nmlat %f, mlon %f'%(location[1], location[2]))
             f.write('\nlocation %f, %f, %f'%(location[0],location[1], location[2]))
             f.write('\noctant(GSM):with rmin '+str(rmin)+':\n' + str(regions[i]))
-            f.write('\nnet positive contributions = '+str(ret[0])+'  (north, east, down)')
-            f.write('\nnet negative contributions = '+str(ret[1])+'  (north, east, down)')
-            f.write('\ndeltaB_loc/nT = ' + str(ret[2]))
+            f.write('\nnet positive contributions = '+str(ret[0])+'  (%s, %s, %s)'%(comp0, comp1, comp2))
+            f.write('\nnet negative contributions = '+str(ret[1])+'  (%s, %s, %s)'%(comp0, comp1, comp2))
+            f.write('\nfull_deltaB/nT = ' + str(ret[2]))
             f.write('\n\n')
             f.close()
 
@@ -173,7 +182,8 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
     return np.array(toret) # indexed by above (j,k,l)
 
 
-def plot(run, pkl, comp, show=False, tag='', totxt=False):
+def plot(run, pkl, show=False, tag='', totxt=True):
+    '''
     if isinstance(comp, int):
         icomp = comp
         comp = str(comp)
@@ -185,13 +195,12 @@ def plot(run, pkl, comp, show=False, tag='', totxt=False):
         icomp = 2
     else:
         raise ValueError ("component must be 'north', 'east', 'down', or integer")
+    '''
 
-    pkl = conf[run+'_derived'] + 'regions/' + pkl
-
-    with open(pkl, 'rb') as handle:
+    with open(conf[run+'_derived'] + 'regions/' + pkl, 'rb') as handle:
         result = pickle.load(handle)
 
-    #result['shape_README']
+    README = result['README']
     location = result['location']
     regions  = result['regions']
     deltaBs = result['deltaBs']
@@ -213,44 +222,55 @@ def plot(run, pkl, comp, show=False, tag='', totxt=False):
         dtimes.append(datetime.datetime(times[i,0],times[i,1],times[i,2],times[i,3],times[i,4],times[i,5]))
 
     types = ('positive', 'negative', 'deltaB_loc') #!!!!!!!!!!
-    for i in range(len(regions)):
-        title = 'dB_%s_'%(comp) + 'mlat_{0:.3f}_mlon_{1:.3f}'.format(location[1], location[2]) \
-                +'\n' +str(regions[i])
-        outname = conf[run+'_derived'] + 'regions/%s_region_%d.png'%(tag,i)
+    if 'north' in README:
+        comps = ('north', 'east', 'down')
+        loc_str = 'mlat_{0:.3f}_mlon_{1:.3f}'.format(location[1], location[2])
+    elif 'x_GSM' in README:
+        comps = ('x_GSM', 'y_GSM', 'z_GSM')
+        loc_str = 'x_{0:.3f}_y_{1:.3f}_z_{2:.3f}'.format(location[0], location[1], location[2])
 
-        from hapiclient.plot.datetick import datetick
+    for icomp in range(3):
+        for i in range(len(regions)):
+            title = 'dB_%s_'%(comps[icomp]) + loc_str \
+                    +'\n' +str(regions[i])
+            direct = conf[run+'_derived'] + 'regions/' + pkl[:-4] + '/'
+            if not os.path.exists(direct):
+                os.makedirs(direct)
 
-        import matplotlib.pyplot as plt
-        import datetime
+            outname = direct+'component_%s_region_%d%s.png'%(comps[icomp], i, tag)
 
-        if totxt:
-            print('writing txt ' + outname + '.txt')
-            txt = open(outname + '.txt', 'w')
-            txt.write('title is:\n')
-            txt.write(title +'\n')
-            txt.write('year month day hour minute second milisecond value(label)\n')
-        for j in range(3):
-            plt.plot(dtimes, deltaBs[:, i, j, icomp], label=types[j])
+            from hapiclient.plot.datetick import datetick
+            import matplotlib.pyplot as plt
+            import datetime
+
             if totxt:
-                txt.write('\nlabel=%s\n'%(types[j]))
-                np.savetxt(txt, np.column_stack([ times, deltaBs[:, i, j, icomp] ]), fmt='%.5f')
-        print('export png for %d with title %s'%(i,title))
+                print('writing txt ' + outname + '.txt')
+                txt = open(outname + '.txt', 'w')
+                txt.write('title is:\n')
+                txt.write(title +'\n')
+                txt.write('year month day hour minute second milisecond value(label)\n')
+            for j in range(3):
+                plt.plot(dtimes, deltaBs[:, i, j, icomp], label=types[j])
+                if totxt:
+                    txt.write('\nlabel=%s\n'%(types[j]))
+                    np.savetxt(txt, np.column_stack([ times, deltaBs[:, i, j, icomp] ]), fmt='%.5f')
+            print('export png for %d with title %s'%(i,title))
 
 
-        datetick('x')
-        # https://stackoverflow.com/questions/1574088/plotting-time-in-python-with-matplotlib
-        #plt.gcf().autofmt_xdate()
+            datetick('x')
+            # https://stackoverflow.com/questions/1574088/plotting-time-in-python-with-matplotlib
+            #plt.gcf().autofmt_xdate()
 
-        plt.xlabel('time')
-        plt.ylabel('(in nanoTesla)')
+            plt.xlabel('time')
+            plt.ylabel('(in nanoTesla)')
 
-        plt.title(title)
-        plt.legend()
+            plt.title(title)
+            plt.legend()
 
-        if show: plt.show()
-        plt.savefig(outname)
-        plt.clf()
-        if totxt: txt.close()
+            if show: plt.show()
+            plt.savefig(outname)
+            plt.clf()
+            if totxt: txt.close()
 
 
 def signedintegrate_timeseries(run, location, regions='octants', tag='', rmin=None, locationtype='MAG'): # location in MAG sph
@@ -386,27 +406,35 @@ def signedintegrate_timeseries(run, location, regions='octants', tag='', rmin=No
 
 def main():
     run = 'DIPTSUR2'
-    time = (2000,1,1,1,1,0)
+    time = (2019,9,2,6,30,0)
     #location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
-    location = np.array([2.,0.,0.])
+    location = np.array([-2.,0.,0.])
 
-    pm = 31.875
-    reg =  {'xlims': (-pm, pm),
-            'ylims': (-pm, pm),
-            'zlims': (-pm, pm),
-            'd': 0.25
-            }
-    signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
-    #signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.475)
-    #signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.525)
-    #signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.7)
+    if True:
+        pm = 31.875
+        reg =  {'xlims': (-pm, pm),
+                'ylims': (-pm, pm),
+                'zlims': (-pm, pm),
+                'd': 0.25
+                }
+        #signedintegrate(run, time, np.array([2.,0.,0.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
+        #signedintegrate(run, time, np.array([0.,0.,-2.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
+        #signedintegrate(run, time, np.array([2.,0.,0.]), regions=(reg,), fwrite=True, rmin=1.8, locationtype='GSM')
+        #signedintegrate(run, time, np.array([0.,0.,-2.]), regions=(reg,), fwrite=True, rmin=1.8, locationtype='GSM')
 
-    if False:
+        #signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.475)
+        #signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.525)
+        #signedintegrate(run, time, location, regions=(reg,), fwrite=True, rmin=1.7)
+
         #location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
+        import time as tm
+        t0 = tm.time()
         signedintegrate_timeseries(run, location, regions='octants', tag='octants', rmin=0., locationtype='GSM') 
+        print('time took: %f hours'%((tm.time() - t0)/3600.))
     else:
         #plot(run, 'mlat_11.059_mlon_146.897_nf_240-octants.pkl', 'north', tag='north', totxt=True)
         #plot(run, 'mlat_11.017_mlon_147.323_nf_698-octants.pkl', 'north', tag='north', totxt=True)
+        plot(run, 'GSM_x_2.000_y_0.000_z_0.000_nf_698-octants.pkl')
         print('else')
 
 if __name__=='__main__':
