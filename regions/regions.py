@@ -129,10 +129,10 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
         # index k runs from: 
                 # k=0 -> 'positive'
                 # k=1 -> 'negative'
-                # k=2 -> 'deltaB_loc' = 'positive' + 'negative'
-        # index l runs from: 
-                # l=0 -> 'north'
-                # l=1 -> 'east'
+                # k=2 -> 'full_deltaB' = 'positive' + 'negative'
+        # index l runs over components: 
+                # l=0 -> 'north' or 'x_GSM'
+                # l=1 -> 'east' or ect
                 # l=2 -> 'down'
         return [positive, negative, full_deltaB] # indexed by above (k,l)
 
@@ -151,10 +151,10 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
                 comp1 = 'y_GSM'
                 comp2 = 'z_GSM'
 
-            if os.path.exists('/home/gary/'):
-                f = open('/home/gary/temp/' + run + 'regs.txt','a')
-            else:
-                f = open('/tmp/regs.txt','a')
+            direct=conf[run+'_derived'] + '%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
+            if not os.path.exists(direct): os.makedirs(direct)
+            f = open(direct + run + '_regions.txt','a')
+
             f.write('\n\n')
             f.write('run = %s\n'%(run))
             f.write('time = ' + str(time))
@@ -174,10 +174,10 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
     # index k runs from: 
             # k=0 -> 'positive'
             # k=1 -> 'negative'
-            # k=2 -> 'deltaB_loc' = 'positive' + 'negative'
-    # index l runs from: 
-            # l=0 -> 'north'
-            # l=1 -> 'east'
+            # k=2 -> 'full_deltaB' = 'positive' + 'negative'
+    # index l runs over components: 
+            # l=0 -> 'north' or 'x_GSM'
+            # l=1 -> 'east' or ect
             # l=2 -> 'down'
     return np.array(toret) # indexed by above (j,k,l)
 
@@ -319,10 +319,10 @@ def signedintegrate_timeseries(run, location, regions='octants', tag='', rmin=No
     # index k runs from: 
             # k=0 -> 'positive'
             # k=1 -> 'negative'
-            # k=2 -> 'deltaB_loc' = 'positive' + 'negative'
-    # index l runs from: 
-            # l=0 -> 'north'
-            # l=1 -> 'east'
+            # k=2 -> 'full_deltaB' = 'positive' + 'negative'
+    # index l runs over components: 
+            # l=0 -> 'north' or 'x_GSM'
+            # l=1 -> 'east' or ect
             # l=2 -> 'down'
     deltaBs = np.array(deltaBs) # indexed by above (i,j,k,l)
     assert(len(deltaBs.shape) == 4)
@@ -408,16 +408,22 @@ def main():
     run = 'DIPTSUR2'
     time = (2019,9,2,6,30,0)
     #location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
-    location = np.array([-2.,0.,0.])
+    #location = np.array([-2.,0.,0.])
 
-    if True:
+
+    if False:
         pm = 31.875
         reg =  {'xlims': (-pm, pm),
                 'ylims': (-pm, pm),
                 'zlims': (-pm, pm),
                 'd': 0.25
                 }
-        #signedintegrate(run, time, np.array([2.,0.,0.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
+        signedintegrate(run, time, np.array([2.,0.,0.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
+        signedintegrate(run, time, np.array([2.,0.,0.]), regions=(reg,), fwrite=True, rmin=1.7, locationtype='GSM')
+        signedintegrate(run, time, np.array([-2.,0.,0.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
+        signedintegrate(run, time, np.array([-2.,0.,0.]), regions=(reg,), fwrite=True, rmin=1.7, locationtype='GSM')
+
+
         #signedintegrate(run, time, np.array([0.,0.,-2.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
         #signedintegrate(run, time, np.array([2.,0.,0.]), regions=(reg,), fwrite=True, rmin=1.8, locationtype='GSM')
         #signedintegrate(run, time, np.array([0.,0.,-2.]), regions=(reg,), fwrite=True, rmin=1.8, locationtype='GSM')
@@ -434,7 +440,7 @@ def main():
     else:
         #plot(run, 'mlat_11.059_mlon_146.897_nf_240-octants.pkl', 'north', tag='north', totxt=True)
         #plot(run, 'mlat_11.017_mlon_147.323_nf_698-octants.pkl', 'north', tag='north', totxt=True)
-        plot(run, 'GSM_x_2.000_y_0.000_z_0.000_nf_698-octants.pkl')
+        plot(run, 'GSM_x_-2.000_y_0.000_z_0.000_nf_698-octants.pkl')
         print('else')
 
 if __name__=='__main__':

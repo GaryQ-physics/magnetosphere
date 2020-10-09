@@ -176,3 +176,5 @@ SWMF_user_man.pdf pg 147 "Since the normalized current is defined as curl B"
 SWMF.pdf pg 155 "Since the normalized current is defined as curl B"
 
 
+#ModWriteLogSatFile.f90  line 618
+ModGroundMagPerturb.f90  line 430
