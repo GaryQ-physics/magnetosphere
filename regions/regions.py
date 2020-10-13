@@ -405,10 +405,21 @@ def signedintegrate_timeseries(run, location, regions='octants', tag='', rmin=No
 
 
 def main():
-    run = 'DIPTSUR2'
-    time = (2019,9,2,6,30,0)
+    run = 'IMP10_RUN_SAMPLE'
+    time = (2019,9,2,7,0,0)
     #location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
     #location = np.array([-2.,0.,0.])
+
+    pm = 31.875
+    reg =  {'xlims': (-pm, pm),
+            'ylims': (-pm, pm),
+            'zlims': (-pm, pm),
+            'd': 0.25
+            }
+    signedintegrate(run, time, np.array([2.,0.,0.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
+    signedintegrate(run, time, np.array([2.,0.,0.]), regions=(reg,), fwrite=True, rmin=1.7, locationtype='GSM')
+    signedintegrate(run, time, np.array([-2.,0.,0.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
+    signedintegrate(run, time, np.array([-2.,0.,0.]), regions=(reg,), fwrite=True, rmin=1.7, locationtype='GSM')
 
 
     if False:
@@ -440,7 +451,7 @@ def main():
     else:
         #plot(run, 'mlat_11.059_mlon_146.897_nf_240-octants.pkl', 'north', tag='north', totxt=True)
         #plot(run, 'mlat_11.017_mlon_147.323_nf_698-octants.pkl', 'north', tag='north', totxt=True)
-        plot(run, 'GSM_x_-2.000_y_0.000_z_0.000_nf_698-octants.pkl')
+        #plot(run, 'GSM_x_-2.000_y_0.000_z_0.000_nf_698-octants.pkl')
         print('else')
 
 if __name__=='__main__':
