@@ -37,7 +37,6 @@ if not os.path.exists(direct):
     os.makedirs(direct)
 
 pm = 31.875
-pm = 7.
 reg =  {'xlims': (-pm, pm),
         'ylims': (-pm, pm),
         'zlims': (-pm, pm),
@@ -48,13 +47,12 @@ points = np.loadtxt(pointfile_path)
 #results = np.nan*np.empty((points.shape[0],3))
 
 def RUN(i):
-    print(i)
     result = regions.signedintegrate(run, time, points[i,:], regions=(reg,), rmin=rmin, locationtype='GSM')
 
     assert(result.shape[0]==1 and len(result.shape)==3)
     result = result[0, 2, :]
 
-    print('csv_results: ' + str(result[0]) + ',' str(result[1]) + ',' + str(result[2]) + ',' + '\n')
+    print('i=%d_results_'%(i) + str(result[0]) + ',' + str(result[1]) + ',' + str(result[2]) + ',' + '\n')
 
     return result
 
