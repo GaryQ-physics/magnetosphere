@@ -81,7 +81,7 @@ def getoctants():
     return (q1, q2, q3, q4, q5, q6, q7, q8)
 
 
-def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=None, locationtype='MAG'): # loc in MAG sph
+def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=None, locationtype='MAG'):
 
     if regions == 'octants':
         regions = getoctants()
@@ -181,6 +181,16 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
             # l=2 -> 'down'
     return np.array(toret) # indexed by above (j,k,l)
 
+
+def signedintegrate_in_magnetosphere(run, time, location, fwrite=False, rmin=None):
+    pm = 31.875
+    reg =  {'xlims': (-pm, pm),
+            'ylims': (-pm, pm),
+            'zlims': (-pm, pm),
+            'd': 0.25
+            }
+
+    signedintegrate(run, time, location, regions=(reg,), fwrite=fwrite, rmin=rmin, locationtype='GSM')
 
 def plot(run, pkl, show=False, tag='', totxt=True):
     '''
