@@ -10,9 +10,10 @@ import regions
 
 run = 'DIPTSUR2'
 cut = False
+para = True
 
 if os.path.exists('/home/gary/'):
-    pointfile_path = '/home/gary/Downloads/points_for_gary.txt'
+    pointfile_path = '/home/gary/Downloads/points_for_gary-test.txt'
 else:
     pointfile_path = '/home/gquaresi/points_for_gary.txt'
 
@@ -32,8 +33,11 @@ else:
     rmin = 0.
     direct = direct + 'including_currents_before_rCurrents/'
 
+if not os.path.exists(direct):
+    os.makedirs(direct)
 
 pm = 31.875
+pm = 7.
 reg =  {'xlims': (-pm, pm),
         'ylims': (-pm, pm),
         'zlims': (-pm, pm),
@@ -41,32 +45,51 @@ reg =  {'xlims': (-pm, pm),
         }
 
 points = np.loadtxt(pointfile_path)
-results = np.nan*np.empty((points.shape[0],3))
+#results = np.nan*np.empty((points.shape[0],3))
 
-if not os.path.exists(direct):
-    os.makedirs(direct)
-csv_results = open(direct + 'csv_results.csv','w')
-csv_full = open(direct + 'csv_full.csv','w')
-
-for i in range(points.shape[0]):
+def RUN(i):
+    print(i)
     result = regions.signedintegrate(run, time, points[i,:], regions=(reg,), rmin=rmin, locationtype='GSM')
 
     assert(result.shape[0]==1 and len(result.shape)==3)
     result = result[0, 2, :]
 
-    results[i, :] = result
+    print('csv_results: ' + str(result[0]) + ',' str(result[1]) + ',' + str(result[2]) + ',' + '\n')
 
-    csv_results.write(str(result[0]) + ',')
-    csv_results.write(str(result[1]) + ',')
-    csv_results.write(str(result[2]) + ',')
+    return result
+
+
+if para:
+    from joblib import Parallel, delayed
+    import multiprocessing
+    num_cores = multiprocessing.cpu_count()
+    if num_cores is not None and num_cores > points.shape[0] :
+        num_cores = points.shape[0]
+    print('Parallel processing {0:d} point(s) using {1:d} cores'\
+          .format(points.shape[0], num_cores))
+    results = Parallel(n_jobs=num_cores)(\
+            delayed(RUN)(i) for i in range(points.shape[0]))
+else:
+    results = []
+    for i in range(points.shape[0]):
+        results.append(RUN(i))
+
+results = np.array(results)
+
+
+csv_results = open(direct + 'csv_results.csv','w')
+csv_full = open(direct + 'csv_full.csv','w')
+for i in range(points.shape[0]):
+    csv_results.write(str(results[i,0]) + ',')
+    csv_results.write(str(results[i,1]) + ',')
+    csv_results.write(str(results[i,2]) + ',')
 
     csv_full.write(str(points[i,0]) + ',')
     csv_full.write(str(points[i,1]) + ',')
     csv_full.write(str(points[i,2]) + ',')
-    csv_full.write(str(result[0]) + ',')
-    csv_full.write(str(result[1]) + ',')
-    csv_full.write(str(result[2]) + ',')
-
+    csv_full.write(str(results[i,0]) + ',')
+    csv_full.write(str(results[i,1]) + ',')
+    csv_full.write(str(results[i,2]) + ',')
 csv_results.close()
 csv_full.close()
 
