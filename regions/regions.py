@@ -151,7 +151,7 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
                 comp1 = 'y_GSM'
                 comp2 = 'z_GSM'
 
-            direct=conf[run+'_derived'] + '%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
+            direct=conf[run+'_derived'] + 'regions/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
             if not os.path.exists(direct): os.makedirs(direct)
             f = open(direct + run + '_regions.txt','a')
 
@@ -405,21 +405,10 @@ def signedintegrate_timeseries(run, location, regions='octants', tag='', rmin=No
 
 
 def main():
-    run = 'IMP10_RUN_SAMPLE'
-    time = (2019,9,2,7,0,0)
+    run = 'DIPTSUR2'
+    time = (2019,9,2,6,30,0)
     #location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
     #location = np.array([-2.,0.,0.])
-
-    pm = 31.875
-    reg =  {'xlims': (-pm, pm),
-            'ylims': (-pm, pm),
-            'zlims': (-pm, pm),
-            'd': 0.25
-            }
-    signedintegrate(run, time, np.array([2.,0.,0.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
-    signedintegrate(run, time, np.array([2.,0.,0.]), regions=(reg,), fwrite=True, rmin=1.7, locationtype='GSM')
-    signedintegrate(run, time, np.array([-2.,0.,0.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
-    signedintegrate(run, time, np.array([-2.,0.,0.]), regions=(reg,), fwrite=True, rmin=1.7, locationtype='GSM')
 
 
     if False:
@@ -429,11 +418,10 @@ def main():
                 'zlims': (-pm, pm),
                 'd': 0.25
                 }
-        signedintegrate(run, time, np.array([2.,0.,0.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
-        signedintegrate(run, time, np.array([2.,0.,0.]), regions=(reg,), fwrite=True, rmin=1.7, locationtype='GSM')
-        signedintegrate(run, time, np.array([-2.,0.,0.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
-        signedintegrate(run, time, np.array([-2.,0.,0.]), regions=(reg,), fwrite=True, rmin=1.7, locationtype='GSM')
-
+        #signedintegrate(run, time, np.array([2.,0.,0.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
+        #signedintegrate(run, time, np.array([2.,0.,0.]), regions=(reg,), fwrite=True, rmin=1.7, locationtype='GSM')
+        #signedintegrate(run, time, np.array([-2.,0.,0.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
+        #signedintegrate(run, time, np.array([-2.,0.,0.]), regions=(reg,), fwrite=True, rmin=1.7, locationtype='GSM')
 
         #signedintegrate(run, time, np.array([0.,0.,-2.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
         #signedintegrate(run, time, np.array([2.,0.,0.]), regions=(reg,), fwrite=True, rmin=1.8, locationtype='GSM')

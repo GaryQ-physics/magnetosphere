@@ -144,7 +144,7 @@ def dirlist(rootdir, **kwargs):
                 if re.search(kwargs['regex'], file):
                     if 'fullpath' in kwargs:
                         if kwargs['fullpath']:
-                            file_keep.append(subdir+'/'+file)
+                            file_keep.append(subdir+file)
                         else:
                             file_keep.append(file)
                     else:
@@ -152,7 +152,7 @@ def dirlist(rootdir, **kwargs):
             else:
                 if 'fullpath' in kwargs:
                     if kwargs['fullpath']:
-                        file_keep.append(subdir+'/'+file)
+                        file_keep.append(subdir+file)
                     else:
                         file_keep.append(file)
                 else:

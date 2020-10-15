@@ -9,10 +9,10 @@ import regions
 import cxtransform as cx
 import magnetometers as mg
 
-run = 'DIPTSUR2'
+run = 'IMP10_RUN_SAMPLE'
 
 pkl = run + '_different_rmin.pkl'
-para = False
+para = True
 serial = False
 rs = 0.03125*np.arange(32,96)
 
