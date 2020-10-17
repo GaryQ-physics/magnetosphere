@@ -1,10 +1,97 @@
-# biot_savart
-
 import numpy as np
 from units_and_constants import phys
 
+'''
+import biot_savart as bs
+import numpy as np
+X0 = np.array([[1.,1,1],[2,2,2]])
+X= 1.*np.arange(18).reshape(6,3)
+J = 10*X
+result = bs.deltaB('dB', X0, X, J)
 
-def deltaB(variable, x0, X, J, V_char = 1.):
+
+result.shape
+
+X0[0,:]
+X0[1,:]
+
+
+a=bs.deltaB('dB', X0[0,:], X, J)
+b=bs.deltaB('dB', X0[1,:], X, J)
+ap=bs.deltaB_old('dB', X0[0,:], X, J)
+bp=bs.deltaB_old('dB', X0[1,:], X, J)
+a==ap
+b==bp
+
+
+
+a==result[0,:,:]
+b==result[1,:,:]
+'''
+
+def deltaB(variable, X0, X, J, V_char = 1.):
+    print('\n\nhellothere\n\n')
+
+    X=np.array(X)
+    if X.shape == (3,):
+        X=np.array([X])
+
+    X0=np.array(X0)
+    if X0.shape == (3,):
+        X0=np.array([X0])
+
+    '''
+    X0 = np.repeat([X0], X.shape[0], axis=0)
+    X0=np.swapaxes(X0,0,1)
+    X = np.repeat([X], X0.shape[0], axis=0)
+    
+    R = X0 - X
+    '''
+
+    X0 = np.repeat([X0], X.shape[0], axis=0)
+    memloc = X0.__array_interface__['data'][0]
+    X0=np.swapaxes(X0,0,1)
+    print(memloc == X0.__array_interface__['data'][0])
+    J = np.repeat([J], X0.shape[0], axis=0)
+    R = np.repeat([X], X0.shape[0], axis=0)
+    del X
+    R *= -1
+    R += X0
+    del X0
+
+    rcut = 1.733*np.cbrt(V_char) # np.sqrt(3) == 1.7320508075688772
+    Rcubed = np.einsum('ijk,ijk->ij',R,R)**1.5
+
+    #divRcubed = 1./Rcubed
+    #https://stackoverflow.com/questions/26248654/how-to-return-0-with-divide-by-zero/40022737
+    divRcubed = np.divide(1., Rcubed, out=np.zeros_like(Rcubed), where=(Rcubed >= rcut**3))
+    dB = np.cross(J, R)
+    print('heh')
+    #dB = np.einsum('ijk,ij->ijk', dB, divRcubed)
+    dB *= divRcubed[:,:,None]
+    dB *= phys['mu0']/(4*np.pi)
+    try:  #!!!!! better way?
+        V_char.shape
+        dB = np.einsum('i,ij->ij', V_char, dB)
+    except:
+        dB *= V_char
+
+    if(variable=='dB'):
+        if dB.shape[0]==1:
+            dB = dB[0,:,:]
+        return dB
+
+    deltaB = np.sum(dB, axis=1)
+    if(variable=='deltaB'):
+        if deltaB.shape[0]==1:
+            deltaB = deltaB[0,:]
+        return deltaB
+
+    return np.nan
+
+
+
+def deltaB_old(variable, x0, X, J, V_char = 1.):
     X=np.array(X)
     if X.shape == (3,):
         X=np.array([X])
@@ -17,12 +104,13 @@ def deltaB(variable, x0, X, J, V_char = 1.):
 
     rcut = 1.733*np.cbrt(V_char) # np.sqrt(3) == 1.7320508075688772
     Rcubed = (R[:,0]**2 + R[:,1]**2 + R[:,2]**2)**1.5
+    #Rcubed = np.einstum('ij,ij->i',R,R)**1.5
     #divRcubed = 1./Rcubed
     #https://stackoverflow.com/questions/26248654/how-to-return-0-with-divide-by-zero/40022737
     divRcubed = np.divide(1., Rcubed, out=np.zeros_like(Rcubed), where=(Rcubed >= rcut**3))
 
     dB = (phys['mu0']/(4*np.pi))*( np.cross(J, R)*divRcubed[:,np.newaxis] ) #https://stackoverflow.com/questions/5795700/multiply-numpy-array-of-scalars-by-array-of-vectors
-
+    #''''''''''''''''''''''''''''' np.einsum('ij,i->ij', np.cross(J, R), divRcubed)
     try:  #!!!!! better way?
         V_char.shape
         dB = np.einsum('i,ij->ij', V_char, dB)
@@ -36,19 +124,6 @@ def deltaB(variable, x0, X, J, V_char = 1.):
     if(variable=='deltaB'):
         return deltaB
 
-    '''
-    if(variable=='deltaB_mag'):
-        return np.sqrt(deltaBnT[:,0]**2 + deltaBnT[:,1]**2 + deltaBnT[:,2]**2)
-    if(variable=='deltaB_EW'):
-        # east west direction (east positive)
-        #return np.einsum('ij,ij->i', deltaBnT, a2) #https://stackoverflow.com/questions/15616742/vectorized-way-of-calculating-row-wise-dot-product-two-matrices-with-scipy
-        return np.dot(deltaBnT,a2)
-    if(variable=='deltaB_NS'):
-        # north south direction (north positive)
-        return np.einsum('ij,ij->i', deltaBnT, a1)
-    if(variable=='deltaBx'):
-        return deltaBnT[:,0]
-    '''
     return np.nan
 
 '''

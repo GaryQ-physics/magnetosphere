@@ -71,7 +71,7 @@ Notes:
 
         working hypothesis: different versions of spacepy
 
-2020/17/09
+2020/09/17
     new script quadrants.py
     ran quadrants.py for DIPTSUR2
     most up to date -derived folders now on sunspot /media/solar-backup/git-data/sblake
@@ -106,15 +106,28 @@ Notes:
         ModuleNotFoundError: No module named 'spacepy'
 
 
-2020/21/09
+2020/09/21
     quadrants.py -> regions.py
     new subdirectory run-derived/regions/
     regions.py should replace bs_compare_SWMF_kameleon.py eventually
     ran regions for DIPTSUR2 (all files) on sunspot
 
-2020/28/09
+2020/09/28
     cuplane_plot_demo2b.py now has zoomed in option (process_type=3)
     ran above for DIPTSUR2 without rerunning process_type=1,2
+
+2020/10/16
+    wrote compare_many_points.py
+
+
+2020/10/17
+    edited biot_savart.py: moved old deltaB() to deltaB_old(), then 
+    \   vectorized deltaB() to allow multiple field evaluation points (X0 is (M,3)).
+    \   Also made more memory efficient. Checked it agrees with deltaB_old() using
+    \   the tripple quotes commented script at top of biot_savart.py
+    wrote check_curl.py
+
+
 
 
 TODO:
@@ -169,6 +182,8 @@ See 'git help config' and search for 'push.default' for further information.
 'current' instead of 'simple' if you sometimes use older versions of Git)
 
 
+http://web.mit.edu/6.013_book/www/chapter8/8.4.html
+https://en.wikipedia.org/wiki/K%C3%A4ll%C3%A9n%E2%80%93Lehmann_spectral_representation
 
 
 
@@ -178,3 +193,36 @@ SWMF.pdf pg 155 "Since the normalized current is defined as curl B"
 
 #ModWriteLogSatFile.f90  line 618
 ModGroundMagPerturb.f90  line 430
+
+>>> 31.875*2/.25
+255.0
+>>> 31.875*2/.25 +1
+256.0
+>>> 256**3
+16777216
+>>> 1*(256**3)*3
+50331648
+>>> nums_per_pt = (256**3)*3
+>>> nums = nums_per_pt*6
+>>> nums
+301989888
+>>> bytes = nums*4
+>>> bits = bytes*8
+>>> bytes
+1207959552
+>>> bits
+9663676416
+>>> 2**10
+1024
+>>> 2**30
+1073741824
+>>> Gbytes = bits/(2**30)
+>>> Gbytes
+9
+>>> Gbytes = bits/(2.**30)
+>>> Gbytes
+9.0
+>>> Gbytes = bytes/(2.**30)
+>>> Gbytes
+1.125
+

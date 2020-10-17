@@ -97,7 +97,8 @@ def integrate(run, time_fname, mlat, mlon, para=True,
     Nz = ax_list[2].size
 
     if Nx*Ny*Nz > 257**3:
-        raise ValueError("number of points exceeds 257**3, potentially may run out of memory")
+        #raise ValueError("number of points exceeds 257**3, potentially may run out of memory")
+        print("WARNING: number of points exceeds 257**3, potentially may run out of memory")
 
     if type(time_fname) == str:
         filename = os.path.split(time_fname)[1]
@@ -113,8 +114,9 @@ def integrate(run, time_fname, mlat, mlon, para=True,
     else:
         x0 = cx.MAGtoGSM([1., mlat, mlon], time, 'sph', 'car')
 
-    import tempfile
-    os.system('rm ' + tempfile.gettempdir() + '/*dB_array_slice*')
+    if tonpfile:
+        import tempfile
+        os.system('rm ' + tempfile.gettempdir() + '/*dB_array_slice*')
 
     if para:
         #Gy, Gz = np.meshgrid(Y,Z)
