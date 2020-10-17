@@ -21,6 +21,7 @@ def bsint(filename, pts, region):
     G = make_grid(ax_list, slices=False)
     J = probe(filename, G, var=['jx','jy','jz'], library='kameleon')*(phys['muA']/(phys['m']**2))
     deltaBs = bs.deltaB('deltaB', pts, G, J, V_char = region['d']**3)
+    return deltaBs
 
 
 def GetCurlB(points, filename, method='biotsavart'):
@@ -84,6 +85,9 @@ print(points)
 
 filename = util.time2CDFfilename(run, time)
 
+import time as tm
+t0 = tm.time()
+
 B1 = probe(filename, points, var=['b1x','b1y','b1z'], library='kameleon')
 B = probe(filename, points, var=['bx','by','bz'], library='kameleon')
 J = probe(filename, points, var=['jx','jy','jz'], library='kameleon')*(phys['muA']/(phys['m']**2))
@@ -93,3 +97,4 @@ print(J_scaled)
 print(B)
 print(B1)
 print(curlB)
+print('runtime = %f minutes'%((tm.time()-t0)/60.))
