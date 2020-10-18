@@ -40,24 +40,20 @@ def deltaB(variable, X0, X, J, V_char = 1.):
     if X0.shape == (3,):
         X0=np.array([X0])
 
-    '''
-    X0 = np.repeat([X0], X.shape[0], axis=0)
-    X0=np.swapaxes(X0,0,1)
-    X = np.repeat([X], X0.shape[0], axis=0)
-    
-    R = X0 - X
-    '''
-
     X0 = np.repeat([X0], X.shape[0], axis=0)
     memloc = X0.__array_interface__['data'][0]
     X0=np.swapaxes(X0,0,1)
     print(memloc == X0.__array_interface__['data'][0])
-    J = np.repeat([J], X0.shape[0], axis=0)
-    R = np.repeat([X], X0.shape[0], axis=0)
+
+    num_eval_pts = X0.shape[0]
+
+    R = np.repeat([X], num_eval_pts, axis=0)
     del X
     R *= -1
     R += X0
     del X0
+
+    dB = np.repeat([J], num_eval_pts, axis=0) #extended J right now, but will become dB after modifications
 
     rcut = 1.733*np.cbrt(V_char) # np.sqrt(3) == 1.7320508075688772
     Rcubed = np.einsum('ijk,ijk->ij',R,R)**1.5
@@ -65,7 +61,7 @@ def deltaB(variable, X0, X, J, V_char = 1.):
     #divRcubed = 1./Rcubed
     #https://stackoverflow.com/questions/26248654/how-to-return-0-with-divide-by-zero/40022737
     divRcubed = np.divide(1., Rcubed, out=np.zeros_like(Rcubed), where=(Rcubed >= rcut**3))
-    dB = np.cross(J, R)
+    dB = np.cross(dB, R)
     print('heh')
     #dB = np.einsum('ijk,ij->ijk', dB, divRcubed)
     dB *= divRcubed[:,:,None]
