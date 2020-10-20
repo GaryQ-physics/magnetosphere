@@ -13,7 +13,7 @@ cut = False
 para = True
 
 if os.path.exists('/home/gary/'):
-    pointfile_path = '/home/gary/Downloads/points_for_gary-test.txt'
+    pointfile_path = '/home/gary/Downloads/points_for_gary-short.txt'
 else:
     pointfile_path = '/home/gquaresi/points_for_gary.txt'
 
@@ -47,10 +47,34 @@ points = np.loadtxt(pointfile_path)
 #results = np.nan*np.empty((points.shape[0],3))
 
 def RUN(i):
-    result = regions.signedintegrate(run, time, points[i,:], regions=(reg,), rmin=rmin, locationtype='GSM')
+    point = points[i,:]
+    reg2 = reg.copy()
 
-    assert(result.shape[0]==1 and len(result.shape)==3)
-    result = result[0, 2, :]
+    def regionconfig(i, lims)
+        if point[i] > 0:
+            minn = reg['d']*round((point[i] - pm)/reg['d'])
+            maxx = reg['d']*round((point[i] + pm)/reg['d'])
+            minn = max(minn, pm + reg['d'])
+            reg2[lims] = (minn, maxx)
+        if point[i] < 0:
+            minn = reg['d']*round((point[i] - pm)/reg['d'])
+            maxx = reg['d']*round((point[i] + pm)/reg['d'])
+            maxx = min(maxx, -pm - reg['d'])
+            reg2[lims] = (minn, maxx)
+
+    regionconfig(0, 'xlims')
+    regionconfig(1, 'ylims')
+    regionconfig(2, 'zlims')
+
+
+    result = regions.signedintegrate(run, time, points[i,:], regions=(reg,reg2), rmin=rmin, locationtype='GSM')
+
+    assert(len(result.shape)==3)
+    if result.shape[0]==1:
+        result = result[0, 2, :]
+    else:
+        result = np.sum(result, axis=0)
+
 
     print('i=%d_results_'%(i) + str(result[0]) + ',' + str(result[1]) + ',' + str(result[2]) + ',' + '\n')
 
@@ -75,26 +99,26 @@ else:
 results = np.array(results)
 
 
-csv_results = open(direct + 'csv_results.csv','w')
-csv_full = open(direct + 'csv_full.csv','w')
+bs_results_nopoints = open(direct + 'bs_results_nopoints.csv','w')
+bs_results = open(direct + 'bs_results.csv','w')
 for i in range(points.shape[0]):
-    csv_results.write(str(results[i,0]) + ',')
-    csv_results.write(str(results[i,1]) + ',')
-    csv_results.write(str(results[i,2]) + ',')
+    bs_results_nopoints.write(str(results[i,0]) + ',')
+    bs_results_nopoints.write(str(results[i,1]) + ',')
+    bs_results_nopoints.write(str(results[i,2]) + ',')
 
-    csv_full.write(str(points[i,0]) + ',')
-    csv_full.write(str(points[i,1]) + ',')
-    csv_full.write(str(points[i,2]) + ',')
-    csv_full.write(str(results[i,0]) + ',')
-    csv_full.write(str(results[i,1]) + ',')
-    csv_full.write(str(results[i,2]) + ',')
-csv_results.close()
-csv_full.close()
+    bs_results.write(str(points[i,0]) + ',')
+    bs_results.write(str(points[i,1]) + ',')
+    bs_results.write(str(points[i,2]) + ',')
+    bs_results.write(str(results[i,0]) + ',')
+    bs_results.write(str(results[i,1]) + ',')
+    bs_results.write(str(results[i,2]) + ',')
+bs_results_nopoints.close()
+bs_results.close()
 
-txt_full = open(direct + 'txt_full.txt', 'w')
-txt_full.write('time = (%d,%d,%d,%d,%d,%d,%d), rmin=%f, run=%s\n'%(time + (rmin,run)))
-txt_full.write(str(reg)+'\n')
-txt_full.write('point_x point_y point_z deltaB_x deltaB_x deltaB_x\n')
-np.savetxt(txt_full, np.column_stack([points, results]), fmt='%.5f')
-txt_full.close()
+txt = open(direct + 'bs_results.txt', 'w')
+txt.write('time = (%d,%d,%d,%d,%d,%d,%d), rmin=%f, run=%s\n'%(time + (rmin,run)))
+txt.write(str(reg)+'\n')
+txt.write('point_x point_y point_z deltaB_x deltaB_x deltaB_x\n')
+np.savetxt(txt, np.column_stack([points, results]), fmt='%.5f')
+txt.close()
 

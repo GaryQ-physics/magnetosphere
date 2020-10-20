@@ -1,5 +1,9 @@
 import numpy as np
 from units_and_constants import phys
+from make_grid import make_grid, make_axes
+
+import deltaB_subroutine
+
 
 '''
 import biot_savart as bs
@@ -25,12 +29,22 @@ b==bp
 
 
 
-a==result[0,:,:]
-b==result[1,:,:]
+ap==result[0,:,:]
+bp==result[1,:,:]
 '''
 
+def deltaB_wrap_Nx3(variable, X0, X, J, V_char = 1.):
+    #X and J must be (N,3)
+    #X0 must be (M,3)
+    print('\n\n from deltaB_wrap_Nx3 \n\n')
+
+
+def deltaB_wrap_3xN():
+    pass
+
+
 def deltaB(variable, X0, X, J, V_char = 1.):
-    print('\n\nhellothere\n\n')
+    print('\n\n from deltaB \n\n')
 
     X=np.array(X)
     if X.shape == (3,):
@@ -57,14 +71,21 @@ def deltaB(variable, X0, X, J, V_char = 1.):
 
     rcut = 1.733*np.cbrt(V_char) # np.sqrt(3) == 1.7320508075688772
     Rcubed = np.einsum('ijk,ijk->ij',R,R)**1.5
-
     #divRcubed = 1./Rcubed
     #https://stackoverflow.com/questions/26248654/how-to-return-0-with-divide-by-zero/40022737
     divRcubed = np.divide(1., Rcubed, out=np.zeros_like(Rcubed), where=(Rcubed >= rcut**3))
-    dB = np.cross(dB, R)
-    print('heh')
+
+    #dB = np.cross(dB, R)
+    dB = dB.transpose()
+    R = R.transpose()
+    deltaB_subroutine.cross(dB, R)
+    dB = dB.transpose()
+    del R
+    print('checkpoint')
+
     #dB = np.einsum('ijk,ij->ijk', dB, divRcubed)
     dB *= divRcubed[:,:,None]
+
     dB *= phys['mu0']/(4*np.pi)
     try:  #!!!!! better way?
         V_char.shape
@@ -76,13 +97,11 @@ def deltaB(variable, X0, X, J, V_char = 1.):
         if dB.shape[0]==1:
             dB = dB[0,:,:]
         return dB
-
     deltaB = np.sum(dB, axis=1)
     if(variable=='deltaB'):
         if deltaB.shape[0]==1:
             deltaB = deltaB[0,:]
         return deltaB
-
     return np.nan
 
 
@@ -122,65 +141,22 @@ def deltaB_old(variable, x0, X, J, V_char = 1.):
 
     return np.nan
 
-'''
-def B_EW(x0, X, J, Npole, dV_grid):
-    Npole=np.array(Npole)
 
-    a2 = np.cross(Npole, x0)
-    a1 = np.cross(x0, a2)
-    a1 = a1/np.linalg.norm(a1)
-    a2 = a2/np.linalg.norm(a2)
-    print(list(a2))
-    deltaBnT = deltaB('deltaB', x0, X, J, V_char=dV_grid)/phys['nT']
-    return np.dot(deltaBnT,a2)
-'''
+def biot_savart_run(run, time, pts, regions, separate=False):
+    import util
+    filename = util.time2CDFfilename(run, time)
 
-'''
-def make_grid(xlims, ylims, zlims, dx, dy, dz):
-    if len(xlims) == 2:
-        no_origin = xlims[0] > 0. or xlims[1] < 0. or ylims[0] > 0. or ylims[1] < 0. or zlims[0] > 0. or zlims[1] < 0.
-        if no_origin:
-            print('WARNING: grid does not contain origin')
-            X = np.arange(xlims[0], xlims[1]+dx, dx)
-            Y = np.arange(ylims[0], ylims[1]+dy, dy)
-            Z = np.arange(zlims[0], zlims[1]+dz, dz)
-        else:
-            # need flip(a,0) for python 2.7.17 whereas flip(a,0) or flip(a) works in 2.7.18 and 3.7.4
-            X = np.concatenate([ -np.flip(np.delete(np.arange(0., -xlims[0]+dx, dx), 0), 0) , np.arange(0., xlims[1]+dx, dx) ])
-            Y = np.concatenate([ -np.flip(np.delete(np.arange(0., -ylims[0]+dy, dy), 0), 0) , np.arange(0., ylims[1]+dy, dy) ])
-            Z = np.concatenate([ -np.flip(np.delete(np.arange(0., -zlims[0]+dz, dz), 0), 0) , np.arange(0., zlims[1]+dz, dz) ])
-    else:
-        X = np.array(xlims)
-        Y = np.array(ylims)
-        Z = np.array(zlims)
-    Nx = X.size
-    Ny = Y.size
-    Nz = Z.size
+    if isinstance(regions, dict):
+        regions = (regions,)
 
-    B2, B3, B1 = np.meshgrid(Y, Z, X)
-    #B1, B2, B3 = np.meshgrid(X, Y, Z) # seems more natural but doesnt work with vtk structured_grid format
-    B1 = B1.flatten(order='C')
-    B2 = B2.flatten(order='C')
-    B3 = B3.flatten(order='C')
-    Bgrid = np.column_stack((B1, B2, B3))
-
-    Xind = np.arange(0, Nx, 1)
-    Yind = np.arange(0, Ny, 1)
-    Zind = np.arange(0, Nz, 1)
-    C2, C3, C1 = np.meshgrid(Yind, Zind, Xind)
-    C1 = C1.flatten(order='C')
-    C2 = C2.flatten(order='C')
-    C3 = C3.flatten(order='C')
-    inds = np.column_stack((C1, C2, C3))
-
-    Xc = np.arange(0, Nx-1, 1)
-    Yc = np.arange(0, Ny-1, 1)
-    Zc = np.arange(0, Nz-1, 1)
-    D2, D3, D1 = np.meshgrid(Yc, Zc, Xc)
-    D1 = D1.flatten(order='C')
-    D2 = D2.flatten(order='C')
-    D3 = D3.flatten(order='C')
-    cell_inds = np.column_stack((D1, D2, D3))
-
-    return [Bgrid, Nx, Ny, Nz, cell_inds, inds]
-'''
+    for region in list(regions):
+        ax_list = make_axes(region['xlims'], region['ylims'], region['zlims'], region['d'])
+        G = make_grid(ax_list, slices=False)
+        J = probe(filename, G, var=['jx','jy','jz'], library='kameleon')
+        J *= phys['muA']/(phys['m']**2)
+        deltaB = bs.deltaB('deltaB', pts, G, J, V_char = region['d']**3)
+        ret.append(deltaB.copy())
+    ret = np.array(ret)
+    if separate:
+        return ret
+    return np.sum(ret, axis=0)

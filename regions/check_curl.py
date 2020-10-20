@@ -10,18 +10,6 @@ import util
 from units_and_constants import phys
 #import biot_savart_kameleon_interpolated_grid as bsk
 import biot_savart as bs
-from make_grid import make_grid, make_axes
-
-
-
-
-
-def bsint(filename, pts, region):
-    ax_list = make_axes(region['xlims'], region['ylims'], region['zlims'], region['d'])
-    G = make_grid(ax_list, slices=False)
-    J = probe(filename, G, var=['jx','jy','jz'], library='kameleon')*(phys['muA']/(phys['m']**2))
-    deltaBs = bs.deltaB('deltaB', pts, G, J, V_char = region['d']**3)
-    return deltaBs
 
 # B = [0.5*y**2, z*x, z]
 # curlB = [-x, 0, z-y]
@@ -62,7 +50,7 @@ By_testinterp = RegularGridInterpolator((xax,yax,zax), By_interdata)
 Bz_testinterp = RegularGridInterpolator((xax,yax,zax), Bz_interdata)
 
 
-def GetCurlB(points, filename, method='biotsavart'):
+def GetCurlB(points, filename, method='biotsavart', para=False):
     pm = 31.875
     reg =  {'xlims': (-pm, pm),
             'ylims': (-pm, pm),
@@ -71,8 +59,7 @@ def GetCurlB(points, filename, method='biotsavart'):
             }
     epsilon = 1./16.
 
-    ret = []
-    for i in range(points.shape[0]):
+    def func(i):
         point = points[i,:].copy()
         xplus = point + epsilon*np.array([1,0,0])
         xmin =  point - epsilon*np.array([1,0,0])
@@ -84,7 +71,7 @@ def GetCurlB(points, filename, method='biotsavart'):
         print(pts.shape)
 
         if method=='biotsavart':
-            Bs = bsint(filename, pts, reg)
+            Bs = bs.biot_savart_run(run, time, pts, reg)
         if method=='b_batsrus':
             Bs = probe(filename, pts, var=['bx','by','bz'], library='kameleon')
         if method=='b1_batsrus':
@@ -94,25 +81,32 @@ def GetCurlB(points, filename, method='biotsavart'):
         if method=='testinterp':
             Bs = np.column_stack([Bx_testinterp(pts), By_testinterp(pts), Bz_testinterp(pts)])
 
-        print(Bs.shape)
+        #print(Bs.shape)
         delB = np.nan*np.empty((3,3))
         delB[0,:] = ( Bs[0,:] - Bs[1,:] )/(2.*epsilon)
         delB[1,:] = ( Bs[2,:] - Bs[3,:] )/(2.*epsilon)
         delB[2,:] = ( Bs[4,:] - Bs[5,:] )/(2.*epsilon)
-        print(delB)
+        #print(delB)
 
         curlB_tens = delB - delB.transpose()
-        print(curlB_tens)
+        #print(curlB_tens)
         curlB = np.array([ curlB_tens[1,2], curlB_tens[2,0], curlB_tens[0,1] ])
-        print(curlB)
+        #print(curlB)
+        #print('\n\n\n')
+        return curlB
 
-        ret.append(curlB)
+    if para:
+        pass #would run out of memory anyway
+    else:
+        ret = []
+        for i in range(points.shape[0]):
+            ret.append(func(i))
 
-        print('\n\n\n')
     return np.array(ret)
 
 run = 'DIPTSUR2'
 cut = False
+debug = True
 
 if run == 'DIPTSUR2':
     time = (2019,9,2,6,30,0,0)
@@ -128,11 +122,17 @@ if cut:
 else:
     rmin = 0.
     direct = direct + 'including_currents_before_rCurrents/'
-data = np.loadtxt(direct + 'txt_full-short.txt', skiprows=3)
-points = data[:, 0:3]
-points = np.array([[5.2,4.3,-2.1],[2.,2.,7.]])
 
-print(points)
+if os.path.exists('/home/gary/'):
+    data = np.loadtxt(direct + 'bs_results.txt', skiprows=3)
+    points = data[:, 0:3]
+    #points = np.array([[5.2,4.3,-2.1],[2.,2.,7.]])
+    #points = np.column_stack([np.arange(2,30),np.zeros(28),np.zeros(28)])
+else:
+    points = np.loadtxt('/home/gquaresi/points_for_gary')
+
+if debug:
+    print(points)
 
 
 filename = util.time2CDFfilename(run, time)
@@ -144,12 +144,26 @@ B1 = probe(filename, points, var=['b1x','b1y','b1z'], library='kameleon')
 B = probe(filename, points, var=['bx','by','bz'], library='kameleon')
 J = probe(filename, points, var=['jx','jy','jz'], library='kameleon')*(phys['muA']/(phys['m']**2))
 J_scaled = phys['mu0'] * J
-curlB = GetCurlB(points, filename, method='testinterp')
-print(J_scaled)
-print(B)
-print(B1)
-print(curlB)
-print(curlBtest(points))
+curlB = GetCurlB(points, filename, method='b_batsrus')
+
+error = np.einsum('ij,ij->i', curlB - J_scaled, curlB - J_scaled)
+error = error/np.einsum('ij,ij->i', J_scaled, J_scaled)
+error = np.sqrt(error)
+
+if debug:
+    print(J_scaled)
+    print(B)
+    print(B1)
+    print(curlB)
+    print(curlBtest(points))
+    print(error)
+
+if os.path.exists('/home/gary/'):
+    txt = open('/home/gary/magnetosphere/check_curl.txt', 'w')
+else:
+    txt = open('/home/gquaresi/magnetosphere/check_curl.txt', 'w')
+
+np.savetxt(txt, np.column_stack([points, error, J_scaled, curlB]))
 
 print('runtime = %f minutes'%((tm.time()-t0)/60.))
 
@@ -163,6 +177,141 @@ method='biotsavart'
  [  -4.15499353    0.87281436 -123.13650513]]
 [[ 0.1731481   0.59475596 -0.15250371]
  [ 0.16899027  0.57523569 -0.1242519 ]]
+
+####### Oct 18th 2020 13:52 ########## method='biotsavart' #########
+(python2.7) gquaresi@sunspot ~/magnetosphere/regions $ python check_curl.py 
+
+
+ util path: ~/magnetosphere/util/util.py 
+
+
+[[ 5.2  4.3 -2.1]
+ [ 2.   2.   7. ]]
+Kameleon::close() calling model's close
+Kameleon::close() calling model's close
+Kameleon::close() calling model's close
+(6, 3)
+Kameleon::close() calling model's close
+
+
+hellothere
+
+
+True
+heh
+(6, 3)
+[[ 15.05304798  31.71843829   8.27645302]
+ [ 28.81623777  12.54499775  -0.17297768]
+ [  6.86216141   6.89162133 -27.59843898]]
+[[ 0.          2.90220052  1.4142916 ]
+ [-2.90220052  0.         -7.064599  ]
+ [-1.4142916   7.064599    0.        ]]
+[-7.064599   -1.4142916   2.90220052]
+
+
+
+
+(6, 3)
+Kameleon::close() calling model's close
+
+
+hellothere
+
+
+True
+heh
+(6, 3)
+[[-71.32262607 -13.6614482   62.73757699]
+ [-35.15499014  25.51301891  -1.07144681]
+ [-87.70847478 -26.28448631  53.42347172]]
+[[   0.           21.49354194  150.44605177]
+ [ -21.49354194    0.           25.2130395 ]
+ [-150.44605177  -25.2130395     0.        ]]
+[  25.2130395  -150.44605177   21.49354194]
+
+
+
+
+[[ -0.04388906   0.051706     0.22988535]
+ [  5.34341367 -40.64481063  11.30561658]]
+[[ 3.31596471e-02  2.07271695e-01 -1.14144844e+02]
+ [ 1.61457733e+02  2.52562637e+01 -3.49682861e+02]]
+[[ -71.14097595  -75.71589661 -165.93405151]
+ [ 228.52600098   75.39697266 -247.07489014]]
+[[  -7.064599     -1.4142916     2.90220052]
+ [  25.2130395  -150.44605177   21.49354194]]
+[[ -5.2    0.   -57.57]
+ [ -2.     0.    -5.  ]]
+runtime = 11.760381 minutes
+#################
+
+####### Oct 19th 2020 15:30 ########## method='biotsavart' #########
+(python2.7) gary@gary-Inspiron-5567:~/magnetosphere/regions$ python check_curl.py 
+
+
+ util path: ~/magnetosphere/util/util.py 
+
+
+[[ 5.2  4.3 -2.1]
+ [ 2.   2.   7. ]]
+Kameleon::close() calling model's close
+Kameleon::close() calling model's close
+Kameleon::close() calling model's close
+(6, 3)
+Kameleon::close() calling model's close
+
+
+ from deltaB 
+
+
+True
+checkpoint
+(6, 3)
+[[ 15.05304798  31.71843829   8.27645302]
+ [ 28.81623777  12.54499775  -0.17297768]
+ [  6.86216141   6.89162133 -27.59843898]]
+[[ 0.          2.90220052  1.4142916 ]
+ [-2.90220052  0.         -7.064599  ]
+ [-1.4142916   7.064599    0.        ]]
+[-7.064599   -1.4142916   2.90220052]
+
+
+
+
+(6, 3)
+Kameleon::close() calling model's close
+
+
+ from deltaB 
+
+
+True
+checkpoint
+(6, 3)
+[[-71.32262607 -13.6614482   62.73757699]
+ [-35.15499014  25.51301891  -1.07144681]
+ [-87.70847478 -26.28448631  53.42347172]]
+[[   0.           21.49354194  150.44605177]
+ [ -21.49354194    0.           25.2130395 ]
+ [-150.44605177  -25.2130395     0.        ]]
+[  25.2130395  -150.44605177   21.49354194]
+
+
+
+
+[[ -0.04388906   0.051706     0.22988535]
+ [  5.34341367 -40.64481063  11.30561658]]
+[[ 3.31596471e-02  2.07271695e-01 -1.14144844e+02]
+ [ 1.61457733e+02  2.52562637e+01 -3.49682861e+02]]
+[[ -71.14097595  -75.71589661 -165.93405151]
+ [ 228.52600098   75.39697266 -247.07489014]]
+[[  -7.064599     -1.4142916     2.90220052]
+ [  25.2130395  -150.44605177   21.49354194]]
+[[ -5.2    0.   -57.57]
+ [ -2.     0.    -5.  ]]
+[31.93329888  2.63489412]
+runtime = 5.335643 minutes
+#################
 '''
 
 

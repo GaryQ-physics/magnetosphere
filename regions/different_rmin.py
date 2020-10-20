@@ -5,31 +5,37 @@ import pickle
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
+import util
 import regions
 import cxtransform as cx
 import magnetometers as mg
 
 run = 'IMP10_RUN_SAMPLE'
-
-pkl = run + '_different_rmin.pkl'
-para = True
-serial = False
-rs = 0.03125*np.arange(32,96)
-
-pkl = conf[run+'_derived'] + 'regions/' + pkl
-
-if run == 'DIPTSUR2':
-    time = (2019,9,2,6,30,0,0)
-if run == 'IMP10_RUN_SAMPLE':
-    time = (2019,9,2,7,0,0,0)
-location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
-
-pm = 31.875
+pm = 16.125
 reg =  {'xlims': (-pm, pm),
         'ylims': (-pm, pm),
         'zlims': (-pm, pm),
         'd': 0.25
         }
+para = True
+serial = False
+rs = 0.03125*np.arange(32,64) #96
+
+pkl = run + '_different_rmin_pm_%f_d_%f.pkl'%(pm, reg['d'])
+
+
+if run == 'DIPTSUR2':
+    time = (2019,9,2,6,30,0,0)
+    SWMF = np.array([-1058. , 2. ,  -22.])
+if run == 'IMP10_RUN_SAMPLE':
+    time = (2019,9,2,7,0,0,0)
+    SWMF = np.array([-1021., 2.24, 121.69])
+
+location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
+
+pkl = conf[run+'_derived'] \
+      + 'regions/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6) \
+      + pkl
 
 if para:
     from joblib import Parallel, delayed
@@ -65,11 +71,6 @@ if (not para) and (not serial):
 
 print(dBs[:,0,2,:])
 print(dBs.shape)
-
-if run == 'DIPTSUR2':
-    SWMF = np.array([-1058. , 2. ,  -22.])
-if run == 'IMP10_RUN_SAMPLE':
-    SWMF = np.array([-1021., 2.24, 121.69])
 
 calc = dBs[:,0,2,:]
 swmf = np.repeat([SWMF], dBs.shape[0], axis=0)
@@ -130,8 +131,4 @@ try:
 except:
     print('Failed to plot. Can run again with para = False and serial = False to skip computation')
 
-
-
-
-#toret[0,2,:]   dBs[:,0,2,:] is Nx3
 
