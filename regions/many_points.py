@@ -36,18 +36,44 @@ else:
 if not os.path.exists(direct):
     os.makedirs(direct)
 
-pm = 31.875
-reg =  {'xlims': (-pm, pm),
-        'ylims': (-pm, pm),
-        'zlims': (-pm, pm),
-        'd': 0.25
-        }
 
 points = np.loadtxt(pointfile_path)
 #results = np.nan*np.empty((points.shape[0],3))
 
 def RUN(i):
+    pm = 31.875 # 1/2 length of side
+    d = 0.25
+
+    #reg =  {'xlims': (-pm, pm),
+    #        'ylims': (-pm, pm),
+    #        'zlims': (-pm, pm),
+    #        'd': 0.25
+     #       }
+
     point = points[i,:]
+
+    p = d*np.round(point/d)
+
+    ##########2d example if p was (2,)#############
+
+    if p[0]>0 and p[1]>0 and p[2]>0: #in first octant
+        #Tr_x = (p[0] - pm) >= (0+pm) 
+        #Tr_x = p[0] >= 2*pm
+        Tr = p >= 2*pm
+        if np.any(Tr):
+            pass
+        else:
+            #sliver_x = (0+pm) - (p[0] - pm)
+            #sliver_x = 2*pm - p[0]
+            sliver = 2*pm - p
+            maxdirection = np.argmax(sliver)
+            if maxdirection==0:
+                reg['xlims'] =  (0+pm-sliver[0], 0+pm)# == (0+pm-(2*pm-p[0]), 0+pm) == (-pm+p[0], pm)
+                reg['ylims'] =  (0-pm, p[1]+pm) # == (-pm, pm+p[1])
+            if maxdirection==1:
+
+#######################
+
     reg2 = reg.copy()
 
     def regionconfig(i, lims)
