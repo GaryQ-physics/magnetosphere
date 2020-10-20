@@ -91,7 +91,7 @@ def GetCurlB(points, filename, method='biotsavart', para=False):
         curlB_tens = delB - delB.transpose()
         #print(curlB_tens)
         curlB = np.array([ curlB_tens[1,2], curlB_tens[2,0], curlB_tens[0,1] ])
-        #print(curlB)
+        print(curlB)
         #print('\n\n\n')
         return curlB
 
@@ -105,7 +105,7 @@ def GetCurlB(points, filename, method='biotsavart', para=False):
     return np.array(ret)
 
 run = 'DIPTSUR2'
-cut = False
+cut = True
 debug = True
 
 if run == 'DIPTSUR2':
@@ -161,7 +161,7 @@ if debug:
 if os.path.exists('/home/gary/'):
     txt = open('/home/gary/magnetosphere/check_curl.txt', 'w')
 else:
-    txt = open('/home/gquaresi/magnetosphere/check_curl.txt', 'w')
+    txt = open(conf[run+'_derived']+'check_curl_cut_%s.txt'%(str(cut)), 'w')
 
 np.savetxt(txt, np.column_stack([points, error, J_scaled, curlB]))
 

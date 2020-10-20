@@ -27,7 +27,7 @@ subroutine DELTAB(A, B, N, M)
 end subroutine DELTAB
 
 
-subroutine ROUT(A, B, N, M)
+subroutine ROUT(n, plus1, plus2)
     implicit none
     integer, intent(in) :: n
     integer, intent(out) :: plus1, plus2 ! Output
