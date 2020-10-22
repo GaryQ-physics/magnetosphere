@@ -83,6 +83,9 @@ def getoctants():
 
 def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=None, locationtype='MAG'):
 
+    print('regions:')
+    print(regions)
+
     if regions == 'octants':
         regions = getoctants()
     elif regions == 'full':
@@ -112,7 +115,10 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
             #deltaB = np.sum(dB, axis=0)
             #deltaB_loc = deltaB
 
-
+        #print('dB_loc:')
+        #print(dB_loc.shape)
+        #print(dB_loc)
+        #dB_loc.tofile('dB_loc.bin')
         full_deltaB = np.sum(dB_loc, axis=0)
         positive = np.empty(3)
         negative = np.empty(3)
@@ -123,8 +129,14 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
             positive[comp] =  np.sum(positive_contrs)
             negative[comp] =  np.sum(negative_contrs)
 
-        print(np.max(np.abs(positive + negative - full_deltaB)))
+        #print(full_deltaB)
+        #print(positive)
+        #print(negative)
+
+        #print( np.max(np.abs(positive + negative - full_deltaB)))
+        #print('\n\n\n\n##########')
         assert(np.max(np.abs(positive + negative - full_deltaB)) < 1e-9)
+        #print('##############\n\n\n\n')
 
         # index k runs from: 
                 # k=0 -> 'positive'
@@ -420,6 +432,12 @@ def main():
     #location = mg.GetMagnetometerLocation('colaba', (2019,1,1,1,0,0), 'MAG', 'sph')
     #location = np.array([-2.,0.,0.])
 
+    reg =  {'xlims': (-31.875, 46.875), 
+            'ylims': (-31.875, 30.875),
+            'zlims': (-31.875, 30.875), 
+            'd': 0.25}
+
+    signedintegrate(run, time, np.array([15., -1., -1.]), regions=(reg,), fwrite=True, rmin=0., locationtype='GSM')
 
     if False:
         pm = 31.875

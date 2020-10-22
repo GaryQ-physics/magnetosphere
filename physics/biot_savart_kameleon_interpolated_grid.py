@@ -179,6 +179,8 @@ def integrate(run, time_fname, mlat, mlon, para=True,
             print('done dB')
 
     if returnAll:
+        #print('dB in bsk')
+        #print(dB)
         return [dB, G, (Nx,Ny,Nz)]
     else:
         Btot = np.sum(dB, axis=0)

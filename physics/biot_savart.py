@@ -8,7 +8,7 @@ import deltaB_subroutine
 '''
 import biot_savart as bs
 import numpy as np
-X0 = np.array([[1.,1,1],[2,2,2]])
+X0 = np.array([[0.,1,2],[2,2,2]])
 X= 1.*np.arange(18).reshape(6,3)
 J = 10*X
 result = bs.deltaB('dB', X0, X, J)
@@ -107,6 +107,7 @@ def deltaB(variable, X0, X, J, V_char = 1.):
 
 
 def deltaB_old(variable, x0, X, J, V_char = 1.):
+    print('\n\n from deltaB_old \n\n')
     X=np.array(X)
     if X.shape == (3,):
         X=np.array([X])
@@ -143,20 +144,49 @@ def deltaB_old(variable, x0, X, J, V_char = 1.):
 
 
 def biot_savart_run(run, time, pts, regions, separate=False):
+    import os
+    import sys
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
+    from config import conf
     import util
+    from probe import probe
+
     filename = util.time2CDFfilename(run, time)
 
     if isinstance(regions, dict):
         regions = (regions,)
 
+    ret = []
     for region in list(regions):
         ax_list = make_axes(region['xlims'], region['ylims'], region['zlims'], region['d'])
         G = make_grid(ax_list, slices=False)
         J = probe(filename, G, var=['jx','jy','jz'], library='kameleon')
         J *= phys['muA']/(phys['m']**2)
-        deltaB = bs.deltaB('deltaB', pts, G, J, V_char = region['d']**3)
-        ret.append(deltaB.copy())
+        result = deltaB('deltaB', pts, G, J, V_char = region['d']**3)
+        ret.append(result.copy())
     ret = np.array(ret)
     if separate:
         return ret
     return np.sum(ret, axis=0)
+
+if __name__ == '__main__':
+    run = 'DIPTSUR2'
+    time = (2019,9,2,6,30,0)
+
+    #reg =  {'xlims': (-31.875, 46.875), 
+    #        'ylims': (-31.875, 30.875),
+    #        'zlims': (-31.875, 30.875), 
+    #        'd': 0.25}
+
+    #reg =  {'xlims': (-31.875, 31.875), 
+    #        'ylims': (-31.875, 31.875),
+    #        'zlims': (-31.875, 31.875), 
+    #        'd': 0.25}
+
+    reg = {'xlims': (-31.875, 31.875), 'd': 0.25, 'zlims': (-31.875, 30.875), 'ylims': (-31.875, 30.875)}
+
+    ret = biot_savart_run(run, time, np.array([15., -1., -1.]), (reg,), separate=True)
+
+    print(ret)
+    print(ret.shape)
+

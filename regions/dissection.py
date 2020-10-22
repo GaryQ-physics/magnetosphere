@@ -4,6 +4,16 @@ import numpy as np
 import numpy as np
 import dissection as di
 
+Q = np.array([1.5,0.5,0.])
+di.dissect(Q, 2., include_flat=False)
+
+Q = np.array([1.5,-0.5,0.])
+di.dissect(Q, 2., include_flat=False)
+
+P = np.array([-44,53, 22.])
+blocks = di.dissect(P, 64.)
+di.plot3dblocks(blocks)
+
 Q = np.array([1.5,0.5,])
 di.dissect(Q, 2., include_flat=True)
 di.dissect(Q, 2., include_flat=False)
@@ -140,13 +150,24 @@ def dissect_3d(p, L):
         return ret
 
 def dissect(p, L, include_flat=True):
-    print('p is  '+str(p))
+    needToFlip = p < 0
+    p[needToFlip] = -p[needToFlip]
+
+    blocks = dissect_positive(p, L, include_flat=include_flat)
+
+    temp = blocks[:, needToFlip, :].copy() #appears setting a=b[tr] already makes copy, unlike a=b[:], but its set explicitly
+    blocks[:, needToFlip, 0] = - temp[:, :, 1]
+    blocks[:, needToFlip, 1] = - temp[:, :, 0]
+
+    return blocks
+
+
+def dissect_positive(p, L, include_flat=True):
+    assert(np.all(p)>=0)
     pm = L/2.
     assert(len(p.shape)==1)
     n = p.size # number of dimensions of these hypercubes
     # want to return an array ret indexed by (a,b,c) where (ret[a,b,0], ret[a,b,1]) is the limits of the bth cartesian component for the ath block, so ret.shape==(nblocks,n,2)
-
-    assert(np.all(p)>=0)#temporarily
 
     if np.any(p>=2*pm):
         one_region = np.zeros((n,2))
@@ -222,8 +243,14 @@ def dissect(p, L, include_flat=True):
 
 
 def GetRegions(point):
-    assert(point.shape==(3,))
+    globalXmin = -224.
+    globalXmax = 32.
+    globalYmin = -128.
+    globalYmax = 128.
+    globalZmin = -128.
+    globalZmax = 128.
 
+    assert(point.shape==(3,))
     pm = 31.875
     d = 0.25
     p = d*np.round(point/d)
@@ -231,12 +258,27 @@ def GetRegions(point):
     blocks = dissect(p, 2.*(pm + d/2.), include_flat=False)
     ret = []
     for i in range(blocks.shape[0]):
-        reg = {}
+        reg = {'d' : d}
         if np.any(np.isnan(blocks[i,:,:])):
             continue
         reg['xlims'] = tuple( blocks[i,0,:] + np.array([d/2.,-d/2.]) )
         reg['ylims'] = tuple( blocks[i,1,:] + np.array([d/2.,-d/2.]) )
         reg['zlims'] = tuple( blocks[i,2,:] + np.array([d/2.,-d/2.]) )
+
+        if reg['xlims'][1] > globalXmax:
+            reg['xlims'] = ( reg['xlims'][0], d*np.floor(globalXmax/d)-d/2.)
+        if reg['ylims'][1] > globalYmax:
+            reg['ylims'] = ( reg['ylims'][0], d*np.floor(globalYmax/d)-d/2.)
+        if reg['zlims'][1] > globalZmax:
+            reg['zlims'] = ( reg['zlims'][0], d*np.floor(globalZmax/d)-d/2.)
+
+        if reg['xlims'][0] < globalXmin:
+            reg['xlims'] = ( d*np.floor(globalXmin/d)+d/2., reg['xlims'][1] )
+        if reg['ylims'][0] < globalYmin:
+            reg['ylims'] = ( d*np.floor(globalYmin/d)+d/2., reg['ylims'][1] )
+        if reg['zlims'][0] < globalZmin:
+            reg['zlims'] = ( d*np.floor(globalZmin/d)+d/2., reg['zlims'][1] )
+
         ret.append(reg.copy())
 
     return tuple(ret)

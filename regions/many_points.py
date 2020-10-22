@@ -7,13 +7,14 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 import util
 import regions
+import dissection as di
 
 run = 'DIPTSUR2'
 cut = False
 para = True
 
 if os.path.exists('/home/gary/'):
-    pointfile_path = '/home/gary/Downloads/points_for_gary-short.txt'
+    pointfile_path = '/home/gary/Downloads/points_for_gary-test.txt'
 else:
     pointfile_path = '/home/gquaresi/points_for_gary.txt'
 
@@ -40,72 +41,28 @@ if not os.path.exists(direct):
 points = np.loadtxt(pointfile_path)
 #results = np.nan*np.empty((points.shape[0],3))
 
+#pm = 31.875
+#reg =  {'xlims': (-pm, pm),
+#        'ylims': (-pm, pm),
+#        'zlims': (-pm, pm),
+#        'd': 0.25
+#        }
 def RUN(i):
-    pm = 31.875 # 1/2 length of side
-    d = 0.25
+    regs = di.GetRegions(points[i,:])
+    result = regions.signedintegrate(run, time, points[i,:], regions=regs, rmin=rmin, locationtype='GSM')
 
-    #reg =  {'xlims': (-pm, pm),
-    #        'ylims': (-pm, pm),
-    #        'zlims': (-pm, pm),
-    #        'd': 0.25
-     #       }
-
-    point = points[i,:]
-
-    p = d*np.round(point/d)
-
-    ##########2d example if p was (2,)#############
-
-    if p[0]>0 and p[1]>0 and p[2]>0: #in first octant
-        #Tr_x = (p[0] - pm) >= (0+pm) 
-        #Tr_x = p[0] >= 2*pm
-        Tr = p >= 2*pm
-        if np.any(Tr):
-            pass
-        else:
-            #sliver_x = (0+pm) - (p[0] - pm)
-            #sliver_x = 2*pm - p[0]
-            sliver = 2*pm - p
-            maxdirection = np.argmax(sliver)
-            if maxdirection==0:
-                reg['xlims'] =  (0+pm-sliver[0], 0+pm)# == (0+pm-(2*pm-p[0]), 0+pm) == (-pm+p[0], pm)
-                reg['ylims'] =  (0-pm, p[1]+pm) # == (-pm, pm+p[1])
-            if maxdirection==1:
-
-#######################
-
-    reg2 = reg.copy()
-
-    def regionconfig(i, lims)
-        if point[i] > 0:
-            minn = reg['d']*round((point[i] - pm)/reg['d'])
-            maxx = reg['d']*round((point[i] + pm)/reg['d'])
-            minn = max(minn, pm + reg['d'])
-            reg2[lims] = (minn, maxx)
-        if point[i] < 0:
-            minn = reg['d']*round((point[i] - pm)/reg['d'])
-            maxx = reg['d']*round((point[i] + pm)/reg['d'])
-            maxx = min(maxx, -pm - reg['d'])
-            reg2[lims] = (minn, maxx)
-
-    regionconfig(0, 'xlims')
-    regionconfig(1, 'ylims')
-    regionconfig(2, 'zlims')
-
-
-    result = regions.signedintegrate(run, time, points[i,:], regions=(reg,reg2), rmin=rmin, locationtype='GSM')
-
-    assert(len(result.shape)==3)
+    assert(len(result.shape)==3 and result.shape[1]==3 and result.shape[2]==3)
     if result.shape[0]==1:
         result = result[0, 2, :]
     else:
-        result = np.sum(result, axis=0)
-
+        result = np.sum(result, axis=0)[2,:]
 
     print('i=%d_results_'%(i) + str(result[0]) + ',' + str(result[1]) + ',' + str(result[2]) + ',' + '\n')
 
     return result
 
+import time as tm
+t0 = tm.time()
 
 if para:
     from joblib import Parallel, delayed
@@ -117,15 +74,21 @@ if para:
           .format(points.shape[0], num_cores))
     results = Parallel(n_jobs=num_cores)(\
             delayed(RUN)(i) for i in range(points.shape[0]))
+    print('what the hell?')
+
 else:
     results = []
     for i in range(points.shape[0]):
         results.append(RUN(i))
 
+print('WHAT THE HELL')
+
 results = np.array(results)
 
 
+print('writing ' + direct + 'bs_results_nopoints.csv')
 bs_results_nopoints = open(direct + 'bs_results_nopoints.csv','w')
+print('writing ' + direct + 'bs_results.csv')
 bs_results = open(direct + 'bs_results.csv','w')
 for i in range(points.shape[0]):
     bs_results_nopoints.write(str(results[i,0]) + ',')
@@ -139,12 +102,27 @@ for i in range(points.shape[0]):
     bs_results.write(str(results[i,1]) + ',')
     bs_results.write(str(results[i,2]) + ',')
 bs_results_nopoints.close()
+print('wrote ' + direct + 'bs_results_nopoints.csv')
 bs_results.close()
+print('wrote ' + direct + 'bs_results.csv')
 
+print('writing ' + direct + 'bs_results.txt')
 txt = open(direct + 'bs_results.txt', 'w')
-txt.write('time = (%d,%d,%d,%d,%d,%d,%d), rmin=%f, run=%s\n'%(time + (rmin,run)))
-txt.write(str(reg)+'\n')
-txt.write('point_x point_y point_z deltaB_x deltaB_x deltaB_x\n')
+txt.write('time = (%d,%d,%d,%d,%d,%d,%d), rmin=%f, run=%s, cut=%s\n\n'%(time + (rmin,run,cut)))
+txt.write('point_x point_y point_z Bx_bs By_bs Bz_bs\n')
 np.savetxt(txt, np.column_stack([points, results]), fmt='%.5f')
 txt.close()
+print('wrote ' + direct + 'bs_results.txt')
 
+print('writing ' + direct + 'corresponding_regions.txt')
+regstxt = open(direct + 'corresponding_regions.txt', 'w')
+for i in range(points.shape[0]):
+    regs = di.GetRegions(points[i,:])
+    regstxt.write(str(regs))
+    regstxt.write('\n\n')
+regstxt.close()
+print('wrote ' + direct + 'corresponding_regions.txt')
+
+
+
+print('ran in %f hours'%((tm.time()-t0)/3600.))
