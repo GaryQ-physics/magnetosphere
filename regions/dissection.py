@@ -255,6 +255,13 @@ def GetRegions(point):
     d = 0.25
     p = d*np.round(point/d)
 
+    Xmax = d*np.floor(globalXmax/d) - d/2.
+    Xmin = d*np.ceil(globalXmin/d)  + d/2.
+    Ymax = d*np.floor(globalYmax/d) - d/2.
+    Ymin = d*np.ceil(globalYmin/d)  + d/2.
+    Zmax = d*np.floor(globalZmax/d) - d/2.
+    Zmin = d*np.ceil(globalZmin/d)  + d/2.
+
     blocks = dissect(p, 2.*(pm + d/2.), include_flat=False)
     ret = []
     for i in range(blocks.shape[0]):
@@ -265,19 +272,30 @@ def GetRegions(point):
         reg['ylims'] = tuple( blocks[i,1,:] + np.array([d/2.,-d/2.]) )
         reg['zlims'] = tuple( blocks[i,2,:] + np.array([d/2.,-d/2.]) )
 
-        if reg['xlims'][1] > globalXmax:
-            reg['xlims'] = ( reg['xlims'][0], d*np.floor(globalXmax/d)-d/2.)
-        if reg['ylims'][1] > globalYmax:
-            reg['ylims'] = ( reg['ylims'][0], d*np.floor(globalYmax/d)-d/2.)
-        if reg['zlims'][1] > globalZmax:
-            reg['zlims'] = ( reg['zlims'][0], d*np.floor(globalZmax/d)-d/2.)
 
-        if reg['xlims'][0] < globalXmin:
-            reg['xlims'] = ( d*np.floor(globalXmin/d)+d/2., reg['xlims'][1] )
-        if reg['ylims'][0] < globalYmin:
-            reg['ylims'] = ( d*np.floor(globalYmin/d)+d/2., reg['ylims'][1] )
-        if reg['zlims'][0] < globalZmin:
-            reg['zlims'] = ( d*np.floor(globalZmin/d)+d/2., reg['zlims'][1] )
+        if  reg['xlims'][0] >= Xmax \
+         or reg['ylims'][0] >= Ymax \
+         or reg['zlims'][0] >= Zmax:
+            continue
+
+        if  reg['xlims'][0] <= Xmin \
+         or reg['ylims'][0] <= Ymin \
+         or reg['zlims'][0] <= Zmin:
+            continue
+
+        if reg['xlims'][1] > Xmax:
+            reg['xlims'] = ( reg['xlims'][0], Xmax)
+        if reg['ylims'][1] > Ymax:
+            reg['ylims'] = ( reg['ylims'][0], Ymax)
+        if reg['zlims'][1] > Zmax:
+            reg['zlims'] = ( reg['zlims'][0], Zmax)
+
+        if reg['xlims'][0] < Xmin:
+            reg['xlims'] = ( Xmin, reg['xlims'][1] )
+        if reg['ylims'][0] < Ymin:
+            reg['ylims'] = ( Ymin, reg['ylims'][1] )
+        if reg['zlims'][0] < Zmin:
+            reg['zlims'] = ( Zmin, reg['zlims'][1] )
 
         ret.append(reg.copy())
 

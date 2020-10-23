@@ -129,7 +129,7 @@ if os.path.exists('/home/gary/'):
     #points = np.array([[5.2,4.3,-2.1],[2.,2.,7.]])
     #points = np.column_stack([np.arange(2,30),np.zeros(28),np.zeros(28)])
 else:
-    points = np.loadtxt('/home/gquaresi/points_for_gary')
+    points = np.loadtxt('/home/gquaresi/points_for_gary.txt')
 
 if debug:
     print(points)
