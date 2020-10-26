@@ -127,10 +127,26 @@ Notes:
     \   the tripple quotes commented script at top of biot_savart.py
     wrote check_curl.py
 
+2020/10/21:
+    wrote dissection.py to take two intersecting (in particular a cube around the earth center and cube around point of evaluation in magnetosphere) and 
+    \   and find side limits of equivalent union of disjoint rectangular prisms
+    \   and using GetRegions() returns tuple of formated dictionaries as in regions.py
+    \   doing run of points sean requested on sunspot
+
+2020/10/22:
+    ran on sunspot failed from bug in dissection.GetRegions, namely lower limit could be highter than upper
+    fixed that bug, running again on sunspot
+
+2020/10/22:
+    sunspot ran worked for points sean requested for DIPSTUR2. I copied the resulting bs_results.txt to local drive
+
 
 
 
 TODO:
+
+call vtk_export from magnetovis into magnetosphere to get magnetosphere to get its examples working
+
 
 paraview contour surfaces for dB_north
 
@@ -149,12 +165,11 @@ test the -> loc rotation against something analytic
 
 
 
-('special_parameter_R', 'FLOAT: special_parameter_R: 1.39999998')
 https://github.com/rweigel/kameleon
 
 
 
-
+on mag: sudo mount /var/www/git-data/sblake
 
 
 
