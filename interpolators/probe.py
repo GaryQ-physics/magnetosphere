@@ -56,7 +56,7 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
     #else:
     #    filename = util.time2filename(filename) #!!!!!!
 
-    if not os.path.exists(filename):
+    if not os.path.exists(filename) and not TESTANALYTIC:
         raise ValueError('Not found: ' + filename)
 
     ################### import apropriate file for library
