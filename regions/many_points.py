@@ -10,7 +10,7 @@ import regions
 import dissection as di
 
 run = 'DIPTSUR2'
-cut = False
+cut = True
 para = True
 
 if os.path.exists('/home/gary/'):
@@ -74,14 +74,12 @@ if para:
           .format(points.shape[0], num_cores))
     results = Parallel(n_jobs=num_cores)(\
             delayed(RUN)(i) for i in range(points.shape[0]))
-    print('what the hell?')
 
 else:
     results = []
     for i in range(points.shape[0]):
         results.append(RUN(i))
 
-print('WHAT THE HELL')
 
 results = np.array(results)
 
