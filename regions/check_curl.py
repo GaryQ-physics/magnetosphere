@@ -104,8 +104,8 @@ def GetCurlB(points, filename, method='biotsavart', para=False):
 
     return np.array(ret)
 
-run = 'DIPTSUR2'
-cut = True
+run = 'TESTANALYTIC'
+cut = False
 debug = True
 
 if run == 'DIPTSUR2':
@@ -114,6 +114,9 @@ if run == 'DIPTSUR2':
 if run == 'IMP10_RUN_SAMPLE':
     time = (2019,9,2,7,0,0,0)
     rCurrents = 1.7
+if run == 'TESTANALYTIC':
+    time = (2000,1,1,0,10,0,0)
+    rCurrents = 0.
 
 direct = conf[run+'_derived'] + 'regions/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
 if cut:
@@ -124,12 +127,15 @@ else:
     direct = direct + 'including_currents_before_rCurrents/'
 
 if os.path.exists('/home/gary/'):
-    data = np.loadtxt(direct + 'bs_results.txt', skiprows=3)
-    points = data[:, 0:3]
+    #data = np.loadtxt(direct + 'bs_results.txt', skiprows=3)
+    #points = data[:, 0:3]
+
     #points = np.array([[5.2,4.3,-2.1],[2.,2.,7.]])
     #points = np.column_stack([np.arange(2,30),np.zeros(28),np.zeros(28)])
+
+    points = np.loadtxt('/home/gary/Downloads/points_for_gary-test.txt')
 else:
-    points = np.loadtxt('/home/gquaresi/points_for_gary.txt')
+    points = np.loadtxt('/home/gquaresi/points_for_gary-short.txt')
 
 if debug:
     print(points)
@@ -140,11 +146,10 @@ filename = util.time2CDFfilename(run, time)
 import time as tm
 t0 = tm.time()
 
-B1 = probe(filename, points, var=['b1x','b1y','b1z'], library='kameleon')
-B = probe(filename, points, var=['bx','by','bz'], library='kameleon')
+
 J = probe(filename, points, var=['jx','jy','jz'], library='kameleon')*(phys['muA']/(phys['m']**2))
 J_scaled = phys['mu0'] * J
-curlB = GetCurlB(points, filename, method='b_batsrus')
+curlB = GetCurlB(points, filename, method='biotsavart')
 
 error = np.einsum('ij,ij->i', curlB - J_scaled, curlB - J_scaled)
 error = error/np.einsum('ij,ij->i', J_scaled, J_scaled)

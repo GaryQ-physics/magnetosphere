@@ -123,4 +123,4 @@ print('wrote ' + direct + 'corresponding_regions.txt')
 
 
 
-print('ran in %f hours'%((tm.time()-t0)/3600.))
+print('ran in %f hours'%((tm.time()-t0)/3600.))#ran in 1.275607 hours
