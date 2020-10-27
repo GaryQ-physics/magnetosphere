@@ -157,8 +157,6 @@ error = np.sqrt(error)
 
 if debug:
     print(J_scaled)
-    print(B)
-    print(B1)
     print(curlB)
     print(curlBtest(points))
     print(error)

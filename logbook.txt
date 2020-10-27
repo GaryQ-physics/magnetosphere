@@ -140,6 +140,12 @@ Notes:
 2020/10/22:
     sunspot ran worked for points sean requested for DIPSTUR2. I copied the resulting bs_results.txt to local drive
 
+2020/10/26:
+    ran many_point.py with same points for DIPSTUR2 with cut=True this time
+    IMP10_RUN_SAMPLE/regions/0190902T070000 still out of date though
+
+2020/10/26:
+    ran same points for DIPSTUR2 with cut=True this time
 
 
 
@@ -167,7 +173,7 @@ test the -> loc rotation against something analytic
 
 https://github.com/rweigel/kameleon
 
-
+http://numba.pydata.org/
 
 on mag: sudo mount /var/www/git-data/sblake
 
