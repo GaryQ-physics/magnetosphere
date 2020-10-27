@@ -104,7 +104,8 @@ def GetCurlB(points, filename, method='biotsavart', para=False):
 
     return np.array(ret)
 
-run = 'TESTANALYTIC'
+run = 'DIPTSUR2'
+method = 'biotsavart'
 cut = False
 debug = True
 
@@ -126,8 +127,9 @@ else:
     rmin = 0.
     direct = direct + 'including_currents_before_rCurrents/'
 
+
 if os.path.exists('/home/gary/'):
-    #data = np.loadtxt(direct + 'bs_results.txt', skiprows=3)
+    #data = np.loadtxt(direct + 'including_currents_before_rCurrents/bs_results.txt', skiprows=3)
     #points = data[:, 0:3]
 
     #points = np.array([[5.2,4.3,-2.1],[2.,2.,7.]])
@@ -149,7 +151,7 @@ t0 = tm.time()
 
 J = probe(filename, points, var=['jx','jy','jz'], library='kameleon')*(phys['muA']/(phys['m']**2))
 J_scaled = phys['mu0'] * J
-curlB = GetCurlB(points, filename, method='biotsavart')
+curlB = GetCurlB(points, filename, method=method)
 
 error = np.einsum('ij,ij->i', curlB - J_scaled, curlB - J_scaled)
 error = error/np.einsum('ij,ij->i', J_scaled, J_scaled)
@@ -161,11 +163,12 @@ if debug:
     print(curlBtest(points))
     print(error)
 
-if os.path.exists('/home/gary/'):
-    txt = open('/home/gary/magnetosphere/check_curl.txt', 'w')
-else:
-    txt = open(conf[run+'_derived']+'check_curl_cut_%s.txt'%(str(cut)), 'w')
+if not os.path.exists(direct):
+    os.makedirs(direct)
 
+outfname = direct+'check_curl_method_%s.txt'%(method)
+
+txt = open(outfname, 'w')
 np.savetxt(txt, np.column_stack([points, error, J_scaled, curlB]))
 
 print('runtime = %f minutes'%((tm.time()-t0)/60.))

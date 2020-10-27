@@ -147,7 +147,10 @@ Notes:
 2020/10/26:
     ran same points for DIPSTUR2 with cut=True this time
 
-
+2020/10/27:
+    generalized naming convention for check_curl.py
+    renamed TESTANALYTIC-derived/check_curl_cut_False.txt -> TESTANALYTIC-derived/regions/20190902T063000/including_currents_before_rCurrents/check_curl_method_biotsavart.txt acordingly
+    running check_curl for DIPTSUR2 (with different methods)
 
 TODO:
 
