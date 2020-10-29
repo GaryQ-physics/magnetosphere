@@ -150,7 +150,12 @@ Notes:
 2020/10/27:
     generalized naming convention for check_curl.py
     renamed TESTANALYTIC-derived/check_curl_cut_False.txt -> TESTANALYTIC-derived/regions/20190902T063000/including_currents_before_rCurrents/check_curl_method_biotsavart.txt acordingly
-    running check_curl for DIPTSUR2 (with different methods)
+    ran check_curl for DIPTSUR2 (with different methods, b1_batsrus, b_batsrus, and biotsavart)
+
+2020/10/29:
+    turns out that check_curl run for DIPTSUR2 was only the short list...
+    made new list of points called full_points.txt (in ~/ for laptop and sunspot)
+    running check curl for full_points DIPTSUR2 on sunspot
 
 TODO:
 
@@ -208,6 +213,18 @@ See 'git help config' and search for 'push.default' for further information.
 
 http://web.mit.edu/6.013_book/www/chapter8/8.4.html
 https://en.wikipedia.org/wiki/K%C3%A4ll%C3%A9n%E2%80%93Lehmann_spectral_representation
+
+#MAGNETICINNERBOUNDARY
+
+
+https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2020SW002551
+
+The radial component of B1 on the ghost face is set as B1rGhost = B1rCoef*B1rTrue at the inner boundary. B1rCoef=-1 corresponds to a reflective boundary, while B1rCoef=1 is a floating (zero gradient) boundary. Any value between -1 and 1 is possible. Using floating condition, however, will not work well for strong storms, as there is no mechanism to restore the dipole after the storm. Reflective will recover the dipole, but it may result in some less stable behavior. The optimal value may be problem dependent. The default value corresponding to reflection is shown above.
+
+
+
+
+peter.willliam.schuck@gmail.com 240-810-6807
 
 
 

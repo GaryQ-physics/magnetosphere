@@ -96,7 +96,7 @@ def GetCurlB(points, filename, method='biotsavart', para=False):
         return curlB
 
     if para:
-        pass #would run out of memory anyway
+        assert(False) #would run out of memory anyway
     else:
         ret = []
         for i in range(points.shape[0]):
@@ -105,9 +105,9 @@ def GetCurlB(points, filename, method='biotsavart', para=False):
     return np.array(ret)
 
 run = 'DIPTSUR2'
-method = 'biotsavart'
-cut = False
-debug = True
+method = 'b_batsrus'
+cut = True
+debug = False
 
 if run == 'DIPTSUR2':
     time = (2019,9,2,6,30,0,0)
@@ -137,7 +137,7 @@ if os.path.exists('/home/gary/'):
 
     points = np.loadtxt('/home/gary/Downloads/points_for_gary-test.txt')
 else:
-    points = np.loadtxt('/home/gquaresi/points_for_gary-short.txt')
+    points = np.loadtxt('/home/gquaresi/full_points.txt')
 
 if debug:
     print(points)
@@ -153,25 +153,30 @@ J = probe(filename, points, var=['jx','jy','jz'], library='kameleon')*(phys['muA
 J_scaled = phys['mu0'] * J
 curlB = GetCurlB(points, filename, method=method)
 
-error = np.einsum('ij,ij->i', curlB - J_scaled, curlB - J_scaled)
-error = error/np.einsum('ij,ij->i', J_scaled, J_scaled)
-error = np.sqrt(error)
+#error = np.einsum('ij,ij->i', curlB - J_scaled, curlB - J_scaled)
+#error = error/np.einsum('ij,ij->i', J_scaled, J_scaled)
+#error = np.sqrt(error)
 
 if debug:
     print(J_scaled)
     print(curlB)
     print(curlBtest(points))
-    print(error)
+    #print(error)
 
 if not os.path.exists(direct):
     os.makedirs(direct)
 
 outfname = direct+'check_curl_method_%s.txt'%(method)
-
+util.safeprep_fileout(outfname)
 txt = open(outfname, 'w')
-np.savetxt(txt, np.column_stack([points, error, J_scaled, curlB]))
 
-print('runtime = %f minutes'%((tm.time()-t0)/60.))
+txt.write('time = (%d,%d,%d,%d,%d,%d,%d),  run=%s, (units: nT and R_e (J scaled by mu0))\n\n'%(time + (run,)))
+txt.write('point_x point_y point_z Jx, Jy, Jz, curlBx_%s curlBx_%s curlBx_%s\n'%(method,method,method))
+np.savetxt(txt, np.column_stack([points, J_scaled, curlB]), fmt='%.5f')
+
+txt.close()
+
+print('runtime = %f minutes'%((tm.time()-t0)/60.)) #110 min biotsavart, 0.1 min batsrus
 
 '''
 method='biotsavart'

@@ -220,7 +220,6 @@ def cdf_to_structured_grid(run, time, mlat, mlon, var, para=True, debug=False,
              point_data_name = var, title=var + 'structured grid ' + run, ftype=ftype, grid='STRUCTURED_GRID', debug=True)
 '''
 
-
 '''
 
 rbody = 1.25 #???
@@ -337,7 +336,6 @@ def Compute(Event, var, calcTotal=False, retTotal=False, dx=.3, dy=.3, dz=.3):
 
 '''
 
-
 '''
 
 def writevtk(Event, var, calcTotal=False, binary=True, dx=.3, dy=.3, dz=.3, fname=None):
@@ -395,3 +393,4 @@ def writevtk(Event, var, calcTotal=False, binary=True, dx=.3, dy=.3, dz=.3, fnam
     f.close()
     print("Wrote " + fname)
 '''
+

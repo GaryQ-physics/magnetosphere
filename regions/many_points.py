@@ -16,7 +16,7 @@ para = True
 if os.path.exists('/home/gary/'):
     pointfile_path = '/home/gary/Downloads/points_for_gary-test.txt'
 else:
-    pointfile_path = '/home/gquaresi/points_for_gary.txt'
+    pointfile_path = '/home/gquaresi/full_points.txt'
 
 
 if run == 'DIPTSUR2':
@@ -37,8 +37,9 @@ else:
 if not os.path.exists(direct):
     os.makedirs(direct)
 
-
 points = np.loadtxt(pointfile_path)
+
+
 #results = np.nan*np.empty((points.shape[0],3))
 
 #pm = 31.875
@@ -105,9 +106,12 @@ bs_results.close()
 print('wrote ' + direct + 'bs_results.csv')
 
 print('writing ' + direct + 'bs_results.txt')
+
+util.safeprep_fileout(direct + 'bs_results.txt')
 txt = open(direct + 'bs_results.txt', 'w')
+
 txt.write('time = (%d,%d,%d,%d,%d,%d,%d), rmin=%f, run=%s, cut=%s\n\n'%(time + (rmin,run,cut)))
-txt.write('point_x point_y point_z Bx_bs By_bs Bz_bs\n')
+txt.write('point_x point_y point_z Bx_biotsavart By_biotsavart Bz_biotsavart\n')
 np.savetxt(txt, np.column_stack([points, results]), fmt='%.5f')
 txt.close()
 print('wrote ' + direct + 'bs_results.txt')

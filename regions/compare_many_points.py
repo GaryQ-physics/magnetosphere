@@ -10,7 +10,7 @@ import util
 from units_and_constants import phys
 
 run = 'DIPTSUR2'
-cut = False
+cut = True
 
 if run == 'DIPTSUR2':
     time = (2019,9,2,6,30,0,0)
@@ -35,7 +35,9 @@ dB = data[:, 3:6]
 B1 = probe(filename, points, var=['b1x','b1y','b1z'], library='kameleon')
 B = probe(filename, points, var=['bx','by','bz'], library='kameleon')
 
+util.safeprep_fileout(direct + 'comparison.txt')
 txt = open(direct + 'comparison.txt','w')
+
 txt.write('B_bs is the field computed by biot savart integral of "j" in datafile\n')
 txt.write('B_sim is the field given by "b" in datafile\n')
 txt.write('B1_sim is the field given by "b1" in datafile\n\n')
