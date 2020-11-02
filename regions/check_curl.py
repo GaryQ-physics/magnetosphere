@@ -13,6 +13,7 @@ import biot_savart as bs
 
 # B = [0.5*y**2, z*x, z]
 # curlB = [-x, 0, z-y]
+# divB = 1.
 
 def Btest(X):
     ret = np.zeros(X.shape)
@@ -27,6 +28,14 @@ def curlBtest(X):
         #ret[i,:] = np.array([0,0,2])
         ret[i,:] = np.array([-X[i,0], 0., X[i,2]-3.*X[i,1]**2])
     return ret
+
+def divBtest(X):
+    ret = np.zeros(X.shape[0])
+    for i in range(X.shape[0]):
+        ret[i] = 1.
+    return ret
+
+
 
 #adapted from magnetosphere/cutplane/fieldlines.py
 from scipy.interpolate import RegularGridInterpolator
@@ -171,7 +180,7 @@ util.safeprep_fileout(outfname)
 txt = open(outfname, 'w')
 
 txt.write('time = (%d,%d,%d,%d,%d,%d,%d),  run=%s, (units: nT and R_e (J scaled by mu0))\n\n'%(time + (run,)))
-txt.write('point_x point_y point_z Jx, Jy, Jz, curlBx_%s curlBx_%s curlBx_%s\n'%(method,method,method))
+txt.write('point_x point_y point_z Jx Jy Jz curlBx_%s curlBy_%s curlBz_%s\n'%(method,method,method))
 np.savetxt(txt, np.column_stack([points, J_scaled, curlB]), fmt='%.5f')
 
 txt.close()

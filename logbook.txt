@@ -159,6 +159,8 @@ Notes:
 
 TODO:
 
+B_field_lines_compare_grid_and_kameleon_interp.py add vtk from https://python.hotexamples.com/site/file?hash=0x96ff2155fa36e65db82cd0d55a0c8582d9942e6ef37a0f28d757d663c03d1aac&fullName=beautiful_data-master/mix.py&project=chielk/beautiful_data
+
 call vtk_export from magnetovis into magnetosphere to get magnetosphere to get its examples working
 
 
@@ -212,6 +214,9 @@ See 'git help config' and search for 'push.default' for further information.
 
 
 http://web.mit.edu/6.013_book/www/chapter8/8.4.html
+https://www.open.edu/openlearn/science-maths-technology/engineering-technology/superconductivity/content-section-3.2
+
+
 https://en.wikipedia.org/wiki/K%C3%A4ll%C3%A9n%E2%80%93Lehmann_spectral_representation
 
 #MAGNETICINNERBOUNDARY
