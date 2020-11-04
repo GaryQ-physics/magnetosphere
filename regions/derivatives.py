@@ -119,8 +119,8 @@ def GetDivergence(delF):
 def GetCurl(delF):
     curlF = np.nan*np.empty((delF.shape[0], 3))
     for i in range(delF.shape[0]):
-        curlF_tens = delB[i,:,:] - delB[i,:,:].transpose()
-        curlF[i,:] = np.array([ curlB_tens[1,2], curlB_tens[2,0], curlB_tens[0,1] ])
+        curlF_tens = delF[i,:,:] - delF[i,:,:].transpose()
+        curlF[i,:] = np.array([ curlF_tens[1,2], curlF_tens[2,0], curlF_tens[0,1] ])
 
     return curlF
 
