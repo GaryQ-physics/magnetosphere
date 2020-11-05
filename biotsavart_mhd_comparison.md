@@ -10,7 +10,8 @@ mid includes only points with 100 <= *value* <= 1000.
 large includes only points with 1000 <= *value*.
 
 now to embed image:
-<img src="https://dummyimage.com/200x200/b844b8/fff">
+
+<img src="https://dummyimage.com/200x200/b844b8/fff" alt="shit">
 
 ![](https://dummyimage.com/200x200/b844b8/fff "Title")
 
