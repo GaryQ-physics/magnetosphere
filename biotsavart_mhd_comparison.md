@@ -11,7 +11,7 @@ The points on the Day and Night side were plotted seperately in two different fi
 All distances are in earth radii, all magnetic fields are in nanoTesla.
 
 ## Nightside
-![](http://localhost:8888/tree/plots/night_side.png) 
+![](http://localhost:8888/view/plots/night_side.png) 
 >3 scatterplots, one for each cartesian component. One dot for each sampled gridpoint on the nightside.
 >
 >datapoints color coded based on the absolute value of the corresponding component of *B1_simulation* (or *value*)
@@ -21,7 +21,7 @@ All distances are in earth radii, all magnetic fields are in nanoTesla.
 >large includes only points with 1000 nT <= *value*.
 
 ## Dayside
-![](http://localhost:8888/tree/plots/day_side.png) 
+![](http://localhost:8888/view/plots/day_side.png) 
 >3 scatterplots, one for each cartesian component. One dot for each sampled gridpoint on the dayside.
 >
 >datapoints color coded based on the absolute value of the corresponding component of *B1_simulation* (or *value*)
