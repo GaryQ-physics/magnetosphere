@@ -1,14 +1,15 @@
-# Biot-Savart and MhD Comparison
+# Biot-Savart and MHD Comparison
 
-a sequence of points was sampled at random from the native BATS-R-US grid. At each of these points, the following quantities were calculated and recorded: 
-- *B1_simulation* : the MhD magnetic field excluding the earth dipole field (i.e. "b1" in BATS-R-US)
-- *B_biotsavart* : the magnetic field calculated due to the MhD current density ("j" in BATS-R-US)
+A set of points were selected at random from the native SWMF grid. At each of these points, the following quantities were calculated and recorded:
 
-The points on the Day and Night side were plotted seperately in two different figures. The plots show percent error vs distance from earth center. The percent error of each cartesian component is calculated with: 
-- the corresponding component of *B1_simulation*  --  Treated as the "expected value"
-- the corresponding component of *B_biotsavart*  --  Treated as the "observed value"
+- *B1_simulation* : the MHD magnetic field excluding the Earth dipole field ("b1" in SWMF output files)
+- *B_biotsavart* : the magnetic field calculated due to the MhD current density ("j" in SWMF output files)
 
-All distances are in earth radii, all magnetic fields are in nanoTesla.
+The points on the Day and Night side were plotted seperately in two different figures. The plots show percent error vs distance from Earth center. The percent error of each cartesian component is calculated with: 
+- the corresponding component of *B1_simulation* used as the "expected value"
+- the corresponding component of *B_biotsavart*  used as the "observed value"
+
+All distances are in Earth radii, all magnetic fields are in nanoTesla.
 
 ## Nightside
 ![](images/night_side.png) 
@@ -30,4 +31,6 @@ All distances are in earth radii, all magnetic fields are in nanoTesla.
 >mid includes only points with 100 nT <= *value* <= 1000 nT.
 >large includes only points with 1000 nT <= *value*.
 
-Note: Points outside the MhD domain, because they are say too close to earth, have *B1_simulation* = 0. These are not included in the plots, as they would be +/- infinity.
+Note: Points outside the MHD domain, because they are say too close to earth, have *B1_simulation* = 0. These are not included in the plots, as they would give values of +/- infinity.
+
+## Summary of Results and Conclusion
