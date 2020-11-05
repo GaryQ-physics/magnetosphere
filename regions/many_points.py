@@ -49,6 +49,7 @@ points = np.loadtxt(pointfile_path)
 #        'd': 0.25
 #        }
 def RUN(i):
+    print('i = %d_start_'%(i))
     regs = di.GetRegions(points[i,:])
     result = regions.signedintegrate(run, time, points[i,:], regions=regs, rmin=rmin, locationtype='GSM')
 
@@ -58,7 +59,7 @@ def RUN(i):
     else:
         result = np.sum(result, axis=0)[2,:]
 
-    print('i=%d_results_'%(i) + str(result[0]) + ',' + str(result[1]) + ',' + str(result[2]) + ',' + '\n')
+    print('i = %d_results_'%(i) + str(result[0]) + ',' + str(result[1]) + ',' + str(result[2]) + ',' + '\n')
 
     return result
 

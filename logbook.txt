@@ -157,6 +157,18 @@ Notes:
     made new list of points called full_points.txt (in ~/ for laptop and sunspot)
     running check curl for full_points DIPTSUR2 on sunspot
 
+
+
+in dissection.py line 281 to 283 the 0 index changed to 1
+
+
+
+
+
+
+
+
+
 TODO:
 
 B_field_lines_compare_grid_and_kameleon_interp.py add vtk from https://python.hotexamples.com/site/file?hash=0x96ff2155fa36e65db82cd0d55a0c8582d9942e6ef37a0f28d757d663c03d1aac&fullName=beautiful_data-master/mix.py&project=chielk/beautiful_data
