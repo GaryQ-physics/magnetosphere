@@ -11,6 +11,7 @@ large includes only points with 1000 <= *value*.
 
 now to embed image:
 
-<img src="https://dummyimage.com/200x200/b844b8/fff" alt="shit">
+<img src="https://dummyimage.com/200x200/b844b8/fff">
+*this is caption*
 
 now more text
