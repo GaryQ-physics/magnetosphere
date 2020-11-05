@@ -128,7 +128,7 @@ Notes:
     wrote check_curl.py
 
 2020/10/21:
-    wrote dissection.py to take two intersecting (in particular a cube around the earth center and cube around point of evaluation in magnetosphere) and 
+    wrote dissection.py to take two intersecting (in particular a cube around the earth center and cube around point of evaluation in magnetosphere)
     \   and find side limits of equivalent union of disjoint rectangular prisms
     \   and using GetRegions() returns tuple of formated dictionaries as in regions.py
     \   doing run of points sean requested on sunspot
@@ -158,9 +158,12 @@ Notes:
     running check curl for full_points DIPTSUR2 on sunspot
 
 
-
-in dissection.py line 281 to 283 the 0 index changed to 1
-
+2020/11/04:
+    randomly generate list of points from all native grid points based on distance to earth
+    tried to run random points on sunspot many_points.py, but error in dissection.py
+    MODIFIED: in dissection.py line 281 to 283 the 0 index changed to 1
+              also (and this is what fixed it) added if lim[0] == lim[1] statement before appending region.
+    running random points again on sunspot.
 
 
 
