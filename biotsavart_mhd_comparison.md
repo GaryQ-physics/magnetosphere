@@ -13,9 +13,4 @@ now to embed image:
 
 <img src="https://dummyimage.com/200x200/b844b8/fff" alt="shit">
 
-![](https://dummyimage.com/200x200/b844b8/fff "Title")
-
-{:.image-caption}
-*The caption for my image*
-
 now more text
