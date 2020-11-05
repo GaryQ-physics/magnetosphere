@@ -1,3 +1,19 @@
 # title
+3 scatterplots, one for each cartesian component of *B1sim*, where *B1sim* is 
+the MhD magnetic field, not including the earth dipole. (i.e. "b1" in BATS-R-US) 
 
-here is some text
+datapoints color coded based on *value*, where *value* is the absolute value of 
+the corresponding component of *B1sim*
+
+small includes only points with *value* < 100.
+mid includes only points with 100 <= *value* <= 1000.
+large includes only points with 1000 <= *value*.
+
+now to embed image:
+![embeded why isnt this showing](http://localhost:8888/tree/plots/night_side.png)
+
+some text
+
+![altattribute](https://dummyimage.com/200x200/b844b8/fff "Title")
+
+now more text
