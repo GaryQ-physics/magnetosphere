@@ -283,7 +283,6 @@ def GetRegions(point):
          or reg['zlims'][1] <= Zmin:
             continue
 
-        if i==3: print(reg)
 
         if reg['xlims'][1] > Xmax:
             reg['xlims'] = ( reg['xlims'][0], Xmax)
@@ -305,7 +304,6 @@ def GetRegions(point):
          or reg['zlims'][0] == reg['zlims'][1] :
             continue
 
-        if i==3: print(reg)
 
         ret.append(reg.copy())
 
