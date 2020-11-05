@@ -10,6 +10,8 @@ The points on the Day and Night side were plotted seperately in two different fi
 - the corresponding component of *B_biotsavart*  used as the "observed value"
 
 All distances are in Earth radii, all magnetic fields are in nanoTesla.
+Excellent. I made a few minor edits. Please add a few sentences for a summary and your conclusion.
+
 
 ## Nightside
 ![](images/night_side.png) 
@@ -34,3 +36,4 @@ All distances are in Earth radii, all magnetic fields are in nanoTesla.
 Note: Points outside the MHD domain, because they are say too close to earth, have *B1_simulation* = 0. These are not included in the plots, as they would give values of +/- infinity.
 
 ## Summary of Results and Conclusion
+Overall, the percent errors were quite high, getting to even an order of magnitude off (1000%) in some places even for mid values (>100nT). The large values (>1000nT) only occure less than 5 R\_E in. For the large values on the dayside, there is a noticable trend downward from 100% to 10% or so as you go from 2 to 5 R\_E. For the nightside there are too few large values to tell. However, since there doesn't appear to be a clear trend among the mid range points which extend much farther than 5 R\_E, this does not support the idea that the earth has a strong shielding effect of the biot-savart integral contributions from sources on the oposite side of the earth.
