@@ -10,10 +10,10 @@ mid includes only points with 100 <= *value* <= 1000.
 large includes only points with 1000 <= *value*.
 
 now to embed image:
-![embeded why isnt this showing](http://localhost:8888/tree/plots/night_side.png)
-
-some text
 
 ![altattribute](https://dummyimage.com/200x200/b844b8/fff "Title")
+
+{:.image-caption}
+*The caption for my image*
 
 now more text
