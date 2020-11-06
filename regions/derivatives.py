@@ -156,7 +156,7 @@ if os.path.exists('/home/gary/'):
 
     points = np.loadtxt('/home/gary/Downloads/points_for_gary-test.txt')
 else:
-    points = np.loadtxt('/home/gquaresi/full_points.txt')
+    points = np.loadtxt('/home/gquaresi/rand_generated_points.txt')
 
 if debug:
     print(points)
@@ -173,8 +173,8 @@ results[1,:,:,:] = GetDel('b_batsrus', points, filename)
 results[2,:,:,:] = GetDel('b1_batsrus', points, filename)
 
 print('writing arrays')
-results.tofile(conf[run+'_derived'] + 'tempder_results.bin')
-points.tofile(conf[run+'_derived'] + 'tempder_points.bin')
+results.tofile(direct + 'derivatives_results.bin')
+points.tofile(direct + 'derivatives_points.bin')
 
 if debug:
     print(results)

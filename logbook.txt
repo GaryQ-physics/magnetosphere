@@ -163,7 +163,12 @@ Notes:
     tried to run random points on sunspot many_points.py, but error in dissection.py
     MODIFIED: in dissection.py line 281 to 283 the 0 index changed to 1
               also (and this is what fixed it) added if lim[0] == lim[1] statement before appending region.
-    running random points again on sunspot.
+    ran random points again on sunspot. Worked.
+
+2020/11/05:
+    run derivatives.py using rand_generated_points
+
+
 
 
 
