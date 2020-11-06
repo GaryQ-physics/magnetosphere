@@ -8,7 +8,7 @@ sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 
 import cutplane as cut
-from util import time2filename, maketag
+import util
 import cxtransform as cx
 
 
@@ -18,7 +18,7 @@ from scipy.interpolate import RegularGridInterpolator
 from scipy.integrate import odeint
 
 
-def Compute(Event, Nb, debug=False):
+def Compute(Event, Nb, debug=False, run='SCARR5'):
     Rfudge = 1.01
     if isinstance(Event[0],list):
         mag = np.array(Event[0])
@@ -27,7 +27,7 @@ def Compute(Event, Nb, debug=False):
         time = Event[0:5]
         mag = np.array([Rfudge, Event[5], Event[6]])
 
-    filename = time2filename(time)
+    filename = util.time2CDFfilename(run,time)
 
     R = mag[0]
     MLAT = mag[1]
@@ -51,7 +51,7 @@ def Compute(Event, Nb, debug=False):
     if debug:
         print(ICmag)
 
-    solns_restr = cut.fieldlines(time, ICmag, debug=debug, fieldvar='b')
+    solns_restr = cut.fieldlines(run, time, ICmag, debug=debug, fieldvar='b')
     if debug:
         print(len(solns_restr))
         print(solns_restr)
@@ -69,7 +69,7 @@ def writevtk(Event, Nb=6, debug=True):
         time = Event[0:5]
         mag = np.array([1., Event[5], Event[6]])
 
-    tag = maketag(time)
+    tag = util.maketag(time)
     subdir = '%04d%02d%02dT%02d%02d/' % tuple(time[0:5])
     if not os.path.exists(conf["run_path_derived"] + subdir):
         os.mkdir(conf["run_path_derived"] + subdir)

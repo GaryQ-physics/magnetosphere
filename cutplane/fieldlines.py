@@ -1,5 +1,7 @@
 import numpy as np
-
+import util
+from probe import probe
+from scipy.interpolate import RegularGridInterpolator
 
 def dXds(X, s, sign, Bx_interp, By_interp, Bz_interp):
 
@@ -36,6 +38,10 @@ def fieldlines(run, time, mag, fieldvar='b', s_grid=None, max_iterations=100, de
         N field lines 
 
     """
+    dx = 0.25
+    xlims = (-32., 32.)
+    ylims = zlims = xlims
+    dy=dz=dx
 
     mag = np.array(mag)
     if len(mag.shape) == 1:
@@ -64,10 +70,10 @@ def fieldlines(run, time, mag, fieldvar='b', s_grid=None, max_iterations=100, de
     
     G2, G1, G3 = np.meshgrid(Y, X, Z) # different than in make_grid
     P = np.column_stack( (G1.flatten(), G2.flatten(), G3.flatten()) )
-    filepath = time2CDFfilename(run, time, split=False)
-    Fx = probe(filepath, P, var=fieldvar+'x').reshape(Nx, Ny, Nz)
-    Fy = probe(filepath, P, var=fieldvar+'y').reshape(Nx, Ny, Nz)
-    Fz = probe(filepath, P, var=fieldvar+'z').reshape(Nx, Ny, Nz)
+    filepath = util.time2CDFfilename(run, time, split=False)
+    Fx = probe(filepath, P, var=fieldvar+'x', library='kameleon').reshape(Nx, Ny, Nz)
+    Fy = probe(filepath, P, var=fieldvar+'y', library='kameleon').reshape(Nx, Ny, Nz)
+    Fz = probe(filepath, P, var=fieldvar+'z', library='kameleon').reshape(Nx, Ny, Nz)
 
     # https://stackoverflow.com/questions/21836067/interpolate-3d-volume-with-numpy-and-or-scipy
     Fx_interp = RegularGridInterpolator((X,Y,Z), Fx)

@@ -180,6 +180,12 @@ Notes:
 TODO:
 
 B_field_lines_compare_grid_and_kameleon_interp.py add vtk from https://python.hotexamples.com/site/file?hash=0x96ff2155fa36e65db82cd0d55a0c8582d9942e6ef37a0f28d757d663c03d1aac&fullName=beautiful_data-master/mix.py&project=chielk/beautiful_data
+https://github.com/chielk/beautiful_data/blob/master/ex3/SVVR%20-%20Exercise%203.pdf
+
+
+https://gitlab.kitware.com/vtk/vtk/blob/32ae6c76b70c8da05cec8cabe3ccda8988388561/Filters/General/Testing/Python/streamTracer.py
+https://github.com/naucoin/VTKData/blob/master/Data/office.binary.vtk
+
 
 call vtk_export from magnetovis into magnetosphere to get magnetosphere to get its examples working
 

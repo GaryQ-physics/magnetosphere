@@ -162,9 +162,8 @@ if debug:
     print(points)
 
 filename = util.time2CDFfilename(run, time)
-
-
-#probe(filename, points, var=['jx','jy','jz'], library='kameleon')
+import time as tm
+t0 = tm.time()
 
 results = np.nan*np.empty((3, points.shape[0], 3, 3))
 
@@ -179,3 +178,4 @@ points.tofile(direct + 'derivatives_points.bin')
 if debug:
     print(results)
 
+print('ran in %f minuts'%((tm.time()-t0)/60.))
