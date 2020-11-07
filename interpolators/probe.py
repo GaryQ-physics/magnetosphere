@@ -12,6 +12,52 @@ from units_and_constants import phys
 TESTANALYTIC = False
 
 def J_analytic(X):
+    Jchar = 10. # thought of in kameleon units (muA/m^2)
+    a = 5. #X and a in same units (R_e, a base unit)
+
+    if len(X.shape)==1:
+        X = np.array([X])
+
+    def jrad(r):
+        return Jchar*np.exp(-a*r)
+
+    Mhat = np.array([0,0,1.])
+    R = np.sqrt(np.einsum('ij,ij->i', X, X))
+    J = np.einsum('i,ij->ij', (jrad(R) / R), np.cross(X, Mhat) )
+
+    if J.shape[0]==1:
+        J = J[0,:]
+    return J #return thought in kameleon units since Jchar is
+
+def B_analytic(X):
+    Jchar = 10.
+    a = 5.
+
+    if len(X.shape)==1:
+        X = np.array([X])
+
+    Jchar_K = Jchar * ( phys['muA']/(phys['m']**2) )
+    def Bc(r):
+        #integrate mu0/3 *( Jrad(x) ) from r to infinity
+        return (phys['mu0']/3.)*Jchar_K*(1./a)*np.exp(-a*r)
+    def Md(r):
+        #integrate mu0/3 *( x^3 * Jrad(x) ) from 0 to r
+        return (phys['mu0']/3.)*Jchar_K*( 6/a**4 - (a*r*(a*r*(a*r+3)+6)+6)*np.exp(-a*r)/a**4 )
+
+    # B is sum of two terms, on from integrating dipole field from shells inside (using Md),
+    # and other from integrating constant field from shells outside (using Bc)
+    R = np.sqrt(np.einsum('ij,ij->i', X, X))
+    divR = np.divide(1., R, out=np.zeros_like(R), where=(R > 0.))
+
+    B = (3* (Md(R)*np.einsum('j,ij',Mhat, X)*divR**5)[:,None] * X - Mhat[:,None]*Md(R)*div**3 ) \
+      + (2* Bc(R)*Mhat[:,None])
+
+    if B.shape[0]==1:
+        B = B[0,:]
+    return B
+
+
+def J_analytic2(X):
     """
     X
         Nx3 array of N 3 vectors, assumed in units of R_e
@@ -78,13 +124,18 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
     ################### define interpolate(variable, Q) funtion within this probe
     if TESTANALYTIC:
         def interpolate(variable, Q):
-            J_an = J_analytic(Q)
             if variable == 'jx':
-                return J_an[:, 0]
+                return J_analytic(Q)[:, 0]
             if variable == 'jy':
-                return J_an[:, 1]
+                return J_analytic(Q)[:, 1]
             if variable == 'jz':
-                return J_an[:, 2]
+                return J_analytic(Q)[:, 2]
+            if variable in ['bx', 'b1x']:
+                return B_analytic(Q)[:, 0]
+            if variable in ['by', 'b1y']:
+                return B_analytic(Q)[:, 1]
+            if variable in ['bz', 'b1z']:
+                return B_analytic(Q)[:, 2]
 
     elif library == 'kameleonV':
         def interpolate(variable, Q):
