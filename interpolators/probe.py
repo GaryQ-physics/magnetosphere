@@ -9,11 +9,12 @@ from config import conf
 import util
 from units_and_constants import phys
 
-TESTANALYTIC = False
+TESTANALYTIC = True
 
 def J_analytic(X):
     Jchar = 10. # thought of in kameleon units (muA/m^2)
     a = 5. #X and a in same units (R_e, a base unit)
+    Mhat = np.array([0,0,1.])
 
     if len(X.shape)==1:
         X = np.array([X])
@@ -21,9 +22,8 @@ def J_analytic(X):
     def jrad(r):
         return Jchar*np.exp(-a*r)
 
-    Mhat = np.array([0,0,1.])
     R = np.sqrt(np.einsum('ij,ij->i', X, X))
-    J = np.einsum('i,ij->ij', (jrad(R) / R), np.cross(X, Mhat) )
+    J = np.einsum('i,ij->ij', (jrad(R) / R), np.cross(Mhat, X) )
 
     if J.shape[0]==1:
         J = J[0,:]
@@ -32,6 +32,7 @@ def J_analytic(X):
 def B_analytic(X):
     Jchar = 10.
     a = 5.
+    Mhat = np.array([0,0,1.])
 
     if len(X.shape)==1:
         X = np.array([X])
@@ -49,8 +50,14 @@ def B_analytic(X):
     R = np.sqrt(np.einsum('ij,ij->i', X, X))
     divR = np.divide(1., R, out=np.zeros_like(R), where=(R > 0.))
 
-    B = (3* (Md(R)*np.einsum('j,ij',Mhat, X)*divR**5)[:,None] * X - Mhat[:,None]*Md(R)*div**3 ) \
-      + (2* Bc(R)*Mhat[:,None])
+    print(X)
+    print(R)
+    print(divR)
+    print(Md(R))
+    print(Bc(R))
+
+    B = (3* (Md(R)*np.einsum('j,ij',Mhat, X)*divR**5)[:,None] * X - Mhat*(Md(R)*divR**3)[:,None] ) \
+      + (2*Mhat*Bc(R)[:,None])
 
     if B.shape[0]==1:
         B = B[0,:]

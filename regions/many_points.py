@@ -9,7 +9,7 @@ import util
 import regions
 import dissection as di
 
-run = 'DIPTSUR2'
+run = 'TESTANALYTIC'
 cut = True
 para = True
 
@@ -25,6 +25,9 @@ if run == 'DIPTSUR2':
 if run == 'IMP10_RUN_SAMPLE':
     time = (2019,9,2,7,0,0,0)
     rCurrents = 1.7
+if run == 'TESTANALYTIC':
+    time = (2000,1,1,0,10,0,0)
+    rCurrents = 0.
 
 direct = conf[run+'_derived'] + 'regions/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
 if cut:
