@@ -1,4 +1,13 @@
+import os
+import sys
 import numpy as np
+import pickle
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
+from config import conf
+from probe import probe
+import util
+from units_and_constants import phys
 
 def GetDivergence(delF):
     divF = np.nan*np.empty(delF.shape[0])
@@ -54,7 +63,7 @@ del_b1_batsrus = results[2,:,:,:]
 
 f = open(direct + 'gauss_check.txt','w')
 f.write('point_x point_y point_z divB_sim divB1_sim, divJ_sim')
-np.savetxt(f, np.column_stack([points, GetDivergence(del_b_batsrus), GetDivergence(del_b1_batsrus), GetDivergence(del_j_batsrus)])
+np.savetxt(f, np.column_stack([points, GetDivergence(del_b_batsrus), GetDivergence(del_b1_batsrus), GetDivergence(del_j_batsrus)]))
 f.close()
 
 J = probe(filename, points, var=['jx','jy','jz'], library='kameleon')
@@ -62,5 +71,5 @@ J_scaled = phys['mu0'] * (phys['muA']/(phys['m']**2)) * J
 
 f = open(direct + 'ampere_check.txt','w')
 f.write('point_x point_y point_z curlBx_sim curlBy_sim curlBz_sim Jx_scaled Jy_scaled Jz_scaled')
-np.savetxt(f, np.column_stack([points, GetCurl(del_b_batsrus), J_scaled])
+np.savetxt(f, np.column_stack([points, GetCurl(del_b_batsrus), J_scaled]))
 f.close()
