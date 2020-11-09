@@ -158,8 +158,8 @@ import time as tm
 t0 = tm.time()
 
 
-J = probe(filename, points, var=['jx','jy','jz'], library='kameleon')*(phys['muA']/(phys['m']**2))
-J_scaled = phys['mu0'] * J
+J = probe(filename, points, var=['jx','jy','jz'], library='kameleon')
+J_scaled = phys['mu0'] * (phys['muA']/(phys['m']**2)) *J
 curlB = GetCurlB(points, filename, method=method)
 
 #error = np.einsum('ij,ij->i', curlB - J_scaled, curlB - J_scaled)
