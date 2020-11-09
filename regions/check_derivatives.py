@@ -24,7 +24,7 @@ def GetCurl(delF):
 
     return curlF
 
-run = 'TESTANALYTIC'
+run = 'DIPTSUR2'
 cut = True
 
 if run == 'DIPTSUR2':
@@ -48,17 +48,12 @@ else:
 filename = util.time2CDFfilename(run, time)
 
 
-
-
 points = np.fromfile(direct + 'derivatives_points.bin').reshape((273,3))
 results = np.fromfile(direct + 'derivatives_results.bin').reshape((3,273,3,3))
 
 del_j_batsrus = results[0,:,:,:]
 del_b_batsrus = results[1,:,:,:]
 del_b1_batsrus = results[2,:,:,:]
-
-
-
 
 
 f = open(direct + 'gauss_check.txt','w')

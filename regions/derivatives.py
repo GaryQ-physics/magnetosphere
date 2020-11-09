@@ -178,4 +178,4 @@ points.tofile(direct + 'derivatives_points.bin')
 if debug:
     print(results)
 
-print('ran in %f minuts'%((tm.time()-t0)/60.))
+print('derivatives ran in %f minuts'%((tm.time()-t0)/60.))
