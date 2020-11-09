@@ -124,7 +124,7 @@ def GetCurl(delF):
 
     return curlF
 
-run = 'DIPTSUR2'
+run = 'TESTANALYTIC'
 cut = True
 debug = False
 
