@@ -9,7 +9,7 @@ from config import conf
 import util
 from units_and_constants import phys
 
-TESTANALYTIC = True
+TESTANALYTIC = False
 
 def J_analytic(X):
     Jchar = 10. # thought of in kameleon units (muA/m^2)
@@ -109,7 +109,7 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
     #else:
     #    filename = util.time2filename(filename) #!!!!!!
 
-    if not os.path.exists(filename) and not TESTANALYTIC:
+    if not os.path.exists(filename):# and not TESTANALYTIC:
         raise ValueError('Not found: ' + filename)
 
     ################### import apropriate file for library

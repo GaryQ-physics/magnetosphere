@@ -9,14 +9,14 @@ import util
 import regions
 import dissection as di
 
-run = 'TESTANALYTIC'
+run = 'DIPTSUR2'
 cut = True
 para = True
 
 if os.path.exists('/home/gary/'):
     pointfile_path = '/home/gary/Downloads/points_for_gary-test.txt'
 else:
-    pointfile_path = '/home/gquaresi/rand_generated_points.txt'
+    pointfile_path = '/home/gquaresi/yplus_points.txt'
 
 
 if run == 'DIPTSUR2':
