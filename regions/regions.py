@@ -135,7 +135,13 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
 
         #print( np.max(np.abs(positive + negative - full_deltaB)))
         #print('\n\n\n\n##########')
-        assert(np.max(np.abs(positive + negative - full_deltaB)) < 1e-9)
+        if not np.max(np.abs(positive + negative - full_deltaB)) < 1e-9:
+            print( 'positive = '+str(positive.astype(str)) )
+            print( 'positive = '+str(positive.astype(str)) )
+            print( 'positive = '+str(positive.astype(str)) )
+            print(np.max(np.abs(positive + negative - full_deltaB)) )
+            raise RuntimeError
+
         #print('##############\n\n\n\n')
 
         # index k runs from: 
