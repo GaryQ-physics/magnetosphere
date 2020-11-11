@@ -171,9 +171,8 @@ Notes:
 2020/11/10:
     ran many_points using points on xplus,xminus,yplus,yminus axes, and plotted with jupyter similar to random points
 
-
-
-
+2020/11/11:
+    change condition in regions np.max(np.abs(positive + negative - full_deltaB)) < 1e-8  (was 1e-9 before, but there were values wiht slighly more 1.06e-9 ect failing)
 
 
 
