@@ -9,34 +9,56 @@ from config import conf
 import util
 from units_and_constants import phys
 
-TESTANALYTIC = False
+TESTANALYTIC = True
+
+'''
+import probe as p
+import numpy as np
+di = np.linspace(0,15,151)
+X = np.zeros((151,3))
+X[:,0] = di
+X[:,2] = di
+p.J_analytic(X)
+p.B_analytic(X)
+'''
 
 def J_analytic(X):
-    Jchar = 10. # thought of in kameleon units (muA/m^2)
-    a = 5. #X and a in same units (R_e, a base unit)
     Mhat = np.array([0,0,1.])
 
     if len(X.shape)==1:
         X = np.array([X])
 
+    '''
+    Jchar = 10. # thought of in kameleon units (muA/m^2)
+    a = 5. #X and a in same units (R_e, a base unit)
     def jrad(r):
         return Jchar*np.exp(-a*r)
+    '''
+
+    rCurrents = 1.5
+    Jchar = 1. # thought of in kameleon units (muA/m^2)
+    a = 3. #X and a in same units (R_e, a base unit)
+    def jrad(r):
+        divr = np.divide(1., r, out=np.zeros_like(r), where=(r >= rCurrents))
+        return Jchar*a**5*divr**5
 
     R = np.sqrt(np.einsum('ij,ij->i', X, X))
-    J = np.einsum('i,ij->ij', (jrad(R) / R), np.cross(Mhat, X) )
+    divR = np.divide(1., R, out=np.zeros_like(R), where=(R != 0.))
+    J = np.einsum('i,ij->ij', (jrad(R) * divR), np.cross(Mhat, X) )
 
     if J.shape[0]==1:
         J = J[0,:]
     return J #return thought in kameleon units since Jchar is
 
 def B_analytic(X):
-    Jchar = 10.
-    a = 5.
     Mhat = np.array([0,0,1.])
 
     if len(X.shape)==1:
         X = np.array([X])
 
+    '''
+    Jchar = 10.
+    a = 5.
     Jchar_K = Jchar * ( phys['muA']/(phys['m']**2) )
     def Bc(r):
         #integrate mu0/3 *( Jrad(x) ) from r to infinity
@@ -44,17 +66,35 @@ def B_analytic(X):
     def Md(r):
         #integrate mu0/3 *( x^3 * Jrad(x) ) from 0 to r
         return (phys['mu0']/3.)*Jchar_K*( 6/a**4 - (a*r*(a*r*(a*r+3)+6)+6)*np.exp(-a*r)/a**4 )
+    '''
+
+    rCurrents = 1.5
+    Jchar = 1.
+    a = 3.
+    Jchar_K = Jchar * ( phys['muA']/(phys['m']**2) )
+    def Bc(r):
+        #integrate mu0/3 *( Jrad(x) ) from r to infinity
+        divr = np.divide(1., r, out=np.zeros_like(r), where=(r >= rCurrents))
+        ret = (phys['mu0']/3.)*Jchar_K*(a**5/4) * divr**4
+        ret[divr==0.] = 0.
+        return ret
+    def Md(r):
+        #integrate mu0/3 *( x^3 * Jrad(x) ) from 0 to r (or rather rCurrents to r since take J=0 below that
+        divr = np.divide(1., r, out=np.zeros_like(r), where=(r >= rCurrents))
+        ret = (phys['mu0']/3.)*Jchar_K*a**5 *(1./rCurrents - divr)
+        ret[divr==0.] = 0.
+        return ret
 
     # B is sum of two terms, on from integrating dipole field from shells inside (using Md),
     # and other from integrating constant field from shells outside (using Bc)
     R = np.sqrt(np.einsum('ij,ij->i', X, X))
     divR = np.divide(1., R, out=np.zeros_like(R), where=(R > 0.))
 
-    print(X)
-    print(R)
-    print(divR)
-    print(Md(R))
-    print(Bc(R))
+    #print(X)
+    #print(R)
+    #rint(divR)
+    #print(Md(R))
+    #print(Bc(R))
 
     B = (3* (Md(R)*np.einsum('j,ij',Mhat, X)*divR**5)[:,None] * X - Mhat*(Md(R)*divR**3)[:,None] ) \
       + (2*Mhat*Bc(R)[:,None])
