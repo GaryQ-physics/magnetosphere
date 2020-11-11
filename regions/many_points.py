@@ -16,7 +16,7 @@ para = True
 if os.path.exists('/home/gary/'):
     pointfile_path = '/home/gary/Downloads/points_for_gary-test.txt'
 else:
-    pointfile_path = '/home/gquaresi/yplus_points.txt'
+    pointfile_path = '/home/gquaresi/xplus_points.txt'
 
 
 if run == 'DIPTSUR2':

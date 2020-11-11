@@ -9,7 +9,7 @@ from probe import probe
 import util
 from units_and_constants import phys
 
-run = 'TESTANALYTIC'
+run = 'DIPTSUR2'
 cut = True
 
 if run == 'DIPTSUR2':
@@ -23,6 +23,7 @@ if run == 'TESTANALYTIC':
     rCurrents = 0.
 
 direct = conf[run+'_derived'] + 'regions/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
+direct = direct + 'yplus/'
 if cut:
     rmin = rCurrents
     direct = direct + 'excluding_currents_before_rCurrents/'
