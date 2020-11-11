@@ -135,14 +135,58 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
 
         #print( np.max(np.abs(positive + negative - full_deltaB)))
         #print('\n\n\n\n##########')
-        if not np.max(np.abs(positive + negative - full_deltaB)) < 1e-8:
-            print( 'location = '+str(location.astype(str)) )
-            print( 'positive = '+str(positive.astype(str)) )
-            print( 'negative = '+str(negative.astype(str)) )
-            print( 'full_deltaB = '+str(full_deltaB.astype(str)) )
-            print(np.max(np.abs(positive + negative - full_deltaB)) )
-            sys.stdout.flush()
-            raise RuntimeError
+        maxdiff = np.max(np.abs(positive + negative - full_deltaB))
+
+        if maxdiff >= 1e-4:
+            f = open('tentominus_four.txt', 'a')
+            f.write( 'location = '+str(location.astype(str)) )
+            f.write( 'positive = '+str(positive.astype(str)) )
+            f.write( 'negative = '+str(negative.astype(str)) )
+            f.write( 'full_deltaB = '+str(full_deltaB.astype(str)) )
+            f.write( 'maxdiff = '+str(maxdiff) )
+            f.close()
+        elif maxdiff >= 1e-5:
+            f = open('tentominus_five.txt', 'a')
+            f.write( 'location = '+str(location.astype(str)) )
+            f.write( 'positive = '+str(positive.astype(str)) )
+            f.write( 'negative = '+str(negative.astype(str)) )
+            f.write( 'full_deltaB = '+str(full_deltaB.astype(str)) )
+            f.write( 'maxdiff = '+str(maxdiff) )
+            f.close()
+        elif maxdiff >= 1e-6:
+            f = open('tentominus_six.txt', 'a')
+            f.write( 'location = '+str(location.astype(str)) )
+            f.write( 'positive = '+str(positive.astype(str)) )
+            f.write( 'negative = '+str(negative.astype(str)) )
+            f.write( 'full_deltaB = '+str(full_deltaB.astype(str)) )
+            f.write( 'maxdiff = '+str(maxdiff) )
+            f.close()
+        elif maxdiff >= 1e-7:
+            f = open('tentominus_seven.txt', 'a')
+            f.write( 'location = '+str(location.astype(str)) )
+            f.write( 'positive = '+str(positive.astype(str)) )
+            f.write( 'negative = '+str(negative.astype(str)) )
+            f.write( 'full_deltaB = '+str(full_deltaB.astype(str)) ) 
+            f.write( 'maxdiff = '+str(maxdiff) )
+            f.close()
+        elif maxdiff >= 1e-8:
+            f = open('tentominus_eight.txt', 'a')
+            f.write( 'location = '+str(location.astype(str)) )
+            f.write( 'positive = '+str(positive.astype(str)) )
+            f.write( 'negative = '+str(negative.astype(str)) )
+            f.write( 'full_deltaB = '+str(full_deltaB.astype(str)) ) 
+            f.write( 'maxdiff = '+str(maxdiff) )
+            f.close()
+        elif maxdiff >= 1e-9:
+            f = open('tentominus_nine.txt', 'a')
+            f.write( 'location = '+str(location.astype(str)) )
+            f.write( 'positive = '+str(positive.astype(str)) )
+            f.write( 'negative = '+str(negative.astype(str)) )
+            f.write( 'full_deltaB = '+str(full_deltaB.astype(str)) ) 
+            f.write( 'maxdiff = '+str(maxdiff) )
+            f.close()
+
+
 
         #print('##############\n\n\n\n')
 
