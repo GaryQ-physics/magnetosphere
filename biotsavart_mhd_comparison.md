@@ -10,11 +10,9 @@ The points on the Day and Night side were plotted seperately in two different fi
 - the corresponding component of *B_biotsavart*  used as the "observed value"
 
 All distances are in Earth radii, all magnetic fields are in nanoTesla.
-Excellent. I made a few minor edits. Please add a few sentences for a summary and your conclusion.
-
 
 ## Nightside
-![](images/night_side.png) 
+![](images/DIPTSUR2/night_side.png) 
 >3 scatterplots, one for each cartesian component. One dot for each sampled gridpoint on the nightside.
 >
 >datapoints color coded based on the absolute value of the corresponding component of *B1_simulation* (or *value*)
@@ -24,7 +22,7 @@ Excellent. I made a few minor edits. Please add a few sentences for a summary an
 >large includes only points with 1000 nT <= *value*.
 
 ## Dayside
-![](images/day_side.png) 
+![](images/DIPTSUR2/day_side.png) 
 >3 scatterplots, one for each cartesian component. One dot for each sampled gridpoint on the dayside.
 >
 >datapoints color coded based on the absolute value of the corresponding component of *B1_simulation* (or *value*)
