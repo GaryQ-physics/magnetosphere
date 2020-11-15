@@ -284,3 +284,65 @@ def MAGtoMLT(pos, time, csys='sph', debug=False):
 
     MLT = 12. + delta*24./(2.*np.pi)
     return MLT
+
+
+
+def GSMtoMAGLocalComponents(time, mlat, mlon, dB):
+    if dB.shape == (3,):
+        return toMAGLocalComponents(time, mlat, mlon, np.array([dB]))[0,:]
+
+    time = np.array(time, dtype=int)
+
+    if len(time.shape) == 1:
+        time = np.array([time])
+
+    N = time.shape[0]
+    M = dB.shape[0]
+    assert(dB.shape == (M,3))
+
+    station_pos = MAGtoGSM(np.array([1., mlat, mlon]), time, 'sph', 'car')
+
+    Pole = MAGtoGSM(np.array([0., 0., 1.]), time, 'car', 'car')
+
+    U3 = station_pos
+    U3norm = np.sqrt(U3[:,0]**2 + U3[:,1]**2 + U3[:,2]**2) #( not really needed since norm is 1 in these units where R_e=1, but just to be consistent in all units)
+    divU3norm = 1./U3norm
+    U3 = U3*divU3norm[:,np.newaxis]
+    U1 = np.cross(Pole, U3)
+    U1norm = np.sqrt(U1[:,0]**2 + U1[:,1]**2 + U1[:,2]**2)
+    divU1norm = 1./U1norm
+    #https://stackoverflow.com/questions/5795700/multiply-numpy-array-of-scalars-by-array-of-vectors
+    U1 = U1*divU1norm[:,np.newaxis]
+    U2 = np.cross(U3, U1)
+    assert(U1.shape == (N, 3)) #check
+
+    #print(U1)
+    #print(U2)
+    #print(U3)
+
+    R = np.empty((N, 3, 3))
+    R[:, :, 0] = U2
+    R[:, :, 1] = U1
+    R[:, :, 2] = -U3
+    
+    R = np.linalg.inv(R)
+    assert(R.shape == (N,3,3))
+
+    if N == 1:
+        R = np.repeat(R, dB.shape[0], axis=0)
+    elif N == M:
+        pass
+    else:
+        raise ValueError('dimensions of time and dB dont match')
+
+    
+    #for i in range(N):
+        #R[i,:,0] = U2[i,:]
+        #R[i,:,1] = U1[i,:]
+        #R[i,:,2] = -U3[i,:]
+    #    M = np.column_stack([U2[i,:], U1[i,:], -U3[i,:]])
+    #    R[i, :, :] = np.linalg.inv(M)
+
+    dB_rot = np.einsum('ijk,ik->ij', R, dB)
+    return dB_rot
+

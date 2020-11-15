@@ -143,31 +143,44 @@ def deltaB_old(variable, x0, X, J, V_char = 1.):
     return np.nan
 
 
-def biot_savart_run(run, time, pts, regions, separate=False):
+def biot_savart_run(run, time, pts, regions, summed=True, separateRegions=False):
     import os
     import sys
     sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
     from config import conf
     import util
-    from probe import probe
-
-    filename = util.time2CDFfilename(run, time)
+    from probe import GetRunData
 
     if isinstance(regions, dict):
         regions = (regions,)
+
+    if (not summed) and (not separateRegions):
+        raise ValueError('cannot join unsummed regions')
 
     ret = []
     for region in list(regions):
         ax_list = make_axes(region['xlims'], region['ylims'], region['zlims'], region['d'])
         G = make_grid(ax_list, slices=False)
-        J = probe(filename, G, var=['jx','jy','jz'], library='kameleon')
+        J = GetRunData(run, time, G, 'j')
         J *= phys['muA']/(phys['m']**2)
-        result = deltaB('deltaB', pts, G, J, V_char = region['d']**3)
+
+        if summed:
+            result = deltaB('deltaB', pts, G, J, V_char = region['d']**3)
+        else:
+            result = deltaB('dB', pts, G, J, V_char = region['d']**3)
+
         ret.append(result.copy())
-    ret = np.array(ret)
-    if separate:
-        return ret
-    return np.sum(ret, axis=0)
+
+    if summed:
+        ret = np.array(ret)
+        if separateRegions:
+            return ret
+        return np.sum(ret, axis=0)
+
+    if len(ret) == 1:
+        return ret[0]
+
+    return ret
 
 if __name__ == '__main__':
     run = 'DIPTSUR2'

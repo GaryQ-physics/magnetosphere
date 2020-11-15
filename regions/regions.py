@@ -6,7 +6,8 @@ import pickle
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
-import biot_savart_kameleon_interpolated_grid as bsk
+#import biot_savart_kameleon_interpolated_grid as bsk
+import biot_savart as bs
 import util
 import cxtransform as cx
 import magnetometers as mg
@@ -94,26 +95,23 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
         raise ValueError ("regions must be 'octants', 'full', or custom tuple of dictionaries")
 
     def compute(region):
-        xlims = region['xlims']
-        ylims = region['ylims']
-        zlims = region['zlims']
-        d = region['d']
+        #xlims = region['xlims']
+        #ylims = region['ylims']
+        #zlims = region['zlims']
+        #d = region['d']
 
         if locationtype == 'MAG':
-            dB, G, Ntup = bsk.integrate(run, time, location[1], location[2], para=False,
-                xlims=xlims, ylims=ylims, zlims=zlims, d=d, returnAll=True, rmin=rmin)
+            #dB, G, Ntup = bsk.integrate(run, time, location[1], location[2], para=False,
+            #    xlims=xlims, ylims=ylims, zlims=zlims, d=d, returnAll=True, rmin=rmin)
+            pts = cx.MAGtoGSM(np.array([1.,location[1], location[2]]), time, 'sph','car')
+            dB = bs.biot_savart_run(run, time, pts, region, summed=False, separateRegions=True)
 
-            dB_loc = bsk.toMAGLocalComponents(time, location[1], location[2], dB)
-            #deltaB = np.sum(dB, axis=0)
-            #deltaB_loc = bsk.toMAGLocalComponents(time, location[1], location[2], deltaB)
+            dB_loc = cx.GSMtoMAGLocalComponents(time, location[1], location[2], dB)
 
         elif locationtype == 'GSM':
-            dB, G, Ntup = bsk.integrate(run, time, location, None, para=False,
-                xlims=xlims, ylims=ylims, zlims=zlims, d=d, returnAll=True, rmin=rmin)
-
-            dB_loc = dB
-            #deltaB = np.sum(dB, axis=0)
-            #deltaB_loc = deltaB
+            #dB, G, Ntup = bsk.integrate(run, time, location, None, para=False,
+            #    xlims=xlims, ylims=ylims, zlims=zlims, d=d, returnAll=True, rmin=rmin)
+            dB_loc = bs.biot_savart_run(run, time, location, region, summed=False, separateRegions=True)
 
         #print('dB_loc:')
         #print(dB_loc.shape)
@@ -133,8 +131,6 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
         #print(positive)
         #print(negative)
 
-        #print( np.max(np.abs(positive + negative - full_deltaB)))
-        #print('\n\n\n\n##########')
         maxdiff = np.max(np.abs(positive + negative - full_deltaB))
 
         if maxdiff >= 1e-4:
@@ -185,10 +181,6 @@ def signedintegrate(run, time, location, regions='octants', fwrite=False, rmin=N
             f.write( 'full_deltaB = '+str(full_deltaB.astype(str)) ) 
             f.write( 'maxdiff = '+str(maxdiff) )
             f.close()
-
-
-
-        #print('##############\n\n\n\n')
 
         # index k runs from: 
                 # k=0 -> 'positive'

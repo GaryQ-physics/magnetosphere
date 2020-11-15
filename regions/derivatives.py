@@ -8,7 +8,6 @@ from config import conf
 from probe import probe
 import util
 from units_and_constants import phys
-#import biot_savart_kameleon_interpolated_grid as bsk
 import biot_savart as bs
 
 # B = [0.5*y**2, z*x, z]
@@ -139,6 +138,7 @@ if run == 'TESTANALYTIC':
     rCurrents = 1.5
 
 direct = conf[run+'_derived'] + 'regions/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
+
 if cut:
     rmin = rCurrents
     direct = direct + 'excluding_currents_before_rCurrents/'
@@ -146,6 +146,8 @@ else:
     rmin = 0.
     direct = direct + 'including_currents_before_rCurrents/'
 
+if not os.path.exists(direct):
+    direct = ''
 
 if os.path.exists('/home/gary/'):
     #data = np.loadtxt(direct + 'including_currents_before_rCurrents/bs_results.txt', skiprows=3)

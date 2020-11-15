@@ -9,8 +9,6 @@ from config import conf
 import util
 from units_and_constants import phys
 
-TESTANALYTIC = True
-
 '''
 import probe as p
 import numpy as np
@@ -135,7 +133,7 @@ def J_analytic2(X):
     return j_kameleonUnits
 
 
-def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleonV'):
+def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleonV', TESTANALYTIC=True):
     """
     library = 'kameleonV', 'kameleon', 'pycdf'
     """
@@ -244,3 +242,21 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
         kameleon.close()
 
     return ret
+
+
+def GetRunData(run, time, P, var):
+    if var=='j':
+        var = ['jx','jy','jz']
+    elif var=='b':
+        var = ['bx','by','bz']
+    elif var=='b1':
+        var = ['b1x','b1y','b1z']
+
+    if 'TESTANALYTIC' == run:
+        TESTANALYTIC = True
+    else:
+        TESTANALYTIC = False
+
+    filename = util.time2CDFfilename(run, time)
+    return probe(filename, P, var=var, library='kameleon', TESTANALYTIC=TESTANALYTIC)
+

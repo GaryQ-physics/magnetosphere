@@ -174,21 +174,24 @@ Notes:
 2020/11/11:
     change condition in regions np.max(np.abs(positive + negative - full_deltaB)) < 1e-8  (was 1e-9 before, but there were values wiht slighly more 1.06e-9 ect failing)
 
+2020/11/12:
+    wrote vtk/streamTracer_test based on https://gitlab.kitware.com/vtk/vtk/blob/32ae6c76b70c8da05cec8cabe3ccda8988388561/Filters/General/Testing/Python/streamTracer.py
+    regions.py NEEDS TO BE CHECKED that its not broken after remomoving biot_savart_kameleon_interpolated_grid dependence
+    NEED TO INCLUDE rmin
 
 
 
 
 TODO:
+1. Visualize derivatives
 
-B_field_lines_compare_grid_and_kameleon_interp.py add vtk from https://python.hotexamples.com/site/file?hash=0x96ff2155fa36e65db82cd0d55a0c8582d9942e6ef37a0f28d757d663c03d1aac&fullName=beautiful_data-master/mix.py&project=chielk/beautiful_data
-https://github.com/chielk/beautiful_data/blob/master/ex3/SVVR%20-%20Exercise%203.pdf
+2. Surface integrals over boundary
 
+3. Improve biot-savart when point has nonzero J
 
-https://gitlab.kitware.com/vtk/vtk/blob/32ae6c76b70c8da05cec8cabe3ccda8988388561/Filters/General/Testing/Python/streamTracer.py
-https://github.com/naucoin/VTKData/blob/master/Data/office.binary.vtk
+4. extract stream like data from vtk, compare in B_field_lines_compare_grid_and_kameleon_interp.py
 
-
-call vtk_export from magnetovis into magnetosphere to get magnetosphere to get its examples working
+5. magnetovis package
 
 
 paraview contour surfaces for dB_north
@@ -206,7 +209,8 @@ test the -> loc rotation against something analytic
 
 
 
-
+https://searchcode.com/?q=vtkStreamTracer
+https://vtk.org/doc/nightly/html/graph_legend.html
 
 https://github.com/rweigel/kameleon
 

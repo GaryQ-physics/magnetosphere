@@ -57,7 +57,7 @@ del_b1_batsrus = results[2,:,:,:]
 
 
 f = open(direct + 'gauss_check.txt','w')
-f.write('point_x point_y point_z divB_sim divB1_sim, divJ_sim\n')
+f.write('point_x point_y point_z divB_sim divB1_sim divJ_sim\n')
 np.savetxt(f, np.column_stack([points, GetDivergence(del_b_batsrus), GetDivergence(del_b1_batsrus), GetDivergence(del_j_batsrus)]))
 f.close()
 

@@ -4,7 +4,7 @@ Using the same set of randomly generated points as before, the following quantit
 - B_analytic : the magnetic field from the analytic form of the exact solution with the above J
 
 The points on the Day and Night side were plotted seperately in two different figures. The plots show percent error vs distance from Earth center. The percent error of each cartesian component is calculated with:
-- the corresponding component of B1_simulation used as the "expected value"
+- the corresponding component of B_analytic used as the "expected value"
 - The corresponding component of B_biotsavart used as the "observed value"
 
 All distances are in Earth radii, all magnetic fields are in nanoTesla.
