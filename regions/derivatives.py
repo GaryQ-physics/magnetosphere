@@ -73,7 +73,6 @@ def GetDel(field, points, filename, para=False):
         print(pts.shape)
 
         if field == 'b_biotsavart':
-            assert( field=='b' )
             pm = 31.875
             reg =  {'xlims': (-pm, pm),
                     'ylims': (-pm, pm),
@@ -108,23 +107,12 @@ def GetDel(field, points, filename, para=False):
 
     return np.array(ret)
 
-def GetDivergence(delF):
-    divF = np.nan*np.empty(delF.shape[0])
-    for i in range(delF.shape[0]):
-        divF[i] = delF[i,0,0] + delF[i,1,1] + delF[i,2,2]
 
-    return divF
-
-def GetCurl(delF):
-    curlF = np.nan*np.empty((delF.shape[0], 3))
-    for i in range(delF.shape[0]):
-        curlF_tens = delF[i,:,:] - delF[i,:,:].transpose()
-        curlF[i,:] = np.array([ curlF_tens[1,2], curlF_tens[2,0], curlF_tens[0,1] ])
-
-    return curlF
-
+####################
 run = 'TESTANALYTIC'
 cut = True
+pntlist = 'native_random_sampled'
+####################
 debug = False
 
 if run == 'DIPTSUR2':
@@ -138,6 +126,10 @@ if run == 'TESTANALYTIC':
     rCurrents = 1.5
 
 direct = conf[run+'_derived'] + 'regions/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
+direct = direct + pntlist + '/'
+
+points = np.loadtxt(direct + pntlist + '_points.txt')
+if debug: print(points)
 
 if cut:
     rmin = rCurrents
@@ -147,26 +139,12 @@ else:
     direct = direct + 'including_currents_before_rCurrents/'
 
 if not os.path.exists(direct):
-    direct = ''
+    os.mkdir(direct)
 
-if os.path.exists('/home/gary/'):
-    #data = np.loadtxt(direct + 'including_currents_before_rCurrents/bs_results.txt', skiprows=3)
-    #points = data[:, 0:3]
-
-    #points = np.array([[5.2,4.3,-2.1],[2.,2.,7.]])
-    #points = np.column_stack([np.arange(2,30),np.zeros(28),np.zeros(28)])
-
-    points = np.loadtxt('/home/gary/Downloads/points_for_gary-test.txt')
-else:
-    points = np.loadtxt('/home/gquaresi/rand_generated_points.txt')
-
-if debug:
-    print(points)
-
-filename = util.time2CDFfilename(run, time)
 import time as tm
 t0 = tm.time()
 
+filename = util.time2CDFfilename(run, time)
 results = np.nan*np.empty((3, points.shape[0], 3, 3))
 
 results[0,:,:,:] = GetDel('j_batsrus', points, filename)
@@ -177,7 +155,5 @@ print('writing arrays')
 results.tofile(direct + 'derivatives_results.bin')
 points.tofile(direct + 'derivatives_points.bin')
 
-if debug:
-    print(results)
-
+if debug: print(results)
 print('derivatives ran in %f minuts'%((tm.time()-t0)/60.))

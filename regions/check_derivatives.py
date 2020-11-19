@@ -24,8 +24,12 @@ def GetCurl(delF):
 
     return curlF
 
-run = 'DIPTSUR2'
+
+####################
+run = 'TESTANALYTIC'
 cut = True
+pntlist = 'native_random_sampled'
+####################
 
 if run == 'DIPTSUR2':
     time = (2019,9,2,6,30,0,0)
@@ -35,9 +39,10 @@ if run == 'IMP10_RUN_SAMPLE':
     rCurrents = 1.7
 if run == 'TESTANALYTIC':
     time = (2000,1,1,0,10,0,0)
-    rCurrents = 0.
+    rCurrents = 1.5
 
 direct = conf[run+'_derived'] + 'regions/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
+direct = direct + pntlist + '/'
 if cut:
     rmin = rCurrents
     direct = direct + 'excluding_currents_before_rCurrents/'
@@ -46,7 +51,6 @@ else:
     direct = direct + 'including_currents_before_rCurrents/'
 
 filename = util.time2CDFfilename(run, time)
-
 
 points = np.fromfile(direct + 'derivatives_points.bin').reshape((273,3))
 results = np.fromfile(direct + 'derivatives_results.bin').reshape((3,273,3,3))

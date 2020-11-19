@@ -74,7 +74,7 @@ def B_analytic(X):
         #integrate mu0/3 *( Jrad(x) ) from r to infinity
         divr = np.divide(1., r, out=np.zeros_like(r), where=(r >= rCurrents))
         ret = (phys['mu0']/3.)*Jchar_K*(a**5/4) * divr**4
-        ret[divr==0.] = 0.
+        ret[divr==0.] = (phys['mu0']/3.)*Jchar_K*(a**5/4) / (rCurrents**4)
         return ret
     def Md(r):
         #integrate mu0/3 *( x^3 * Jrad(x) ) from 0 to r (or rather rCurrents to r since take J=0 below that
@@ -99,6 +99,52 @@ def B_analytic(X):
 
     if B.shape[0]==1:
         B = B[0,:]
+    return B
+
+'''
+import numpy as np
+import probe as p
+X = 10.*np.random.rand(18).reshape((6,3))
+p.B_analytic_loop(X[0,:])
+p.B_analytic(X[0,:])
+p.B_analytic_loop(X)
+p.B_analytic(X)
+np.allclose(p.B_analytic_loop(X), p.B_analytic(X))
+np.sqrt(np.einsum('ij,ij->i', X, X))
+'''
+
+def B_analytic_loop(X):
+    if X.shape != (3,):
+        toret = np.nan*np.empty(X.shape)
+        for i in range(X.shape[0]):
+            toret[i,:] = B_analytic_loop(X[i,:])
+        return toret
+
+
+    Mhat = np.array([0,0,1.])
+    rCurrents = 1.5
+    Jchar = 1.
+    a = 3.
+    Jchar_K = Jchar * ( phys['muA']/(phys['m']**2) )
+    def Bc(r):
+        #integrate mu0/3 *( Jrad(x) ) from r to infinity
+        if r >=rCurrents:
+            return (phys['mu0']/3.)*Jchar_K*((a**5)/4.) / (r**4)
+        else:
+            return (phys['mu0']/3.)*Jchar_K*((a**5)/4.) / (rCurrents**4)
+
+    def Md(r):
+        #integrate mu0/3 *( x^3 * Jrad(x) ) from 0 to r (or rather rCurrents to r since take J=0 below that
+        if r >=rCurrents:
+            return (phys['mu0']/3.)*Jchar_K*a**5 *(1./rCurrents - 1/r)
+        else:
+            return 0.
+
+    R = np.linalg.norm(X)
+
+    B = ( 3*(Md(R)* np.dot(Mhat,X) / (R**5)) * X - (Md(R)/ (R**3)) * Mhat ) \
+      + ( 2*Bc(R)*Mhat )
+
     return B
 
 
