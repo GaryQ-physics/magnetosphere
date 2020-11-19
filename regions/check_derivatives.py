@@ -26,7 +26,7 @@ def GetCurl(delF):
 
 
 ####################
-run = 'TESTANALYTIC'
+run = 'DIPTSUR2'
 cut = True
 pntlist = 'native_random_sampled'
 ####################

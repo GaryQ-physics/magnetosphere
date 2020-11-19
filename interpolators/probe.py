@@ -180,7 +180,7 @@ def J_analytic2(X):
 
 
 def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleonV', TESTANALYTIC=False):
-    print('TESTANALYTIC = %s'%(TESTANALYTIC))
+    print('TESTANALYTIC = %s'%(str(TESTANALYTIC)))
     """
     library = 'kameleonV', 'kameleon', 'pycdf'
     """
@@ -205,7 +205,9 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
     if library == 'kameleon':
         assert(P.shape[1] == 3)
         sys.path.append(conf['interpolator'] + 'kameleon/lib/python2.7/site-packages/ccmc/')
+        print('before import')
         import _CCMC as ccmc
+        print('after import')
     if library == 'pycdf':
         assert(P.shape[1] == 2)
         sys.path.append(conf['interpolator'] + 'pycdf_with_scipy')
@@ -234,6 +236,7 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
             return kameleonV.interpolate(filename, Q[:,0], Q[:,1], Q[:,2], variable)
 
     elif library == 'kameleon':
+        print('bef int')
         kameleon = ccmc.Kameleon()
         kameleon.open(filename)
         interpolator = kameleon.createNewInterpolator()
@@ -244,6 +247,7 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
             for k in range(Q.shape[0]):
                 arr[k] = interpolator.interpolate(variable, Q[k,0], Q[k,1], Q[k,2])
             return arr
+        print('aft int')
 
     elif library == 'pycdf':
         def interpolate(variable, Q):
@@ -287,7 +291,7 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
 
     if library == 'kameleon' and not TESTANALYTIC:
         kameleon.close()
-
+    print('DONE PROBING')
     return ret
 
 
