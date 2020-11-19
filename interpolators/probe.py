@@ -179,7 +179,7 @@ def J_analytic2(X):
     return j_kameleonUnits
 
 
-def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleonV', TESTANALYTIC=True):
+def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleonV', TESTANALYTIC=False):
     """
     library = 'kameleonV', 'kameleon', 'pycdf'
     """
