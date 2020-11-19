@@ -81,7 +81,7 @@ dA *= R**2
 #J_perp=J_perp.reshape((Nlat,Nlon))
 dA = dA.flatten()
 
-if False:
+if debug:
     I = np.sum(J_norm*dA)
     print(I)
 
@@ -105,7 +105,7 @@ for i in range(points.shape[0]):
 
 np.savetxt(direct + 'bound.txt', np.column_stack([points, I]))
 
-
+print("ran in %f min"%((tm.time-t0)/60.))
 '''
 vtk_export(outfname, P,
                     dataset = 'STRUCTURED_GRID',
