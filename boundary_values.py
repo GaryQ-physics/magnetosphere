@@ -16,6 +16,7 @@ from units_and_constants import phys
 
 run = 'DIPTSUR2'
 pntlist = 'native_random_sampled'
+debug=False
 
 if run == 'DIPTSUR2':
     time = (2019,9,2,6,30,0,0)
