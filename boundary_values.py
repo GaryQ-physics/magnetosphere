@@ -105,7 +105,7 @@ for i in range(points.shape[0]):
 
 np.savetxt(direct + 'bound.txt', np.column_stack([points, I]))
 
-print("ran in %f min"%((tm.time-t0)/60.))
+print("ran in %f min"%((tm.time()-t0)/60.))
 '''
 vtk_export(outfname, P,
                     dataset = 'STRUCTURED_GRID',

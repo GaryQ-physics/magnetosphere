@@ -180,6 +180,7 @@ def J_analytic2(X):
 
 
 def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleonV', TESTANALYTIC=False):
+    print('TESTANALYTIC = %s'%(TESTANALYTIC))
     """
     library = 'kameleonV', 'kameleon', 'pycdf'
     """
