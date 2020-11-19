@@ -9,6 +9,7 @@ from probe import probe
 import util
 from units_and_constants import phys
 import biot_savart as bs
+import dissection as di
 
 # B = [0.5*y**2, z*x, z]
 # curlB = [-x, 0, z-y]
@@ -57,7 +58,9 @@ Bz_testinterp = RegularGridInterpolator((xax,yax,zax), Bz_interdata)
 
 
 
-def GetDel(field, points, filename, para=False):
+def GetDel(run, time, field, points, para=False):
+    filename = util.time2CDFfilename(run, time)
+
     # field = 'b_biotsavart' ; 'b_batsrus' ; 'b1_batsrus' ; 'j_batsrus' ; 'testinterp'
     epsilon = 1./16.
 
@@ -73,13 +76,14 @@ def GetDel(field, points, filename, para=False):
         print(pts.shape)
 
         if field == 'b_biotsavart':
-            pm = 31.875
-            reg =  {'xlims': (-pm, pm),
-                    'ylims': (-pm, pm),
-                    'zlims': (-pm, pm),
-                    'd': 0.25
-                    }
-            Fs = bs.biot_savart_run(run, time, pts, reg)
+            #pm = 31.875
+            #reg =  {'xlims': (-pm, pm),
+            #        'ylims': (-pm, pm),
+            #        'zlims': (-pm, pm),
+            #        'd': 0.25
+            #        }
+            regs = di.GetRegions(point)
+            Fs = bs.biot_savart_run(run, time, pts, regs, summed=True, separateRegions=False)
         elif field == 'testinterp':
             Fs = np.column_stack([Bx_testinterp(pts), By_testinterp(pts), Bz_testinterp(pts)])
         elif '_batsrus' in field:
@@ -109,7 +113,7 @@ def GetDel(field, points, filename, para=False):
 
 
 ####################
-run = 'TESTANALYTIC'
+run = 'DIPTSUR2'
 cut = True
 pntlist = 'native_random_sampled'
 ####################
@@ -144,16 +148,21 @@ if not os.path.exists(direct):
 import time as tm
 t0 = tm.time()
 
-filename = util.time2CDFfilename(run, time)
-results = np.nan*np.empty((3, points.shape[0], 3, 3))
+if False:
+    results = np.nan*np.empty((3, points.shape[0], 3, 3))
 
-results[0,:,:,:] = GetDel('j_batsrus', points, filename)
-results[1,:,:,:] = GetDel('b_batsrus', points, filename)
-results[2,:,:,:] = GetDel('b1_batsrus', points, filename)
+    results[0,:,:,:] = GetDel(run, time, 'j_batsrus', points)
+    results[1,:,:,:] = GetDel(run, time, 'b_batsrus', points)
+    results[2,:,:,:] = GetDel(run, time, 'b1_batsrus', points)
 
-print('writing arrays')
-results.tofile(direct + 'derivatives_results.bin')
-points.tofile(direct + 'derivatives_points.bin')
+    print('writing arrays')
+    results.tofile(direct + 'derivatives_results.bin')
+    points.tofile(direct + 'derivatives_points.bin')
 
-if debug: print(results)
+    if debug: print(results)
+else:
+    delBbs = GetDel(run, time, 'b_biotsavart', points)
+    print('writing array')
+    delBbs.tofile(direct + 'derivatives_bs.bin')
+
 print('derivatives ran in %f minuts'%((tm.time()-t0)/60.))
