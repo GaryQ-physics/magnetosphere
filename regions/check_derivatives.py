@@ -27,19 +27,19 @@ def GetCurl(delF):
 def GetFrobeniusNormDel(delF):
     ret = np.nan*np.empty(delF.shape[0])
     for i in range(delF.shape[0]):
-        ret[i,:] = np.linalg.norm(delF[i,:,:], ord='fro') # frobenius norm, equivalently 2-norm of flattened vector. It's equivalent to set ord=None
+        ret[i] = np.linalg.norm(delF[i,:,:], ord='fro') # frobenius norm, equivalently 2-norm of flattened vector. It's equivalent to set ord=None
     return ret
 
 def GetOperatorNormDel(delF):
     ret = np.nan*np.empty(delF.shape[0])
     for i in range(delF.shape[0]):
-        ret[i,:] = np.linalg.norm(delF[i,:,:], ord=2) # operator norm inherited from column vector 2-norm, equivalently largest singular value.
+        ret[i] = np.linalg.norm(delF[i,:,:], ord=2) # operator norm inherited from column vector 2-norm, equivalently largest singular value.
     return ret
 
 
 
 ####################
-run = 'DIPTSUR2'
+run = 'TESTANALYTIC'
 cut = True
 pntlist = 'native_random_sampled'
 ####################
@@ -121,13 +121,15 @@ f.write(' OperatorNormDel_Bbats OperatorNormDel_B1bats OperatorNormDel_Jbats')
 f.write('\n')
 
 arr = np.column_stack([ div_Bbats, div_B1bats, div_Jbats,
-                        curl_Bbats_x, curl_Bbats_y, curl_Bbats_z,
-                        curl_B1bats_x, curl_B1bats_y, curl_B1bats_z,
-                        Bbats_x, Bbats_y, Bbats_z,
-                        B1bats_x, B1bats_y, B1bats_z,
-                        Jbats_x, Jbats_y, Jbats_z,
+                        curl_Bbats,
+                        curl_B1bats,
+                        Bbats,
+                        B1bats,
+                        Jbats,
                         FrobeniusNormDel_Bbats, FrobeniusNormDel_B1bats, FrobeniusNormDel_Jbats,
                         OperatorNormDel_Bbats, OperatorNormDel_B1bats, OperatorNormDel_Jbats ])
 
 np.savetxt(f, arr)
 f.close()
+print('wrote ' + outname)
+
