@@ -120,7 +120,8 @@ f.write(' FrobeniusNormDel_Bbats FrobeniusNormDel_B1bats FrobeniusNormDel_Jbats'
 f.write(' OperatorNormDel_Bbats OperatorNormDel_B1bats OperatorNormDel_Jbats')
 f.write('\n')
 
-arr = np.column_stack([ div_Bbats, div_B1bats, div_Jbats,
+arr = np.column_stack([ points,
+                        div_Bbats, div_B1bats, div_Jbats,
                         curl_Bbats,
                         curl_B1bats,
                         Bbats,
