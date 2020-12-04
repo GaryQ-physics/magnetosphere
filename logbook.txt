@@ -194,6 +194,17 @@ TODO:
 5. magnetovis package
 
 
+
+
+ModWriteLogSatFile.f90
+    use ModNumConst, ONLY: cPi
+    dst '=' 1/(4*cPi) * integral(JcrossR/R^3) 
+ModNumConst.f90
+       cPi        =  3.1415926535897932384626433832795
+
+
+
+
 paraview contour surfaces for dB_north
 
 check mag grid files for DIPSURE2 (compare)
@@ -206,6 +217,8 @@ check mag grid files for DIPSURE2 (compare)
 change TESTANALYTIC so shell is inside 1Re
 
 test the -> loc rotation against something analytic
+
+http://kirkmcd.princeton.edu/examples/
 
 https://github.com/MSTEM-QUDA
 
