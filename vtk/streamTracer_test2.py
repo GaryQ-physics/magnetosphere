@@ -10,6 +10,54 @@ from probe import probe
 import vtk
 from vtk.numpy_interface import dataset_adapter as dsa
 
+"""
+trace()
+	callable=None
+		trace([[xmin, xmax, dx],[ymin, ymax, dy],[zmin, zmax, dz]], [bx,by,bz], points, method='scipy')
+			Uses ??
+
+		trace([[xmin, xmax, dx],[ymin, ymax, dy],[zmin, zmax, dz]], [bx,by,bz], points, method='vtk')
+			Creates structured grid and passes to streamTracer
+
+		trace([x,y,z],[bx,by,bz],points,method='scipy')
+			Uses nninterpolator
+
+		trace([x,y,z],[bx,by,bz],points,method='vtk')
+			Use triangulate and then passes to streamTracer
+
+	callable=function
+		trace([[xmin, xmax, dx],[ymin, ymax, dy],[zmin, zmax, dz]], [bx,by,bz], points, method='scipy')
+			Uses ??
+
+		trace([[xmin, xmax, dx],[ymin, ymax, dy],[zmin, zmax, dz]], [bx,by,bz], points, method='vtk')
+			Not supported
+
+		trace([x,y,z],[bx,by,bz],points,method='scipy')
+			Uses nninterpolator
+
+		trace([x,y,z],[bx,by,bz],points,method='vtk')
+			Not supported
+	
+traceFile (no callable option provided)
+	traceFile('file.cdf', method='kameleon')
+		Uses kamelon interpolator
+
+	traceFile('file.cdf', method='scipy')
+		Uses NNinterpolator callable
+
+	traceFile('file.cdf', method='vtk')
+		Uses triangulate to create grid
+
+	traceFile('file.out', method='kameleon')
+		Not supported
+
+	traceFile('file.out', method='scipy')
+		Uses NNinterpolator callable
+
+	traceFile('file.out', method='vtk')
+		Uses triangulate to create grid
+
+"""
 '''
 trace(x,y,z,bx,by,bz,points,method='scipy',callable=None)
 trace(x,y,z,bx,by,bz,points,method='vtk',callable=None)
