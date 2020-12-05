@@ -193,8 +193,9 @@ TODO:
 
 5. magnetovis package
 
-
-
+git clone http  blabla@github
+https://www.freecodecamp.org/news/how-to-fix-git-always-asking-for-user-credentials/
+https://www.mathcha.io/
 
 ModWriteLogSatFile.f90
     use ModNumConst, ONLY: cPi
