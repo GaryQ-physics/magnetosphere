@@ -197,6 +197,9 @@ git clone http  blabla@github
 https://www.freecodecamp.org/news/how-to-fix-git-always-asking-for-user-credentials/
 https://www.mathcha.io/
 
+https://people.sc.fsu.edu/~jburkardt/
+
+
 ModWriteLogSatFile.f90
     use ModNumConst, ONLY: cPi
     dst '=' 1/(4*cPi) * integral(JcrossR/R^3) 
