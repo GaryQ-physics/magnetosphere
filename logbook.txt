@@ -180,6 +180,11 @@ Notes:
     NEED TO INCLUDE rmin
 
 
+    installed pyvista
+    demo'd in create_unstructured_grid.py and in misc/pyvista/ directory
+    in misc/pyvista/structured_grid_from_unstructured_grid.py shows how to directly write unstructured grid vtk file that has connectivity
+    \   to trace field lines. Uses pyvista and normal open(,'w'). Note pyvista exports to vtk DataFile version 5.1, instead 3.0 that we've been using.
+
 
 
 TODO:
@@ -199,6 +204,7 @@ https://www.mathcha.io/
 
 https://people.sc.fsu.edu/~jburkardt/
 
+https://docs.pyvista.org/examples/00-load/create-tri-surface.html#sphx-glr-examples-00-load-create-tri-surface-py
 
 ModWriteLogSatFile.f90
     use ModNumConst, ONLY: cPi
