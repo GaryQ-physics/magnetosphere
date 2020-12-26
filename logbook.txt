@@ -206,6 +206,8 @@ https://people.sc.fsu.edu/~jburkardt/
 
 https://docs.pyvista.org/examples/00-load/create-tri-surface.html#sphx-glr-examples-00-load-create-tri-surface-py
 
+https://github.com/nasa/Kamodo/blob/master/kamodo/readers/swmf_gm.py line 117
+
 ModWriteLogSatFile.f90
     use ModNumConst, ONLY: cPi
     dst '=' 1/(4*cPi) * integral(JcrossR/R^3) 
