@@ -185,7 +185,46 @@ Notes:
     in misc/pyvista/structured_grid_from_unstructured_grid.py shows how to directly write unstructured grid vtk file that has connectivity
     \   to trace field lines. Uses pyvista and normal open(,'w'). Note pyvista exports to vtk DataFile version 5.1, instead 3.0 that we've been using.
 
+Q's:
+	what does IDL stand for in swmf idl files
+	what are ghost cells and do we have to worry about them
 
+
+SWMF/GM/BATSRUS/src/ModWritePlot.f90 writes .tree and .out files
+SWMF/GM/BATSRUS/srcPostProc/select_snapshot.f90
+SWMF/GM/BATSRUS/src/ModPlotBox.f90
+SWMF/share/Library/src/ModPlotFile.f90
+	line 482
+    '''
+    case('real4')
+       call open_file(FILE=NameFile, FORM='unformatted', &
+            POSITION=TypePosition, STATUS=TypeStatus)
+
+       write(UnitTmp_) StringHeader
+       write(UnitTmp_) nStep, real(Time, Real4_), nDimOut, nParam, nVar
+       write(UnitTmp_) n_D(1:nDim)
+       if(nParam > 0)then
+          allocate(Param4_I(nParam))       
+          Param4_I = Param_I
+          write(UnitTmp_) Param4_I
+          deallocate(Param4_I)
+       end if
+       write(UnitTmp_) NameVar
+       ! Copy into single precision arrays to avoid compiler issues.
+       allocate(Coord4_ID(n1*n2*n3, nDim))
+       Coord4_ID = Coord_ID
+       write(UnitTmp_) Coord4_ID
+       deallocate(Coord4_ID)
+       allocate(Var4_I(n1*n2*n3))
+       do iVar = 1, nVar
+          Var4_I = Var_IV(:,iVar)
+          write(UnitTmp_) Var4_I
+       end do
+       deallocate(Var4_I)
+       call close_file
+    '''
+SWMF/GM/BATSRUS/srcBATL_/BATL_tree.f90
+	line 1582
 
 TODO:
 1. Visualize derivatives

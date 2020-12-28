@@ -24,7 +24,7 @@ sunspot = [0.9999999999999999, 11.016639272301447, 147.323425223922]
 local = [1.0, 11.058617393065475, 146.89653169520292]
 
 if sunspot == v_out:
-    print('expected on sunspot')
+    print('correct (was getting on sunspot)')
 
 if local == v_out:
-    print('expected on local')
+    print('incorrect (was getting on local)')
