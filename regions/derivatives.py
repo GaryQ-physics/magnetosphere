@@ -58,11 +58,10 @@ Bz_testinterp = RegularGridInterpolator((xax,yax,zax), Bz_interdata)
 
 
 
-def GetDel(run, time, field, points, para=False):
+def GetDel(run, time, field, points, para=False, epsilon=0.0625, debug=False):
     filename = util.time2CDFfilename(run, time)
 
     # field = 'b_biotsavart' ; 'b_batsrus' ; 'b1_batsrus' ; 'j_batsrus' ; 'testinterp'
-    epsilon = 1./16.
 
     def func(i):
         point = points[i,:].copy()
@@ -111,58 +110,60 @@ def GetDel(run, time, field, points, para=False):
 
     return np.array(ret)
 
+if __name__=='__main__':
+    print('RUNNING derivates.py')
 
-####################
-run = 'DIPTSUR2'
-cut = True
-pntlist = 'native_random_sampled'
-####################
-debug = False
+    ####################
+    run = 'DIPTSUR2'
+    cut = True
+    pntlist = 'native_random_sampled'
+    ####################
+    debug = False
 
-if run == 'DIPTSUR2':
-    time = (2019,9,2,6,30,0,0)
-    rCurrents = 1.8
-if run == 'IMP10_RUN_SAMPLE':
-    time = (2019,9,2,7,0,0,0)
-    rCurrents = 1.7
-if run == 'TESTANALYTIC':
-    time = (2000,1,1,0,10,0,0)
-    rCurrents = 1.5
+    if run == 'DIPTSUR2':
+        time = (2019,9,2,6,30,0,0)
+        rCurrents = 1.8
+    if run == 'IMP10_RUN_SAMPLE':
+        time = (2019,9,2,7,0,0,0)
+        rCurrents = 1.7
+    if run == 'TESTANALYTIC':
+        time = (2000,1,1,0,10,0,0)
+        rCurrents = 1.5
 
-direct = conf[run+'_derived'] + 'regions/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
-direct = direct + pntlist + '/'
+    direct = conf[run+'_derived'] + 'regions/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
+    direct = direct + pntlist + '/'
 
-points = np.loadtxt(direct + pntlist + '_points.txt')
-if debug: print(points)
+    points = np.loadtxt(direct + pntlist + '_points.txt')
+    if debug: print(points)
 
-if cut:
-    rmin = rCurrents
-    direct = direct + 'excluding_currents_before_rCurrents/'
-else:
-    rmin = 0.
-    direct = direct + 'including_currents_before_rCurrents/'
+    if cut:
+        rmin = rCurrents
+        direct = direct + 'excluding_currents_before_rCurrents/'
+    else:
+        rmin = 0.
+        direct = direct + 'including_currents_before_rCurrents/'
 
-if not os.path.exists(direct):
-    os.mkdir(direct)
+    if not os.path.exists(direct):
+        os.mkdir(direct)
 
-import time as tm
-t0 = tm.time()
+    import time as tm
+    t0 = tm.time()
 
-if False:
-    results = np.nan*np.empty((3, points.shape[0], 3, 3))
+    if False:
+        results = np.nan*np.empty((3, points.shape[0], 3, 3))
 
-    results[0,:,:,:] = GetDel(run, time, 'j_batsrus', points)
-    results[1,:,:,:] = GetDel(run, time, 'b_batsrus', points)
-    results[2,:,:,:] = GetDel(run, time, 'b1_batsrus', points)
+        results[0,:,:,:] = GetDel(run, time, 'j_batsrus', points)
+        results[1,:,:,:] = GetDel(run, time, 'b_batsrus', points)
+        results[2,:,:,:] = GetDel(run, time, 'b1_batsrus', points)
 
-    print('writing arrays')
-    results.tofile(direct + 'derivatives_results.bin')
-    points.tofile(direct + 'derivatives_points.bin')
+        print('writing arrays')
+        results.tofile(direct + 'derivatives_results.bin')
+        points.tofile(direct + 'derivatives_points.bin')
 
-    if debug: print(results)
-else:
-    delBbs = GetDel(run, time, 'b_biotsavart', points)
-    print('writing array')
-    delBbs.tofile(direct + 'derivatives_bs.bin')
+        if debug: print(results)
+    else:
+        delBbs = GetDel(run, time, 'b_biotsavart', points)
+        print('writing array')
+        delBbs.tofile(direct + 'derivatives_bs.bin')
 
-print('derivatives ran in %f minuts'%((tm.time()-t0)/60.))
+    print('derivatives ran in %f minuts'%((tm.time()-t0)/60.))

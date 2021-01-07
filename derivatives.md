@@ -8,7 +8,8 @@ The partial derivative were computed by symmetric difference, with a step size o
 
 ## J (Current Field)
 ![](images/DIPTSUR2/divergence_J.png)
->for all three scatter plots, each data point is associated to a point in space on the native BATS-R-US grid, and the x-axis is the distance of that point from the center of the earth.
+
+>for all three scatter plots, each data point is associated to a point in space on the native BATS-R-US grid (chosen at random), and the x-axis is the distance of that point from the center of the earth.
 >
 >the y-axis differs for the 3 plots:
 >
@@ -19,7 +20,7 @@ The partial derivative were computed by symmetric difference, with a step size o
 ## B (Magnetic Field)
 ![](images/DIPTSUR2/divergence_B.png)
 
->for all three scatter plots, each data point is associated to a point in space on the native BATS-R-US grid, and the x-axis is the distance of that point from the center of the earth.
+>for all three scatter plots, each data point is associated to a point in space on the native BATS-R-US grid (the same points as in the J case), and the x-axis is the distance of that point from the center of the earth.
 >
 >the y-axis differs for the 3 plots:
 >
