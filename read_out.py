@@ -29,3 +29,8 @@ else:
 print(head)
 print((nStep, Time, nDimOut, nParam, nVar))
 print(n_D)
+
+A = None
+for i in range(50):
+	A = ff.readReals()
+	print(A.shape)
