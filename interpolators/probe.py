@@ -7,28 +7,180 @@ from config import conf
 
 #from util import time2filename, filemeta
 import util
+from units_and_constants import phys
 
 '''
-def interpolate(filename, variable, Q, library)
-    if library == 'kameleonV':
-        return kameleonV.interpolate(filename, Q[:,0], Q[:,1], Q[:,2], variable)
-
-    if library == 'kameleon':
-        kameleon = ccmc.Kameleon()
-        kameleon.open(filename)
-        interpolator = kameleon.createNewInterpolator()
-
-        kameleon.loadVariable(variable)
-        arr = np.nan*np.empty((P.variable[0],))
-        for k in range(Q.shape[0]):
-            arr[k] = interpolator.interpolate(variable, Q[k,0], Q[k,1], Q[k,2])
-        return arr
-
-    if library == 'pycdf'
-        ii.interpolate(Q[:,0], Q[:,1], variable, filename)
+import probe as p
+import numpy as np
+di = np.linspace(0,15,151)
+X = np.zeros((151,3))
+X[:,0] = di
+X[:,2] = di
+p.J_analytic(X)
+p.B_analytic(X)
 '''
 
-def probe(time, P, var=None, debug=False, dictionary=False, library='kameleonV'):
+def J_analytic(X):
+    Mhat = np.array([0,0,1.])
+
+    if len(X.shape)==1:
+        X = np.array([X])
+
+    '''
+    Jchar = 10. # thought of in kameleon units (muA/m^2)
+    a = 5. #X and a in same units (R_e, a base unit)
+    def jrad(r):
+        return Jchar*np.exp(-a*r)
+    '''
+
+    rCurrents = 1.5
+    Jchar = 1. # thought of in kameleon units (muA/m^2)
+    a = 3. #X and a in same units (R_e, a base unit)
+    def jrad(r):
+        divr = np.divide(1., r, out=np.zeros_like(r), where=(r >= rCurrents))
+        return Jchar*a**5*divr**5
+
+    R = np.sqrt(np.einsum('ij,ij->i', X, X))
+    divR = np.divide(1., R, out=np.zeros_like(R), where=(R != 0.))
+    J = np.einsum('i,ij->ij', (jrad(R) * divR), np.cross(Mhat, X) )
+
+    if J.shape[0]==1:
+        J = J[0,:]
+    return J #return thought in kameleon units since Jchar is
+
+def B_analytic(X):
+    Mhat = np.array([0,0,1.])
+
+    if len(X.shape)==1:
+        X = np.array([X])
+
+    '''
+    Jchar = 10.
+    a = 5.
+    Jchar_K = Jchar * ( phys['muA']/(phys['m']**2) )
+    def Bc(r):
+        #integrate mu0/3 *( Jrad(x) ) from r to infinity
+        return (phys['mu0']/3.)*Jchar_K*(1./a)*np.exp(-a*r)
+    def Md(r):
+        #integrate mu0/3 *( x^3 * Jrad(x) ) from 0 to r
+        return (phys['mu0']/3.)*Jchar_K*( 6/a**4 - (a*r*(a*r*(a*r+3)+6)+6)*np.exp(-a*r)/a**4 )
+    '''
+
+    rCurrents = 1.5
+    Jchar = 1.
+    a = 3.
+    Jchar_K = Jchar * ( phys['muA']/(phys['m']**2) )
+    def Bc(r):
+        #integrate mu0/3 *( Jrad(x) ) from r to infinity
+        divr = np.divide(1., r, out=np.zeros_like(r), where=(r >= rCurrents))
+        ret = (phys['mu0']/3.)*Jchar_K*(a**5/4) * divr**4
+        ret[divr==0.] = (phys['mu0']/3.)*Jchar_K*(a**5/4) / (rCurrents**4)
+        return ret
+    def Md(r):
+        #integrate mu0/3 *( x^3 * Jrad(x) ) from 0 to r (or rather rCurrents to r since take J=0 below that
+        divr = np.divide(1., r, out=np.zeros_like(r), where=(r >= rCurrents))
+        ret = (phys['mu0']/3.)*Jchar_K*a**5 *(1./rCurrents - divr)
+        ret[divr==0.] = 0.
+        return ret
+
+    # B is sum of two terms, on from integrating dipole field from shells inside (using Md),
+    # and other from integrating constant field from shells outside (using Bc)
+    R = np.sqrt(np.einsum('ij,ij->i', X, X))
+    divR = np.divide(1., R, out=np.zeros_like(R), where=(R > 0.))
+
+    #print(X)
+    #print(R)
+    #rint(divR)
+    #print(Md(R))
+    #print(Bc(R))
+
+    B = (3* (Md(R)*np.einsum('j,ij',Mhat, X)*divR**5)[:,None] * X - Mhat*(Md(R)*divR**3)[:,None] ) \
+      + (2*Mhat*Bc(R)[:,None])
+
+    if B.shape[0]==1:
+        B = B[0,:]
+    return B
+
+'''
+import numpy as np
+import probe as p
+X = 10.*np.random.rand(18).reshape((6,3))
+p.B_analytic_loop(X[0,:])
+p.B_analytic(X[0,:])
+p.B_analytic_loop(X)
+p.B_analytic(X)
+np.allclose(p.B_analytic_loop(X), p.B_analytic(X))
+np.sqrt(np.einsum('ij,ij->i', X, X))
+'''
+
+def B_analytic_loop(X):
+    if X.shape != (3,):
+        toret = np.nan*np.empty(X.shape)
+        for i in range(X.shape[0]):
+            toret[i,:] = B_analytic_loop(X[i,:])
+        return toret
+
+
+    Mhat = np.array([0,0,1.])
+    rCurrents = 1.5
+    Jchar = 1.
+    a = 3.
+    Jchar_K = Jchar * ( phys['muA']/(phys['m']**2) )
+    def Bc(r):
+        #integrate mu0/3 *( Jrad(x) ) from r to infinity
+        if r >=rCurrents:
+            return (phys['mu0']/3.)*Jchar_K*((a**5)/4.) / (r**4)
+        else:
+            return (phys['mu0']/3.)*Jchar_K*((a**5)/4.) / (rCurrents**4)
+
+    def Md(r):
+        #integrate mu0/3 *( x^3 * Jrad(x) ) from 0 to r (or rather rCurrents to r since take J=0 below that
+        if r >=rCurrents:
+            return (phys['mu0']/3.)*Jchar_K*a**5 *(1./rCurrents - 1/r)
+        else:
+            return 0.
+
+    R = np.linalg.norm(X)
+
+    B = ( 3*(Md(R)* np.dot(Mhat,X) / (R**5)) * X - (Md(R)/ (R**3)) * Mhat ) \
+      + ( 2*Bc(R)*Mhat )
+
+    return B
+
+
+def J_analytic2(X):
+    """
+    X
+        Nx3 array of N 3 vectors, assumed in units of R_e
+    """
+
+    M = np.array([0,0,1000.]) * phys['nT']*phys['R_e']**3
+
+    amin = 2. * phys['R_e']
+    amax = 3. * phys['R_e']
+    psi = M * 15./( phys['mu0']*(amax**5-amin**5) ) # psi = rho*omega (charge density * angular velocity)
+    if False:
+        B_inside = M*5*(amax**2-amin**2)/(amax**5-amin**5) # == (mu0/3)*(amax**2-amin**2)*psi
+        print(B_inside) # 1000.*5*(3**2-2**2)/(3**5-2**5) --> 118.48341232227489
+
+    Rsq = np.einsum('ij,ij->i', X, X)
+    Tr = np.logical_and(amin**2 < Rsq, Rsq < amax**2)
+    to_mult = Tr.astype(np.int) #https://www.python-course.eu/numpy_masking.php
+    j = np.cross(X, psi) # as pure number this is in units of muA/(R_e**2) since those are base units of phys
+    j = np.einsum('i,ij->ij', to_mult, j) # 
+
+    j_kameleonUnits = j/( phys['muA']/(phys['m']**2) )
+
+    #print('HELLO\n\n\n\n\n\n')
+    #print(np.max(j_kameleonUnits))
+    #print(np.min(j_kameleonUnits))
+    #print(j_kameleonUnits)
+
+    return j_kameleonUnits
+
+
+def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleonV', TESTANALYTIC=False):
+    print('TESTANALYTIC = %s'%(str(TESTANALYTIC)))
     """
     library = 'kameleonV', 'kameleon', 'pycdf'
     """
@@ -36,12 +188,13 @@ def probe(time, P, var=None, debug=False, dictionary=False, library='kameleonV')
     if P.shape == (3, ):
         P = np.array([P])
 
-    if type(time) == str:
-        filename = time
-    else:
-        filename = util.time2filename(time) #!!!!!!
+    assert(filename[0] == '/')
+    #if type(time) == str:
+    #    filename = filename
+    #else:
+    #    filename = util.time2filename(filename) #!!!!!!
 
-    if not os.path.exists(filename):
+    if not os.path.exists(filename):# and not TESTANALYTIC:
         raise ValueError('Not found: ' + filename)
 
     ################### import apropriate file for library
@@ -52,7 +205,9 @@ def probe(time, P, var=None, debug=False, dictionary=False, library='kameleonV')
     if library == 'kameleon':
         assert(P.shape[1] == 3)
         sys.path.append(conf['interpolator'] + 'kameleon/lib/python2.7/site-packages/ccmc/')
+        print('before import')
         import _CCMC as ccmc
+        print('after import')
     if library == 'pycdf':
         assert(P.shape[1] == 2)
         sys.path.append(conf['interpolator'] + 'pycdf_with_scipy')
@@ -61,11 +216,27 @@ def probe(time, P, var=None, debug=False, dictionary=False, library='kameleonV')
 
 
     ################### define interpolate(variable, Q) funtion within this probe
-    if library == 'kameleonV':
+    if TESTANALYTIC:
+        def interpolate(variable, Q):
+            if variable == 'jx':
+                return J_analytic(Q)[:, 0]
+            if variable == 'jy':
+                return J_analytic(Q)[:, 1]
+            if variable == 'jz':
+                return J_analytic(Q)[:, 2]
+            if variable in ['bx', 'b1x']:
+                return B_analytic(Q)[:, 0]
+            if variable in ['by', 'b1y']:
+                return B_analytic(Q)[:, 1]
+            if variable in ['bz', 'b1z']:
+                return B_analytic(Q)[:, 2]
+
+    elif library == 'kameleonV':
         def interpolate(variable, Q):
             return kameleonV.interpolate(filename, Q[:,0], Q[:,1], Q[:,2], variable)
 
-    if library == 'kameleon':
+    elif library == 'kameleon':
+        print('bef int')
         kameleon = ccmc.Kameleon()
         kameleon.open(filename)
         interpolator = kameleon.createNewInterpolator()
@@ -76,8 +247,9 @@ def probe(time, P, var=None, debug=False, dictionary=False, library='kameleonV')
             for k in range(Q.shape[0]):
                 arr[k] = interpolator.interpolate(variable, Q[k,0], Q[k,1], Q[k,2])
             return arr
+        print('aft int')
 
-    if library == 'pycdf':
+    elif library == 'pycdf':
         def interpolate(variable, Q):
             return ii.interpolate(Q[:,0], Q[:,1], variable, filename)
     ###################
@@ -117,7 +289,25 @@ def probe(time, P, var=None, debug=False, dictionary=False, library='kameleonV')
             if P.shape[0] == 1:
                 ret = ret.flatten()
 
-    if library == 'kameleon':
+    if library == 'kameleon' and not TESTANALYTIC:
         kameleon.close()
-
+    print('DONE PROBING')
     return ret
+
+
+def GetRunData(run, time, P, var):
+    if var=='j':
+        var = ['jx','jy','jz']
+    elif var=='b':
+        var = ['bx','by','bz']
+    elif var=='b1':
+        var = ['b1x','b1y','b1z']
+
+    if 'TESTANALYTIC' == run:
+        TESTANALYTIC = True
+    else:
+        TESTANALYTIC = False
+
+    filename = util.time2CDFfilename(run, time)
+    return probe(filename, P, var=var, library='kameleon', TESTANALYTIC=TESTANALYTIC)
+

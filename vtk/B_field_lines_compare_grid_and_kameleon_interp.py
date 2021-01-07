@@ -7,10 +7,12 @@ from scipy.integrate import odeint
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
+sys.path.append(conf['interpolator'] + 'kameleon/lib/python2.7/site-packages/ccmc/')
 import _CCMC as ccmc
 
 import cxtransform as cx
 import b_field_lines_write as bfl
+import util
 
 
 ########################################################################
@@ -46,15 +48,14 @@ def dXds(X, s, kam, interp, var, sign):
     else:
         return [0., 0., 0.]
 
-def Compute(Event, Nb, debug=False):
+def Compute(Event, Nb, debug=False, run='SCARR5'):
     #Event = [year, month, day, hours, minutes, seconds, miliseconds, MLONdeg, MLATdeg]
     time = Event[0:7]
     MLON = Event[7]
     MLAT = Event[8]
     T = tuple(time)
 
-    filename = conf["run_path"] + '3d__var_3_e' \
-                + '%04d%02d%02d-%02d%02d%02d-%03d' % T + '.out.cdf'
+    filename = util.time2CDFfilename(run, time)
 
     R = 1.01
     eps = 3.
@@ -159,7 +160,7 @@ print('time for original method with calling ccmc.Kameleon() = ' + str(tf-to))
 to = tm.time()
 solns_withGrid = bfl.Compute([2003, 11, 20, 7, 0, 57.50, 176.00], 6)
 tf = tm.time()
-print('time for new method with writing grid using probe() = ' + str(tf-to))
+print('time for new method with scipy interpolating grid using writing grid using probe() = ' + str(tf-to))
 
 
 print(len(solns_withGrid) == len(solns_original))

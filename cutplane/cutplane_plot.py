@@ -5,7 +5,8 @@ import numpy as np
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 
-from cutplane import data2d, unitvector, fieldlines
+from cutplane import data2d, unitvector
+from fieldlines import fieldlines
 import util
 
 
@@ -57,7 +58,7 @@ def set_colorbar(ax, pcm, zticks, Nbt, title=None, logz=False):
     if title is not None:
         cb.ax.set_title(title, va='bottom', fontsize=10)
 
-def plot(time, parameter, arg3,
+def plot(run, time, parameter, arg3,
          field_lines=None,
          axes=None,
          logz=False,
@@ -65,7 +66,7 @@ def plot(time, parameter, arg3,
          xticks=None, yticks=None, zticks=None,
          dx=0.1, dy=0.1,
          dpi=100, showplot=True,
-         png=True, pngfile=None, debug=False):
+         png=True, pngfile=None, debug=False, mlat_dB=0., mlon_dB=0.):
 
     """
     # Plot p in x-z plane
@@ -93,21 +94,24 @@ def plot(time, parameter, arg3,
     
     xlabel = ''
     ylabel = ''
-    title = 'SCARR5 ' + '%04d-%02d-%02dT%02d:%02d:%02d.%03d' % tuple(time)
+    title = run + ' %04d-%02d-%02dT%02d:%02d:%02d.%03d' % tuple(time)
+    if 'dB' in parameter:
+        import cxtransform as cx
+        title = title + '\nat mlat=%.3f, mlon=%.3f, MLT=%.3f hrs'%(mlat_dB, mlon_dB, cx.MAGtoMLT(mlon_dB, time))
     if type(arg3) == str:
         if arg3 == 'xy':
-            xlabel = 'X [$R_E$]'
-            ylabel = 'Y [$R_E$]'
+            xlabel = '$X_{GSM}$ [$R_E$]'
+            ylabel = '$Y_{GSM}$ [$R_E$]'
             U1 = np.array([1, 0, 0])
             U2 = np.array([0, 1, 0])
         if arg3 == 'xz':
-            xlabel = 'X [$R_E$]'
-            ylabel = 'Z [$R_E$]'
+            xlabel = '$X_{GSM}$ [$R_E$]'
+            ylabel = '$Z_{GSM}$ [$R_E$]'
             U1 = np.array([1, 0, 0])
             U2 = np.array([0, 0, 1])
         if arg3 == 'yz':
-            xlabel = 'Y [$R_E$]'
-            ylabel = 'Z [$R_E$]'
+            xlabel = '$Y_{GSM}$ [$R_E$]'
+            ylabel = '$Z_{GSM}$ [$R_E$]'
             U1 = np.array([0, 1, 0])
             U2 = np.array([0, 0, 1])
     else:
@@ -115,7 +119,7 @@ def plot(time, parameter, arg3,
         if arg3.size == 3:
             title = title + "\n" + "[mlat, mlon]=[{0:.1f}$^o$, {1:.1f}$^o$]" \
                     .format(arg3[1], arg3[2])
-            U = unitvector(time, arg3)
+            U = unitvector(run, time, arg3)
             U1 = U[0]
             U2 = U[1]
         else:
@@ -130,13 +134,13 @@ def plot(time, parameter, arg3,
 
     U3 = np.cross(U1, U2)
  
-    filename = util.time2filename(time)
+    filename = util.time2CDFfilename(run, time)
 
     if pngfile is None:
-        outdir = conf['run_path_derived'] + "cutplanes/"
+        outdir = conf[run + '_derived'] + "cutplanes/"
         if not os.path.exists(outdir):
             os.makedirs(outdir)
-        filename_out = filename.replace(conf['run_path'], outdir) + '.png'
+        filename_out = filename.replace(conf[run + 'cdf'], outdir) + '.png'
     else:
         filename_out = pngfile
 
@@ -152,10 +156,12 @@ def plot(time, parameter, arg3,
                 + '-xlims' + str(xlims[0]) + ',' + str(xlims[1]) \
                 + '-ylims' + str(ylims[0]) + ',' + str(ylims[1]) \
                 + '.npy'
-        cachedir = conf['run_path_derived'] + "cutplanes/cache/" + parameter + "/"
+        cachedir = conf[run + '_derived'] + "cutplanes/cache/" + parameter + "/"
+        if 'dB' in parameter:
+            cachedir = cachedir + '_%.3f_%.3f/'%(mlat_dB, mlon_dB)
         if not os.path.exists(cachedir):
             os.makedirs(cachedir)
-        npfile = filename.replace(conf['run_path'], cachedir) + ext
+        npfile = filename.replace(conf[run + '_cdf'], cachedir) + ext
         if os.path.exists(npfile):
             print("Reading " + npfile)
             Z = np.load(npfile)
@@ -164,8 +170,13 @@ def plot(time, parameter, arg3,
             if debug:
                 print("Interpolating {0:s} onto {1:d}x{2:d} grid" \
                       .format(parameter,len(x_1d),len(y_1d)))
-            Z = data2d(time, parameter, X, Y, [U1, U2, U3], debug=debug)
+            Z = data2d(run, time, parameter, X, Y, [U1, U2, U3], 
+                            debug=debug, mlat=mlat_dB, mlon=mlon_dB)
             print("Writing " + npfile)
+            #print(Z)
+            #print(np.min(Z))
+            #print(np.max(Z))
+
             np.save(npfile, Z)
             print("Wrote " + npfile)
 
@@ -181,7 +192,7 @@ def plot(time, parameter, arg3,
                 lineU[k, 2] = np.dot(line[k, :], U3)
             linesU.append(lineU)
         '''
-        lines = fieldlines(time, field_lines)
+        lines = fieldlines(run, time, field_lines)
         for line in lines:
             lineU = np.empty(line.shape)
             for k in range(line.shape[0]):  # TO DO: vectorize this loop
@@ -190,11 +201,34 @@ def plot(time, parameter, arg3,
                 lineU[k, 2] = np.dot(line[k, :], U3)
             linesU.append(lineU)
 
-    meta = util.filemeta(filename)
+    if run == 'TESTANALYTIC':
+            meta = {}
+            meta["parameters"] = {
+                'jx' : {'plot_unit':'$\\frac{\\mu A}{m^2}$', 'plot_name':'jx'},
+                'jy' : {'plot_unit':'$\\frac{\\mu A}{m^2}$', 'plot_name':'jy'},
+                'jz' : {'plot_unit':'$\\frac{\\mu A}{m^2}$', 'plot_name':'jz'}
+                                    }
 
-    parameter_unit = meta["parameters"][parameter]['plot_unit']
-    parameter_label = meta["parameters"][parameter]['plot_name']
-    
+    else:
+        meta = util.filemeta(filename)
+
+    if 'dB' in parameter:
+        #dB_param_dict = {'dB_Magnitude' : '$|\\frac{dB}{dV}|$',
+        #                 'dB_north' : '$\\frac{dB_N}{dV}$',
+        #                 'dB_east' : '$\\frac{dB_E}{dV}$', 
+        #                 'dB_down' : '$\\frac{dB_D}{dV}$'}
+        #parameter_unit = '$\\frac{nT}{R_E^3}$'
+        dB_param_dict = {'dB_Magnitude' : '$|dB|$',
+                         'dB_north' : '$dB_N$',
+                         'dB_east' : '$dB_E$', 
+                         'dB_down' : '$dB_D$'}
+        parameter_unit = '$nT$'
+        parameter_label = dB_param_dict[parameter] # get dictionary
+    else:
+        parameter_unit = meta["parameters"][parameter]['plot_unit']
+        parameter_label = meta["parameters"][parameter]['plot_name']
+
+
     if axes is None:
         fig = plt.figure(figsize=(7, 6), dpi=dpi, tight_layout=False)
         axes = fig.gca()

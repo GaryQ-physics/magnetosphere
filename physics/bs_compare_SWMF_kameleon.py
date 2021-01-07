@@ -10,31 +10,26 @@ import util
 import cxtransform as cx
 import read_ccmc_datafiles as r_ccmc
 import read_mag_grid_files as rmg
-
+import magnetometers as mag
 
 samp_SWPC = 50*np.arange(31)
-#YKClat = 62.480
-#YKClon = 245.518
-
-magnetometer_stations = {'YKClat':62.480, 'YKClon':245.518,
-                         'FRNlat':37.0913, 'FRNlon':-119.7193,
-                         'FURlat':48.17, 'FURlon':11.28 }
-
-
 samp_SCARR = 50*np.arange(17)
-#YKClat = 62.480
-#YKClon = 245.518
-#MLAT = 0.
-#MLON = 0.
+
+
+def safeclear(outname, ext='.txt'):
+    fname = outname
+    while os.path.exists(fname):
+        fname = fname + '-old' + ext
+    os.system('mv %s %s'%(outname,fname))
+
 
 def get_derived_dir(run, station):
     directory = conf[run + '_derived']
-    if run == 'SWPC':
+    if type(station) == str:
         directory =  directory + station + '/'
-    elif 'SCARR' in run:
-        directory = directory + 'mpos:{0:.3f}:{1:.3f}/'.format(*tuple(station))
     else:
-        assert(False)
+        directory = directory + 'mpos:{0:.3f}:{1:.3f}/'.format(*tuple(station))
+
     return directory
 
 def commonTimes(run, station, debug=False, skip_SWMF=False):
@@ -43,13 +38,12 @@ def commonTimes(run, station, debug=False, skip_SWMF=False):
 
     run = 'SCARR5',  station = [MLAT, MLON]  where these are floats
     """
-
+    '''
     if run == 'SWPC':
-        assert(type(station) == str)
-    elif 'SCARR' in run:
-        assert(type(station) == list)
+        if type(station) != str:
+            raise ValueError('to get data from SWMF output for SWPC run, \
+                    need station to be a string for valid magnetometer station name')
 
-    if run == 'SWPC':
         samp = samp_SWPC
         data, headers = r_ccmc.getdata([2006, station])
 
@@ -61,31 +55,37 @@ def commonTimes(run, station, debug=False, skip_SWMF=False):
             dtype=int), np.array(list(np.char.split(a[:,4],sep=':')), dtype=int)])
     elif 'SCARR' in run:
         samp = samp_SCARR
-        magfilenames = np.loadtxt(conf['run_path'] + 'ls-1_magfiles.txt', dtype=str)[:,0]
+        magfilenames = np.loadtxt(conf[run + '_cdf'] + 'ls-1_magfiles.txt', dtype=str)[:,0]
         times1 = []
         for file_name in list(magfilenames):
             times1.append(rmg.mag_grid_file2time(file_name))
         times1 = np.array(times1)
 
         times2 = []
-        filenames_all = util.filelist(listtxt = 'ls-1.txt')
+        #filenames_all = util.filelist()
         for file_name in filenames_all:
             times2.append(util.filename2time(file_name))
         times2 = np.array(times2)
+    '''
+    if run == 'SWPC':
+        samp = samp_SWPC
+    elif 'SCARR' in run:
+        samp = samp_SCARR
+
+    times1 = util.get_available_station_times(run, station)
+
+    filenames_all, times2 = util.get_available_slices(run)
 
     t1 = times1[:,5] + 60*times1[:,4] + 60*60*times1[:,3] + 60*60*24*times1[:,2]  # ignores fraction of seconds !!!!
     t2 = times2[:,5] + 60*times2[:,4] + 60*60*times2[:,3] + 60*60*24*times2[:,2]
+
     t_common, ind1, ind2 = np.intersect1d(t1, t2, return_indices=True)
+    filenames = filenames_all[ind2]
 
     assert(np.all(times1[ind1, 0:6] == times2[ind2, 0:6])) #!!!ignoring miliseconds!!!
 
     directory = get_derived_dir(run, station)
 
-    if run == 'SWPC':
-        filenames = a[ind2,0]
-    elif 'SCARR' in run:
-        filenames_all = np.array(filenames_all, dtype=str)
-        filenames = filenames_all[ind2]
 
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -95,21 +95,28 @@ def commonTimes(run, station, debug=False, skip_SWMF=False):
     # so if it has already been run, save time and prevent duplication by passing skip_SWMF=True
     if not skip_SWMF:
         if run == 'SWPC':
+            data, headers = r_ccmc.getdata([2006, station])
             assert(tuple(headers[13:16]) == ('dBn', 'dBe', 'dBd'))
             dB_SWMF_allcommon = data[ind1, 13:16] # dBn dBe dBd  as  0,1,2
             dB_SWMF = dB_SWMF_allcommon[samp, :]
         elif 'SCARR' in run:
             dB_SWMF = np.nan*np.empty((samp.size, 3))
             for i in range(samp.size):
+                if type(station) == str:
+                    rad_dummy, mlat, mlon = mag.GetMagnetometerLocation(station, time, 'MAG', 'sph')
+                else:
+                    mlat, mlon = station
                 dB_SWMF[i, :] = np.array(rmg.analyzedata( 
                                                     conf[run + '_magfile'] + str(magfilenames[ind1[samp[i]]]),
-                                                    station[0], station[1], debug=debug) )[1:4] # dBn dBe dBd  as  0,1,2
+                                                    mlat, mlon, debug=debug) )[1:4] # dBn dBe dBd  as  0,1,2
 
-        datafname = directory + 'dB_SWMF_tofile' + '.txt'
-        f = open(datafname,'a') # append only mode
+        datafname = directory + 'dB_SWMF_tofile.txt'
+
+        safeclear(datafname)
+        f = open(datafname, 'w')
         f.write('\n  new_run:' + run + '\n')
         f.write('-- SWMF\n')
-        f.write('year, day, month, hr, min, sec, dB_SWMF_0, dB_SWMF_1, dB_SWMF_2\n')
+        f.write('year, day, month, hr, min, sec, north, east, down\n')
         for i in range(samp.size):
             f.write(str(times1[ind1[samp[i]], :])[1:-1] + '   ' + str(dB_SWMF[i,:])[1:-1] + '\n')
         f.close()
@@ -123,7 +130,6 @@ def dB_kam_tofile(run, station, time_common, filenames, debug=False, tag=None, x
         print(time_common)
         print(filenames)
         print(dB_SWMF)
-    #assert(run == 'SWPC' or run == 'SCARR5')
 
     if tag == None:
         tup = xlims+ylims+zlims+(d,)
@@ -136,44 +142,36 @@ def dB_kam_tofile(run, station, time_common, filenames, debug=False, tag=None, x
     elif 'SCARR' in run:
         samp = samp_SCARR
 
-    datafname = directory + 'dB_kam_GSM' + tag + '.txt'
-    f = open(datafname,'a') # append only mode
+    datafname = directory + 'dB_kam_tofile_' + tag + '.txt'
+    safeclear(datafname)
+    f = open(datafname, 'w')
     f.write('\n  new_run: ' + run + ' xlims=' + str(xlims) + ', ylims=' + str(ylims) + ', zlims=' + str(zlims) + ', d=' + str(d) + '\n')
     f.write('-- $' + str(d) + 'R_E$ interpolated grid; (X,Y,Z) = (' + str(xlims) + ', ' + str(ylims) + ', ' + str(zlims) + ')\n')
-    f.write('year, day, month, hr, min, sec, dB_kam_xGSM, dB_kam_yGSM, dB_kam_zGSM\n')
+    f.write('year, day, month, hr, min, sec, north, east, down\n')
 
-    dB_kam = np.nan*np.empty((samp.size, 3))
+    dB_kam_loc = np.nan*np.empty((samp.size, 3))
+    dB_kam_GSM = np.nan*np.empty((samp.size, 3))
     for i in range(samp.size):
         print('i,samp[i] = ' + str((i,samp[i])) )
         time = time_common[samp[i],:]
         filename = str(filenames[samp[i]]) # numpy string -> normal string
 
-        if run == 'SWPC':
-            #util.dlfile_SWPC(filename, debug=True)
-            mpos = cx.GEOtoMAG([1., magnetometer_stations[station + 'lat'], magnetometer_stations[station + 'lon']] , time, 'sph', 'sph')
-            mlat = mpos[1]
-            mlon = mpos[2]
-            #filename_full = conf['SWPC_cdf_path'] + filename
-        elif 'SCARR' in run:
-            #util.dlfile(filename, debug=True) old util.dlfile
-            mlat = station[0]
-            mlon = station[1]
-            #filename_full = conf['run_path'] + filename
+        if type(station) == str:
+            r_dummy, mlat, mlon = mag.GetMagnetometerLocation(station, time, 'MAG', 'sph')
+        else:
+            mlat, mlon = station
 
-        filename_full = conf[run + '_cdf'] + filename
-        util.dlfile(filename_full, debug=True)
+        dB = bsk.integrate(run, time, mlat, mlon, para=False,
+            xlims=xlims, ylims=ylims, zlims=zlims, d=d, returnAll=False)
+        dB_kam_GSM[i,:] = dB
+        dB_kam_loc[i,:] = bsk.toMAGLocalComponents(time, mlat, mlon, dB)
 
-        print(time)
-        print(filename)
+        f.write(str(time)[1:-1] + '   ' + str(dB_kam_loc[i,:])[1:-1] + '\n')
 
-        dB_kam[i,:] = bsk.integrate(time, mlat, mlon, filename=filename_full, para=True,
-            xlims=xlims, ylims=ylims, zlims=zlims, d=d,
-            print_output=True)
 
-        f.write(str(time)[1:-1] + '   ' + str(dB_kam[i,:])[1:-1] + '\n')
 
     f.close()
-    return dB_kam
+    return
 
 
 def dB_fromfile(run, station, filename, fullname=False):
@@ -203,45 +201,28 @@ def plot_from_file(run, station, datafnames, fullname=False, component='norm', c
         datafnames = [datafnames]
 
     for datafname in datafnames:
-        times, dB, label = dB_fromfile(run, station, datafname, fullname=fullname)
+        times, dB_loc, label = dB_fromfile(run, station, datafname, fullname=fullname)
 
         times = np.array(times, dtype=int)
-        #if compsyst == 'MAG':
-        #    Pole = cx.MAGtoGSM(np.array([0., 0., 1.]), times, 'car', 'car')
-        #elif compsyst == 'GEO':
-        #    Pole = cx.GEOtoGSM(np.array([0., 0., 1.]), times, 'car', 'car')
 
         if run == 'SWPC':
             assert(times.shape[0] == 31)
-            assert(dB.shape[0] == 31)
-            #station_pos = cx.GEOtoGSM(np.array([1., magnetometer_stations[station + 'lat'], magnetometer_stations[station + 'lon']]), times, 'sph', 'car')
-            rad_dummy, mlat, mlon = cx.GEOtoMAG(np.array([1., magnetometer_stations[station + 'lat'], magnetometer_stations[station + 'lon']]),
-                                                (times[0,0],1,1,1,1,1), 'sph', 'sph')
+            assert(dB_loc.shape[0] == 31)
         elif 'SCARR' in run:
             assert(times.shape[0] == 17)
-            assert(dB.shape[0] == 17)
-            #station_pos = cx.MAGtoGSM(np.array([1., station[0], station[1]]), times, 'sph', 'car')
-            mlat = station[0]
-            mlon = station[0]
+            assert(dB_loc.shape[0] == 17)
 
-        '''
-        U3 = station_pos
-        U3norm = np.sqrt(U3[:,0]**2 + U3[:,1]**2 + U3[:,2]**2)#( not really needed since norm is 1 in these units where R_e=1, but just to be consistent in all units)
-        divU3norm = 1./U3norm
-        U3 = U3*divU3norm[:,np.newaxis]
-        U1 = np.cross(Pole, U3)
-        U1norm = np.sqrt(U1[:,0]**2 + U1[:,1]**2 + U1[:,2]**2)
-        divU1norm = 1./U1norm
-        #https://stackoverflow.com/questions/5795700/multiply-numpy-array-of-scalars-by-array-of-vectors
-        U1 = U1*divU1norm[:,np.newaxis]
-        U2 = np.cross(U3, U1)
-        '''
+        if type(station) == str:
+            rad_dummy, mlat, mlon = mag.GetMagnetometerLocation(station, (times[0,0],1,1,1,1,1), 'MAG', 'sph')
+        else:
+            if len(station) != 2:
+                raise ValueError('station must be string or [mlat, mlon]')
+            mlat = station[0]
+            mlon = station[1]
 
         dtimes = []
         for i in range(times.shape[0]):
             dtimes.append(datetime.datetime(times[i,0],times[i,1],times[i,2],times[i,3],times[i,4],times[i,5]))
-
-        dB_loc = bsk.toMAGLocalComponents(times, mlat, mlon, dB)
 
         if component == 'norm':
             dB_comp = np.sqrt(np.einsum('ij,ij->i', dB_loc, dB_loc))

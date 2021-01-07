@@ -33,26 +33,28 @@ from config import conf
 
 from niceticks import niceticks
 import cutplane_plot as cp
-from util import filelist, filename2time, dlfile, time2datetime, filemeta
-from events import eventlist
+import util
 
-event_list = eventlist()
+run = "SWPC"
+#run = "SCARR5"
 
-debug         = False  # Show extra logging information
+debug         = True  # Show extra logging information
 para          = False  # Process in parallel using all CPUs
 showplot      = False  # Show plot on screen. Set to false for long runs.
                        # Does not always work in Spyder/IPython, especially when
                        # para=True. Starting a new console sometimes fixes.
                        # TODO: Read PNG and display using PIL instead.
-plot_type     = 1
+plot_type     = 2
 
 # Testing options
 first_only    = False  # Do only low-res first processing
 second_only   = False  # Execute only high-res second processing
-test_serial   = True  # Process two files in serial
-test_parallel = False  # Process two files in parallel
+test_serial   = True   # Process few files in serial
+test_parallel = False  # Process few files in parallel
 
-vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
+variables = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
+
+
 
 opts = {
         'regen': True,       # Regenerate image even if found
@@ -64,26 +66,29 @@ opts = {
         'dpi1': 96,          # Make multiple of 16 (for mimwrite animation)
         'dpi2': 96*3,        # Make multiple of 16 (for mimwrite animation)
         'delta1': 0.5,       # Low-res cut plane resolution in R_E
-        'delta2': 0.1,       # High-res cut plane resolution in R_E
+        'delta2': 0.125,     # High-res cut plane resolution in R_E
         'showplot': showplot # Show the plot on screen
         }
 
 if first_only and second_only:
     raise ValueError("Both first_only and second_only are True. Only one may be True.")
 
-(u, idx, ne) = np.unique(event_list[:, 0:5], axis=0, return_index=True, return_counts=True)
-event_list = event_list[idx, :]
-event_list = np.hstack((event_list, np.reshape(ne, (ne.size, 1))))
+#(u, idx, ne) = np.unique(event_list[:, 0:5], axis=0, return_index=True, return_counts=True)
+#event_list = event_list[idx, :]
+#event_list = np.hstack((event_list, np.reshape(ne, (ne.size, 1))))
 
 if test_serial:
     para = False
-    vars = ['p']
+
+    #variables = ['p', 'dB_Magnitude']
+    variables = ['jx','jy','jz','p', 'dB_Magnitude', 'dB_north', 'dB_east', 'dB_down']
+
     opts["nf"] = 2
     opts["showplot"] = True
 
 if test_parallel:
     para = True
-    vars = ['p', 'jy']
+    variables = ['p', 'jy']
     opts["nf"] = 3
     opts["showplot"] = True
     #opts["nf"] = None
@@ -91,6 +96,15 @@ if test_parallel:
     
 
 def process_var(var, opts):
+
+    if 'dB' in var:
+        var_name = var + '_mlat_%.3f_mlon_%.3f'%(opts['mlat_dB'], opts['mlon_dB'])
+    else:
+        var_name = var
+
+    filename_path = conf[run + "_derived"] + "cutplanes/" + var_name
+    if not os.path.exists(filename_path):
+        os.makedirs(filename_path)
 
     k = 1
     times = []
@@ -103,22 +117,24 @@ def process_var(var, opts):
                     }
               }
 
-    if plot_type == 2:
-        dto = time2datetime(filename2time(files[0]))
-        dtf = time2datetime(filename2time(files[-1]))
+    if plot_type == 2: # todo: optimize
+        dto = util.time2datetime(util.CDFfilename2time(run, files[0]))
+        dtf = util.time2datetime(util.CDFfilename2time(run, files[-1]))
         dts = []
+        print('1st dts = ' + str(dts))
         data = {'ux': [], 'bz': [], 'n_events': []}
 
     for filename in files:
-
+        print('k = ' + str(k))
         if k > opts['nf']:
             break
 
-        filename_png = conf["run_path_derived"] + "cutplanes/" + var + "/" \
-                        + '{0:s}-{1:s}-type_{2:d}_delta_{3:.3f}.png' \
-                        .format(filename, var, plot_type, opts['delta'])
 
-        pkl = conf["run_path_derived"] + "cutplanes/minmax/" + var + '.pkl'
+        filename_png = conf[run + "_derived"] + "cutplanes/" + var_name + "/" \
+                        + '{0:s}-{1:s}-type_{2:d}_delta_{3:.3f}.png' \
+                        .format(filename, var_name, plot_type, opts['delta'])
+
+        pkl = conf[run + "_derived"] + "cutplanes/minmax/" + var_name + '.pkl'
 
         zticks = opts['zticks']
         if os.path.exists(pkl):
@@ -142,17 +158,18 @@ def process_var(var, opts):
             k = k + 1
             continue
 
-        times.append(filename2time(filename))
+        times.append(util.CDFfilename2time(run, filename))
 
-        dlfile(times[-1], debug=debug)
+        util.dlfile(conf[run + '_cdf'] + filename, debug=debug)
 
         if plot_type == 1:
-            info = cp.plot(times[-1], var, opts['plane'],
+            info = cp.plot(run, times[-1], var, opts['plane'],
                              dx=opts['delta'], dy=opts['delta'],
                              xlims=opts['xlims'], ylims=opts['ylims'],
                              dpi=opts['dpi'], showplot=opts['showplot'],
                              zticks=zticks, logz=True,
-                             png=True, pngfile=filename_png, debug=debug)
+                             png=True, pngfile=filename_png, debug=debug,
+                             mlat_dB=opts['mlat_dB'], mlon_dB=opts['mlon_dB'])
         elif plot_type == 2:
 
             def set_ylims(p, axes=None):
@@ -188,12 +205,16 @@ def process_var(var, opts):
             #from pandas.plotting import register_matplotlib_converters
             #register_matplotlib_converters()
             
-            if len(dts) < 1:
+            print('2nd dts = ' + str(dts))
+            print('len(dts) = ' + str(len(dts)))
+            if len(dts) < 1: ##!!! just continues everything
+                k = k+1
                 continue
-            
+            print('3rd dts = ' + str(dts))
+
             from matplotlib import pyplot as plt
             from hapiclient.plot.datetick import datetick
-            from probe import probe
+            from cutplane import probe
         
             fig = plt.figure(figsize=(7, 9), dpi=opts['dpi'])
             axes = fig.add_axes([0.07, 0.55, 0.9, 0.4])
@@ -204,10 +225,11 @@ def process_var(var, opts):
                              logz=True,
                              showplot=opts['showplot'],
                              zticks=zticks,
-                             debug=debug)
+                             debug=debug, 
+                             mlat_dB=opts['mlat_dB'], mlon_dB=opts['mlon_dB'])
             
             time = filename2time(filename)
-            dts.append(time2datetime(time))
+            dts.append(util.time2datetime(time))
             
             # Sample upstream solar wind
             # TODO: Generalize code to allow plotting arbitrary number
@@ -227,7 +249,7 @@ def process_var(var, opts):
             data['bz'].append(d['bz'])
             data['n_events'].append(d['n_events'])
 
-            meta = filemeta(filename)
+            meta = util.filemeta(filename)
         
             axes = fig.add_axes([0.07, 0.1, 0.9, 0.18])
             axes.plot(dts, data['bz'], 'k')
@@ -283,7 +305,7 @@ def process_var(var, opts):
         if debug:
             print("Wrote " + pkl)
 
-        print('Finished file {0:d}/{1:d} for {2:s} at resoluton {3:.2f}'\
+        print('Finished file {0:d}/{1:d} for {2:s} at resoluton {3:.5f}'\
                .format(k, opts['nf'], var, opts['delta']))
         
         k = k + 1
@@ -295,17 +317,17 @@ def process_all(opts):
         from joblib import Parallel, delayed
         import multiprocessing
         num_cores = multiprocessing.cpu_count()
-        if num_cores is not None and num_cores > len(vars):
-            num_cores = len(vars)
+        if num_cores is not None and num_cores > len(variables):
+            num_cores = len(variables)
         print('Parallel processing {0:d} variable(s) using {1:d} cores'\
               .format(len(opts.keys()), num_cores))
         results = Parallel(n_jobs=num_cores)(\
-                    delayed(process_var)(var, opts[var]) for var in vars)
+                    delayed(process_var)(var, opts[var]) for var in variables)
     else:
         print('Serial processing {0:d} variable(s).'.format(len(opts.keys())))
         i = 0
         results = []
-        for var in vars:
+        for var in variables:
             results.append(process_var(var, opts[var]))
             i = i + 1
     return results
@@ -318,23 +340,26 @@ try:
 except:
     pass
 
-# Create directory for variable min/max pkl files if needed
-filename_path = conf["run_path_derived"] + "cutplanes/minmax/"
-if not os.path.exists(filename_path):
-    os.makedirs(filename_path)
 
 # Create output directory if needed
-filename_path = conf["run_path_derived"] + "cutplanes/"
+filename_path = conf[run + "_derived"] + "cutplanes/"
 if not os.path.exists(filename_path):
     os.makedirs(filename_path)
+
+# Create directory for variable min/max pkl files if needed
+filename_path = conf[run + "_derived"] + "cutplanes/minmax/"
+if not os.path.exists(filename_path):
+    os.makedirs(filename_path)
+
 print('Image files will be written to subdirectory of\n' + filename_path)
 # Create directory for each variable
-for var in vars:
-    filename_path = conf["run_path_derived"] + "cutplanes/" + var
-    if not os.path.exists(filename_path):
-        os.makedirs(filename_path)
+#for var in variables:
+#    filename_path = conf[run + "_derived"] + "cutplanes/" + var
+#    if not os.path.exists(filename_path):
+#        os.makedirs(filename_path)
 
-files = filelist()
+
+files = list(util.get_available_slices(run)[0])
 
 print('{0:d} files found.'.format(len(files)))
 
@@ -347,22 +372,34 @@ else:
 
 # Create options dict for each variable.
 Opts = {}
-for var in vars:
+for var in variables:
     # .copy to ensure thread safety.
     # Currently not needed b/c opts is not modified.
     Opts[var] = opts.copy()
+    if 'dB' in var:
+        import magnetometers as mg
+        if run == 'CARR_IMPULSE':
+            fixed_time = (2019,9,2,6,30,0)
+            pos = mg.GetMagnetometerLocation('colaba', fixed_time, 'MAG', 'sph')
+        Opts[var]['mlat_dB'] = 0. #pos[1]  # HERES WHERE MLAT MLON ARE SET
+        Opts[var]['mlon_dB'] = 0. #pos[2]
+    else:
+        Opts[var]['mlat_dB'] = None
+        Opts[var]['mlon_dB'] = None
+
 
 if not second_only:
     print('First processing.')
-    for var in vars:
+    for var in variables:
         Opts[var]['delta'] = opts['delta1']
         Opts[var]['dpi'] = opts['dpi1']
 
+    print(Opts)
     process_all(Opts)
 
 if not first_only:
     print('Second processing.')        
-    for var in vars:
+    for var in variables:
         Opts[var]['delta'] = opts['delta2']
         Opts[var]['dpi'] = opts['dpi2']
 

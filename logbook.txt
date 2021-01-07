@@ -1,0 +1,398 @@
+logbook
+
+
+runs:
+
+    SWPC:
+
+        have plotted multiple files with cutplane_plot_demo2.py
+
+        have plotted dB vs time at stations and matches SWMF file, with bs_compare_SWMF_kameleon
+
+        
+
+
+    SCARR5:
+
+
+
+
+    SCARR1:
+
+
+
+    CARR_IMPULSE:
+
+        have plotted one file with cutplane_plot
+
+    DIPTSUR2: (CARR_IMPULSE apears to be just one file from this)
+
+        plotted all files and made the video animations with cutplane_plot_demo5.py and cutplane_plot_demo2_animate.py
+
+
+Notes:
+
+2020/09/03
+    cutplane_plot_demo5 is like _demo2 but parallelizes by files. Tested with SWPC
+
+2020/09/05
+    moved location for calling cdflist.txt in util.get_available_slices from run_cdf to run_derived since no permission to write to run_cdf on sunspot
+
+2020/09/06
+    sunspot Permission denied to write to '/media/solar-backup/tmp/data/SCARR5' when config tries to mkdir SCARR5
+
+2020/09/08
+    despite sunspot and local being up to date with cutplane_plotting branch, got slightly different results for magnetometer location:
+        sunspot:
+
+        Python 2.7.18 |Anaconda, Inc.| (default, Apr 23 2020, 22:42:48) 
+        [GCC 7.3.0] on linux2
+        Type "help", "copyright", "credits" or "license" for more information.
+        >>> from config import conf
+        >>> import magnetometers as mg
+        >>> fixed_time = (2019,9,2,6,30,0)
+        >>> mg.GetMagnetometerLocation('colaba', fixed_time, 'MAG', 'sph')
+        [0.9999999999999999, 11.016639272301447, 147.323425223922]
+        >>> mg.GetMagnetometerLocation('colaba', (2019, 1,1,1,1,1), 'MAG', 'sph')
+        [0.9999999999999999, 11.016639272301447, 147.323425223922]
+
+        local:
+
+        Python 2.7.18 |Anaconda, Inc.| (default, Apr 23 2020, 22:42:48) 
+        [GCC 7.3.0] on linux2
+        Type "help", "copyright", "credits" or "license" for more information.
+        >>> from config import conf
+        >>> import magnetometers as mg
+        >>> fixed_time = (2019,9,2,6,30,0)
+        >>> mg.GetMagnetometerLocation('colaba', fixed_time, 'MAG', 'sph')
+        [1.0, 11.058617393065475, 146.89653169520292]
+        >>> mg.GetMagnetometerLocation('colaba', (2019, 1,1,1,1,1), 'MAG', 'sph')
+        [1.0, 11.058617393065475, 146.89653169520292]
+
+        working hypothesis: different versions of spacepy
+
+2020/09/17
+    new script quadrants.py
+    ran quadrants.py for DIPTSUR2
+    most up to date -derived folders now on sunspot /media/solar-backup/git-data/sblake
+    full length anamations with cutplane_plot for DIPTSUR2, all variable, only xy plane though.
+    earth surf numpy binary files now written to -derived
+    DIPTSUR2 earth surf at 6:30
+
+    made spacepy test script for issue in 2020/09/08:
+
+        (python2.7) gary@gary-Inspiron-5567:~/magnetosphere$ python spacepy_coord_trans_test.py 
+        This unreleased version of SpacePy is not supported by the SpacePy team.
+        UNRELEASED
+        [1.0, 11.058617393065475, 146.89653169520292]
+        expected on local
+
+        (base) gary@gary-Inspiron-5567:~/magnetosphere$ python spacepy_coord_trans_test.py 
+        This unreleased version of SpacePy is not supported by the SpacePy team.
+        UNRELEASED
+        [0.9999999999999999, 11.016639272301447, 147.323425223922]
+        expected on sunspot
+
+
+        (python2.7) gquaresi@sunspot ~/magnetosphere $ python spacepy_coord_trans_test.py 
+        0.2.1
+        [0.9999999999999999, 11.016639272301447, 147.323425223922]
+        expected on sunspot
+
+        (base) gquaresi@sunspot ~/magnetosphere $ python spacepy_coord_trans_test.py 
+        Traceback (most recent call last):
+          File "spacepy_coord_trans_test.py", line 1, in <module>
+            import spacepy.coordinates as sc
+        ModuleNotFoundError: No module named 'spacepy'
+
+
+2020/09/21
+    quadrants.py -> regions.py
+    new subdirectory run-derived/regions/
+    regions.py should replace bs_compare_SWMF_kameleon.py eventually
+    ran regions for DIPTSUR2 (all files) on sunspot
+
+2020/09/28
+    cuplane_plot_demo2b.py now has zoomed in option (process_type=3)
+    ran above for DIPTSUR2 without rerunning process_type=1,2
+
+2020/10/16
+    wrote compare_many_points.py
+
+
+2020/10/17
+    edited biot_savart.py: moved old deltaB() to deltaB_old(), then 
+    \   vectorized deltaB() to allow multiple field evaluation points (X0 is (M,3)).
+    \   Also made more memory efficient. Checked it agrees with deltaB_old() using
+    \   the tripple quotes commented script at top of biot_savart.py
+    wrote check_curl.py
+
+2020/10/21:
+    wrote dissection.py to take two intersecting (in particular a cube around the earth center and cube around point of evaluation in magnetosphere)
+    \   and find side limits of equivalent union of disjoint rectangular prisms
+    \   and using GetRegions() returns tuple of formated dictionaries as in regions.py
+    \   doing run of points sean requested on sunspot
+
+2020/10/22:
+    ran on sunspot failed from bug in dissection.GetRegions, namely lower limit could be highter than upper
+    fixed that bug, running again on sunspot
+
+2020/10/22:
+    sunspot ran worked for points sean requested for DIPSTUR2. I copied the resulting bs_results.txt to local drive
+
+2020/10/26:
+    ran many_point.py with same points for DIPSTUR2 with cut=True this time
+    IMP10_RUN_SAMPLE/regions/0190902T070000 still out of date though
+
+2020/10/26:
+    ran same points for DIPSTUR2 with cut=True this time
+
+2020/10/27:
+    generalized naming convention for check_curl.py
+    renamed TESTANALYTIC-derived/check_curl_cut_False.txt -> TESTANALYTIC-derived/regions/20190902T063000/including_currents_before_rCurrents/check_curl_method_biotsavart.txt acordingly
+    ran check_curl for DIPTSUR2 (with different methods, b1_batsrus, b_batsrus, and biotsavart)
+
+2020/10/29:
+    turns out that check_curl run for DIPTSUR2 was only the short list...
+    made new list of points called full_points.txt (in ~/ for laptop and sunspot)
+    running check curl for full_points DIPTSUR2 on sunspot
+
+
+2020/11/04:
+    randomly generate list of points from all native grid points based on distance to earth
+    tried to run random points on sunspot many_points.py, but error in dissection.py
+    MODIFIED: in dissection.py line 281 to 283 the 0 index changed to 1
+              also (and this is what fixed it) added if lim[0] == lim[1] statement before appending region.
+    ran random points again on sunspot. Worked.
+
+2020/11/05:
+    run derivatives.py using rand_generated_points
+
+2020/11/10:
+    ran many_points using points on xplus,xminus,yplus,yminus axes, and plotted with jupyter similar to random points
+
+2020/11/11:
+    change condition in regions np.max(np.abs(positive + negative - full_deltaB)) < 1e-8  (was 1e-9 before, but there were values wiht slighly more 1.06e-9 ect failing)
+
+2020/11/12:
+    wrote vtk/streamTracer_test based on https://gitlab.kitware.com/vtk/vtk/blob/32ae6c76b70c8da05cec8cabe3ccda8988388561/Filters/General/Testing/Python/streamTracer.py
+    regions.py NEEDS TO BE CHECKED that its not broken after remomoving biot_savart_kameleon_interpolated_grid dependence
+    NEED TO INCLUDE rmin
+
+
+    installed pyvista
+    demo'd in create_unstructured_grid.py and in misc/pyvista/ directory
+    in misc/pyvista/structured_grid_from_unstructured_grid.py shows how to directly write unstructured grid vtk file that has connectivity
+    \   to trace field lines. Uses pyvista and normal open(,'w'). Note pyvista exports to vtk DataFile version 5.1, instead 3.0 that we've been using.
+
+Q's:
+    what does IDL stand for in swmf idl files
+    what are ghost cells and do we have to worry about them
+    #SAVEBINARY is false in PARAM.in (for DIPTSUR2)
+    why is there no #GRID in PARAM.in when theres supposedly no default values according to the manual
+
+SWMF/GM/BATSRUS/src/ModWritePlot.f90 writes .tree and .out files
+SWMF/GM/BATSRUS/srcPostProc/select_snapshot.f90
+SWMF/GM/BATSRUS/src/ModPlotBox.f90
+SWMF/share/Library/src/ModPlotFile.f90
+    line 482
+    '''
+    case('real4')
+       call open_file(FILE=NameFile, FORM='unformatted', &
+            POSITION=TypePosition, STATUS=TypeStatus)
+
+       write(UnitTmp_) StringHeader
+       write(UnitTmp_) nStep, real(Time, Real4_), nDimOut, nParam, nVar
+       write(UnitTmp_) n_D(1:nDim)
+       if(nParam > 0)then
+          allocate(Param4_I(nParam))       
+          Param4_I = Param_I
+          write(UnitTmp_) Param4_I
+          deallocate(Param4_I)
+       end if
+       write(UnitTmp_) NameVar
+       ! Copy into single precision arrays to avoid compiler issues.
+       allocate(Coord4_ID(n1*n2*n3, nDim))
+       Coord4_ID = Coord_ID
+       write(UnitTmp_) Coord4_ID
+       deallocate(Coord4_ID)
+       allocate(Var4_I(n1*n2*n3))
+       do iVar = 1, nVar
+          Var4_I = Var_IV(:,iVar)
+          write(UnitTmp_) Var4_I
+       end do
+       deallocate(Var4_I)
+       call close_file
+    '''
+SWMF/GM/BATSRUS/srcBATL_/BATL_tree.f90
+
+  subroutine get_tree_position(iNode, PositionMin_D, PositionMax_D)
+
+    integer, intent(in) :: iNode
+    real,    intent(out):: PositionMin_D(MaxDim), PositionMax_D(MaxDim)
+
+    ! Calculate normalized position of the edges of node inode.
+    ! Zero is at the minimum boundary of the grid, one is at the max boundary
+
+    integer :: iLevel
+    integer :: MaxIndex_D(MaxDim)
+    !--------------------------------------------------------------------------
+    iLevel = iTree_IA(Level_, iNode)
+
+    ! For non-AMR directions MaxIndex_D = nRoot_D
+    ! For AMR     directions MaxIndex_D = nRoot_D*MaxCoord_I(iLevel)
+    MaxIndex_D = ((MaxCoord_I(iLevel)-1)*(iRatio_D-1) + 1)*nRoot_D
+
+    ! Convert to real by adding -1.0 or 0.0 for the two edges, respectively
+    PositionMin_D = (iTree_IA(Coord1_:CoordLast_,iNode) - 1.0)/MaxIndex_D
+    PositionMax_D = (iTree_IA(Coord1_:CoordLast_,iNode) + 0.0)/MaxIndex_D
+
+  end subroutine get_tree_position
+  !============================================================================
+    line 1582
+
+
+
+
+TODO:
+1. Visualize derivatives
+
+2. Surface integrals over boundary
+
+3. Improve biot-savart when point has nonzero J
+
+4. extract stream like data from vtk, compare in B_field_lines_compare_grid_and_kameleon_interp.py
+
+5. magnetovis package
+
+git clone http  blabla@github
+https://www.freecodecamp.org/news/how-to-fix-git-always-asking-for-user-credentials/
+https://www.mathcha.io/
+
+https://people.sc.fsu.edu/~jburkardt/
+
+https://docs.pyvista.org/examples/00-load/create-tri-surface.html#sphx-glr-examples-00-load-create-tri-surface-py
+
+https://github.com/nasa/Kamodo/blob/master/kamodo/readers/swmf_gm.py line 117
+
+ModWriteLogSatFile.f90
+    use ModNumConst, ONLY: cPi
+    dst '=' 1/(4*cPi) * integral(JcrossR/R^3) 
+ModNumConst.f90
+       cPi        =  3.1415926535897932384626433832795
+
+
+
+
+paraview contour surfaces for dB_north
+
+check mag grid files for DIPSURE2 (compare)
+    want plot of earth surf at 6:30 using :
+        maggrid files
+        surf_deltaB
+        png on google drive
+
+
+change TESTANALYTIC so shell is inside 1Re
+
+test the -> loc rotation against something analytic
+
+http://kirkmcd.princeton.edu/examples/
+
+https://github.com/MSTEM-QUDA
+
+
+https://searchcode.com/?q=vtkStreamTracer
+https://vtk.org/doc/nightly/html/graph_legend.html
+
+https://github.com/rweigel/kameleon
+
+http://numba.pydata.org/
+
+on mag: sudo mount /var/www/git-data/sblake
+
+
+
+also --show-origin doesnt work on sunspot. TODO: check git verison
+
+warning: push.default is unset; its implicit value has changed in
+Git 2.0 from 'matching' to 'simple'. To squelch this message
+and maintain the traditional behavior, use:
+
+  git config --global push.default matching
+
+To squelch this message and adopt the new behavior now, use:
+
+  git config --global push.default simple
+
+When push.default is set to 'matching', git will push local branches
+to the remote branches that already exist with the same name.
+
+Since Git 2.0, Git defaults to the more conservative 'simple'
+behavior, which only pushes the current branch to the corresponding
+remote branch that 'git pull' uses to update the current branch.
+
+See 'git help config' and search for 'push.default' for further information.
+(the 'simple' mode was introduced in Git 1.7.11. Use the similar mode
+'current' instead of 'simple' if you sometimes use older versions of Git)
+
+
+http://web.mit.edu/6.013_book/www/chapter8/8.4.html
+https://www.open.edu/openlearn/science-maths-technology/engineering-technology/superconductivity/content-section-3.2
+
+
+https://en.wikipedia.org/wiki/K%C3%A4ll%C3%A9n%E2%80%93Lehmann_spectral_representation
+
+#MAGNETICINNERBOUNDARY
+
+
+https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2020SW002551
+
+The radial component of B1 on the ghost face is set as B1rGhost = B1rCoef*B1rTrue at the inner boundary. B1rCoef=-1 corresponds to a reflective boundary, while B1rCoef=1 is a floating (zero gradient) boundary. Any value between -1 and 1 is possible. Using floating condition, however, will not work well for strong storms, as there is no mechanism to restore the dipole after the storm. Reflective will recover the dipole, but it may result in some less stable behavior. The optimal value may be problem dependent. The default value corresponding to reflection is shown above.
+
+
+
+
+peter.willliam.schuck@gmail.com 240-810-6807
+
+
+
+SWMF_user_man.pdf pg 147 "Since the normalized current is defined as curl B"
+SWMF.pdf pg 155 "Since the normalized current is defined as curl B"
+
+
+#ModWriteLogSatFile.f90  line 618
+ModGroundMagPerturb.f90  line 430
+
+>>> 31.875*2/.25
+255.0
+>>> 31.875*2/.25 +1
+256.0
+>>> 256**3
+16777216
+>>> 1*(256**3)*3
+50331648
+>>> nums_per_pt = (256**3)*3
+>>> nums = nums_per_pt*6
+>>> nums
+301989888
+>>> bytes = nums*4
+>>> bits = bytes*8
+>>> bytes
+1207959552
+>>> bits
+9663676416
+>>> 2**10
+1024
+>>> 2**30
+1073741824
+>>> Gbytes = bits/(2**30)
+>>> Gbytes
+9
+>>> Gbytes = bits/(2.**30)
+>>> Gbytes
+9.0
+>>> Gbytes = bytes/(2.**30)
+>>> Gbytes
+1.125
+

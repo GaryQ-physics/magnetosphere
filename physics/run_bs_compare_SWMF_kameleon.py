@@ -9,16 +9,16 @@ import bs_compare_SWMF_kameleon as bscomp
 #import cxtransform as cx
 
 
-plot = True
+plot = False
 
 run = 'SWPC'
-station = 'FUR'
+station = 'YKC'
 
 #run = 'SCARR5'
 #station = [63.362, 0.] # aproximatly step of 175./174
 
-#run = 'SCARR'
-#station = [0., 0.]
+#run = 'SCARR5'
+#station = 'YKC'
 
 if plot:
     '''
@@ -42,10 +42,10 @@ if plot:
             ], fullname=True)
     '''
     bscomp.plot_from_file(run, station, ['dB_SWMF_tofile.txt',
-                    'dB_kam_tofile_-048.00_0016.00_-032.00_0032.00_-032.00_0032.00_0.50000_.txt',
-                    ], component='norm')
+                    'dB_kam_tofile_-016.00_0016.00_-016.00_0016.00_-016.00_0016.00_0.25000_.txt',
+                    ], component='down')
 
 else:
-    bscomp.compute(run, station, tag=None, xlims=(-48., 16.), ylims=(-32., 32.), zlims=(-32., 32.), d=0.5, skip_SWMF=True)
+    bscomp.compute(run, station, tag=None, xlims=(-16., 16.), ylims=(-16., 16.), zlims=(-16., 16.), d=0.25, skip_SWMF=False)
     #bscomp.compute(run, station, tag=None, xlims=(-112., 16.), ylims=(-64., 64.), zlims=(-64., 64.), d=0.125, skip_SWMF=True)
 

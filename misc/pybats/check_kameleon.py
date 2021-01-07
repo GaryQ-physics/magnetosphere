@@ -25,11 +25,11 @@ Note:
 
 import spacepy.pybats.bats as bats
 
-from util import time2filename
+import util
 time = [2003, 11, 20, 7, 0]
 
 # read original data file
-filename = time2filename(time, extension='.out')
+filename = util.time2CDFfilename('SCARR5',time)[:-4]
 data3d = bats.Bats2d(filename)
 
 # get the cell coordinates and associated values of J components
@@ -71,7 +71,7 @@ jz_ = jz[Tr]
 X = np.column_stack([x_, y_, z_])
 
 from probe import probe
-J_kameleon = probe(time, X, var=['jx', 'jy', 'jz'], usekV=False)
+J_kameleon = probe(filename+'.cdf', X, var=['jx', 'jy', 'jz'], library='kameleon')
 
 print(jx_.shape)
 print(J_kameleon.shape)

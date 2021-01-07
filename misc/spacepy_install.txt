@@ -52,3 +52,35 @@ prints: setup produced the following warnings. Some functionality may be missing
         Help will not be available.
 '''
 
+
+################################# for ubuntu 20.04  on  2020-26-12 ###########
+
+in python2.7 conda enviroment
+
+$ sudo apt install gfortran (if gfortran or other fortran compiler not already installed)
+
+$ pip install h5py
+$ pip install sphinx
+$ pip install numpydoc
+$ pip install --upgrade spacepy
+
+this works, when on tester (magnetosphere/spacepy_coord_trans_test.py) yield different coordinate transformations "correct (was getting on sunspot)"
+
+
+note:
+
+$ cd /home/gary/miniconda3/envs/python2.7/lib/python2.7/site-packages/
+$ wget https://github.com/spacepy/spacepy/archive/master.zip
+$ unzip master.zip
+$ rm master.zip
+$ cd spacepy-master/
+$ python setup.py install
+
+appears to work, but when running tester (magnetosphere/spacepy_coord_trans_test.py) yield different coordinate transformations "incorrect (was getting on local)"
+
+
+
+
+
+
+
