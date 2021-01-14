@@ -66,13 +66,13 @@ def GetDel(run, time, field, points, para=False, epsilon=0.0625, debug=False):
     def func(i):
         point = points[i,:].copy()
         xplus = point + epsilon*np.array([1,0,0])
-        xmin =  point - epsilon*np.array([1,0,0])
+        xmin  = point - epsilon*np.array([1,0,0])
         yplus = point + epsilon*np.array([0,1,0])
-        ymin =  point - epsilon*np.array([0,1,0])
+        ymin  = point - epsilon*np.array([0,1,0])
         zplus = point + epsilon*np.array([0,0,1])
-        zmin =  point - epsilon*np.array([0,0,1])
+        zmin  = point - epsilon*np.array([0,0,1])
         pts = np.array([xplus, xmin, yplus, ymin, zplus, zmin])
-        print(pts.shape)
+        if debug: print(pts.shape)
 
         if field == 'b_biotsavart':
             #pm = 31.875

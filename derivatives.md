@@ -14,7 +14,7 @@ The partial derivative were computed by symmetric difference, with a step size o
 >the y-axis differs for the 3 plots:
 >
 > - div(J) in units of (muA/m^2)/R_E
-> - div(J)/J in units of 1/R_E
+> - div(J)/norm(J) in units of 1/R_E
 > - div(J)/NormD(J) which is unitless
 
 ## B (Magnetic Field)
@@ -25,6 +25,20 @@ The partial derivative were computed by symmetric difference, with a step size o
 >the y-axis differs for the 3 plots:
 >
 > - div(B) in units of nT/R_E
-> - div(B)/B in units of 1/R_E
+> - div(B)/norm(B) in units of 1/R_E
 > - div(B)/NormD(B) which is unitless
+
+Now to check to the consistency of amperes law, since we expect J to be nonzero, we can compare curl(B) to mu0*J in a unit independent way without using NormD.
+Both quantities are vector quantities, so we could either check all components seperately or use a vector difference. We will examin the vector difference first:
+
+## Amperes law percent error
+![](images/DIPTSUR2/ampere_percent_error.png)
+
+>The vertical line at rCurrents
+>
+>Each data point is associated to a point in space on the native BATS-R-US grid (the same points as before)
+>
+>Percent Error is given by 100.* norm(curl(B) - mu0*J) / norm(mu0*J)  and is plotted on the y-axis
+>
+>plotted on the x-axis is the distance of the corresponding point from the center of the earth in R_E.
 

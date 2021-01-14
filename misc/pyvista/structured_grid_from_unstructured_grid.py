@@ -54,20 +54,8 @@ for i in range(N-1):
                        ind[i,j,k+1], ind[i+1,j,k+1], ind[i+1,j+1,k+1], ind[i,j+1,k+1])
                     )
 
-#PERIODIC IN X DIRECTION (indexed by i)
-V_Periodic = []
-indPeriodic = np.zeros((N+1,N,N))
-indPeriodic[:-1,:,:] = ind
-indPeriodic[-1,:,:] = ind[0,:,:]
-
-for i in range(N):
-    for j in range(N-1):
-        for k in range(N-1):
-            V_Periodic.append( (indPeriodic[i,j,k], indPeriodic[i+1,j,k], indPeriodic[i+1,j+1,k], indPeriodic[i,j+1,k],
-                       indPeriodic[i,j,k+1], indPeriodic[i+1,j,k+1], indPeriodic[i+1,j+1,k+1], indPeriodic[i,j+1,k+1])
-                    )
 V = np.array(V, dtype=int)
-V_Periodic = np.array(V_Periodic, dtype=int)
+
 
 
 if False:

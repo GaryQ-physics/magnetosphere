@@ -115,19 +115,16 @@ unitmu0 = phys['mu0'] * (phys['muA']/(phys['m']**2))
 log.write('unitmu0 = %f\n'%(unitmu0))
 if debug: print('unitmu0 = %f'%(unitmu0))
 
-outname = direct + 'derivatives_df.txt'
-if debug: print('writing ' + outname)
-f = open(outname, 'w')
-f.write('point_x point_y point_z')
-f.write(' div_Bbats div_B1bats div_Jbats')
-f.write(' curl_Bbats_x curl_Bbats_y curl_Bbats_z')
-f.write(' curl_B1bats_x curl_B1bats_y curl_B1bats_z')
-f.write(' Bbats_x Bbats_y Bbats_z')
-f.write(' B1bats_x B1bats_y B1bats_z')
-f.write(' Jbats_x Jbats_y Jbats_z')
-f.write(' FrobeniusNormDel_Bbats FrobeniusNormDel_B1bats FrobeniusNormDel_Jbats')
-f.write(' OperatorNormDel_Bbats OperatorNormDel_B1bats OperatorNormDel_Jbats')
-f.write('\n')
+header = ''
+header = header + 'point_x point_y point_z '
+header = header + 'div_Bbats div_B1bats div_Jbats '
+header = header + 'curl_Bbats_x curl_Bbats_y curl_Bbats_z '
+header = header + 'curl_B1bats_x curl_B1bats_y curl_B1bats_z '
+header = header + 'Bbats_x Bbats_y Bbats_z '
+header = header + 'B1bats_x B1bats_y B1bats_z '
+header = header + 'Jbats_x Jbats_y Jbats_z '
+header = header + 'FrobeniusNormDel_Bbats FrobeniusNormDel_B1bats FrobeniusNormDel_Jbats '
+header = header + 'OperatorNormDel_Bbats OperatorNormDel_B1bats OperatorNormDel_Jbats'
 
 arr = np.column_stack([ points,
                         div_Bbats, div_B1bats, div_Jbats,
@@ -139,12 +136,25 @@ arr = np.column_stack([ points,
                         FrobeniusNormDel_Bbats, FrobeniusNormDel_B1bats, FrobeniusNormDel_Jbats,
                         OperatorNormDel_Bbats, OperatorNormDel_B1bats, OperatorNormDel_Jbats ])
 
-np.savetxt(f, arr)
-f.close()
-log.write('wrote all data in text file ' + outname + 'to be imported as pandas dataframe\n')
-if debug: print('wrote ' + outname)
+data = pd.DataFrame(data=arr, columns=header.split(' '))
 
-data = pd.read_csv(outname, sep=" ")
+if True:
+    outname = direct + 'derivatives_df.txt'
+    if debug: print('writing ' + outname)
+    f = open(outname, 'w')
+    f.write(header)
+    f.write('\n')
+    np.savetxt(f, arr)
+    f.close()
+    log.write('wrote all data in text file ' + outname + ' to be imported as pandas dataframe\n')
+    if debug: print('wrote ' + outname)
+
+    dataload = pd.read_csv(outname, sep=" ")
+    log.write('max diff columns:\n%s\n'%(str(np.max(np.abs(dataload-data)))))
+    if np.all( np.abs(np.array(dataload-data)) > 1e-6 ):
+        log.write('ERROR: abs > 1e-6')#!!!!!!!!
+
+
 #import pickle
 #with open('derpic.pkl', 'wb') as handle:
 #    pickle.dump(data, handle)
@@ -216,16 +226,8 @@ fig.savefig(imagedir+'divergence_B.png')
 if debug: print('saved png ' + imagedir+'divergence_B.png')
 log.write('saved png ' + imagedir+'divergence_B.png\n')
 
-#plt.close()
 del axes
 del fig
-#del matplotlib
-#del plt
-#del AutoMinorLocator
-#import matplotlib
-#matplotlib.use("Agg")
-#import matplotlib.pyplot as plt
-#from matplotlib.ticker import AutoMinorLocator
 
 fig, axes = plt.subplots(figsize=(12,4), nrows=1, ncols=3, dpi=300)
 
@@ -257,6 +259,71 @@ fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 fig.savefig(imagedir+'divergence_J.png')
 if debug: print('saved png ' + imagedir+'divergence_J.png')
 log.write('saved png ' + imagedir+'divergence_J.png\n')
+
+del axes
+del fig
+
+for cp in ['x', 'y', 'z']:
+    fig, axes = plt.subplots(figsize=(12,4), nrows=1, ncols=2, dpi=300)
+
+    axes[0].plot(distance, data['curl_Bbats_'+cp], '+', color='DarkRed', label='$curl(B)$')
+    axes[0].plot(distance, unitmu0*data['Jbats_'+cp], 'x', color='Orange', label='$\\mu_0 J$')
+    axes[0].set_yscale('symlog', linthreshy=1e-2)
+    axes[0].legend()
+    axes[0].set_title('dimensionfull values')
+    axes[0].set_xlabel('distance from center [$R_E$]')
+    axes[0].set_ylabel('values in  $\\frac{nT}{R_E}$')
+
+    axes[1].plot(distance, (data['curl_Bbats_'+cp] - unitmu0*data['Jbats_'+cp])/(unitmu0*normJ),'.',
+                 label='$\\frac{curl(B) - \mu_0 J}{\mu_0 norm(J)}$', color='LightBlue')
+    axes[1].plot(distance, (data['curl_Bbats_'+cp] - unitmu0*data['Jbats_'+cp])/(unitmu0*data['Jbats_'+cp]),'.',
+                 label='$\\frac{curl(B) - \mu_0 J}{\mu_0 J}$', color='Orange')
+    axes[1].set_yscale('symlog', linthreshy=1e-4)
+    axes[1].legend()
+    axes[1].set_title('fractional errors')
+    axes[1].set_xlabel('distance from center [$R_E$]')
+
+    fig.suptitle(cp+' component', fontsize=16)
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+    fig.savefig(imagedir+'ampere_check_'+cp+'_component.png')
+    if debug: print('saved png ' + imagedir+'ampere_check_'+cp+'_component.png')
+    log.write('saved png ' + imagedir+'ampere_check_'+cp+'_component.png\n')
+
+    del axes
+    del fig
+
+amp_err = np.sqrt( (data['curl_Bbats_x'] - unitmu0*data['Jbats_x'])**2
+                  +(data['curl_Bbats_y'] - unitmu0*data['Jbats_y'])**2
+                  +(data['curl_Bbats_z'] - unitmu0*data['Jbats_z'])**2 )
+
+amp_percent_err = 100.*amp_err/(unitmu0*normJ)
+
+
+'''#
+import numpy as np
+distance = np.arange(20)
+amp_percent_err = np.arange(20)**2
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+#'''
+
+fig, ax = plt.subplots(figsize=(12,4), dpi=300)
+
+ax.plot(distance, amp_percent_err, '.')
+ax.set_yscale('symlog', linthreshy=1e-2)
+ax.vlines(rCurrents, 0, 100, linewidths=1.)
+ax.set_title('percent error in amperes law')
+ax.set_xlabel('distance from center [$R_E$]')
+ax.set_ylabel('percent error (%)')
+
+fig.savefig(imagedir+'ampere_percent_error.png')
+if debug: print('saved png ' + imagedir+'ampere_percent_error.png')
+log.write('saved png ' + imagedir+'ampere_percent_error.png\n')
+
+del ax
+del fig
 
 
 now = datetime.now()

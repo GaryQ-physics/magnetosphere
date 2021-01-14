@@ -179,8 +179,7 @@ def J_analytic2(X):
     return j_kameleonUnits
 
 
-def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleonV', TESTANALYTIC=False):
-    print('TESTANALYTIC = %s'%(str(TESTANALYTIC)))
+def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleonV'):
     """
     library = 'kameleonV', 'kameleon', 'pycdf'
     """
@@ -189,10 +188,9 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
         P = np.array([P])
 
     assert(filename[0] == '/')
-    #if type(time) == str:
-    #    filename = filename
-    #else:
-    #    filename = util.time2filename(filename) #!!!!!!
+    TESTANALYTIC = 'TESTANALYTIC' in filename
+    if debug: print('TESTANALYTIC = %s'%(str(TESTANALYTIC)))
+
 
     if not os.path.exists(filename):# and not TESTANALYTIC:
         raise ValueError('Not found: ' + filename)
@@ -205,9 +203,9 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
     if library == 'kameleon':
         assert(P.shape[1] == 3)
         sys.path.append(conf['interpolator'] + 'kameleon/lib/python2.7/site-packages/ccmc/')
-        print('before import')
+        if debug: print('before import')
         import _CCMC as ccmc
-        print('after import')
+        if debug: print('after import')
     if library == 'pycdf':
         assert(P.shape[1] == 2)
         sys.path.append(conf['interpolator'] + 'pycdf_with_scipy')
@@ -236,7 +234,7 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
             return kameleonV.interpolate(filename, Q[:,0], Q[:,1], Q[:,2], variable)
 
     elif library == 'kameleon':
-        print('bef int')
+        if debug: print('bef int')
         kameleon = ccmc.Kameleon()
         kameleon.open(filename)
         interpolator = kameleon.createNewInterpolator()
@@ -247,7 +245,7 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
             for k in range(Q.shape[0]):
                 arr[k] = interpolator.interpolate(variable, Q[k,0], Q[k,1], Q[k,2])
             return arr
-        print('aft int')
+        if debug: print('aft int')
 
     elif library == 'pycdf':
         def interpolate(variable, Q):
@@ -291,7 +289,7 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
 
     if library == 'kameleon' and not TESTANALYTIC:
         kameleon.close()
-    print('DONE PROBING')
+    if debug: print('DONE PROBING')
     return ret
 
 
@@ -303,11 +301,13 @@ def GetRunData(run, time, P, var):
     elif var=='b1':
         var = ['b1x','b1y','b1z']
 
+    '''
     if 'TESTANALYTIC' == run:
         TESTANALYTIC = True
     else:
         TESTANALYTIC = False
+    '''
 
     filename = util.time2CDFfilename(run, time)
-    return probe(filename, P, var=var, library='kameleon', TESTANALYTIC=TESTANALYTIC)
+    return probe(filename, P, var=var, library='kameleon')
 
