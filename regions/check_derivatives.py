@@ -37,7 +37,7 @@ def GetOperatorNormDel(delF):
     return ret
 
 if __name__=='__main__':
-    print('RUNNING check_derivates.py')
+    print('RUNNING regions/check_derivates.py')
 
     ####################
     run = 'TESTANALYTIC'

@@ -111,7 +111,7 @@ def GetDel(run, time, field, points, para=False, epsilon=0.0625, debug=False):
     return np.array(ret)
 
 if __name__=='__main__':
-    print('RUNNING derivates.py')
+    print('RUNNING regions/derivates.py')
 
     ####################
     run = 'DIPTSUR2'
