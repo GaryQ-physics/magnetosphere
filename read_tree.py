@@ -74,7 +74,7 @@ ChildLast_= Child0_ + nChild
 '''
 
 
-filetag = "3d__var_3_e20031120-070000-000"
+filetag = "/home/gary/Batsrus.jl-master/3d__var_3_e20031120-070000-000"
 
 
 
@@ -138,15 +138,22 @@ print(iTree_IA[0,:])
 
 
 # Get all the used blocks
-allblocks = [iTree_IA[FortEqu(Status_), FortEqu(iNode)] for iNode in range(1, nNode+1)]
+allblocks_ = [iTree_IA[FortEqu(Status_), FortEqu(iNode)] for iNode in range(1, nNode+1)]
 blockused_ = [iNode for iNode in range(1, nNode+1) if iTree_IA[FortEqu(Status_), FortEqu(iNode)] == Used_]
 
-minlevels = [iTree_IA[FortEqu(MinLevel_), FortEqu(iNode)] for iNode in range(1, nNode+1) if iTree_IA[FortEqu(Status_), FortEqu(iNode)] == Used_]
-maxlevels = [iTree_IA[FortEqu(MaxLevel_), FortEqu(iNode)] for iNode in range(1, nNode+1) if iTree_IA[FortEqu(Status_), FortEqu(iNode)] == Used_]
+MinLevels = [iTree_IA[FortEqu(MinLevel_), FortEqu(iNode)] for iNode in range(1, nNode+1) if iTree_IA[FortEqu(Status_), FortEqu(iNode)] == Used_]
+MaxLevels = [iTree_IA[FortEqu(MaxLevel_), FortEqu(iNode)] for iNode in range(1, nNode+1) if iTree_IA[FortEqu(Status_), FortEqu(iNode)] == Used_]
+Blocks = [iTree_IA[FortEqu(Block_), FortEqu(iNode)] for iNode in range(1, nNode+1) if iTree_IA[FortEqu(Status_), FortEqu(iNode)] == Used_]
+Levels = [iTree_IA[FortEqu(Level_), FortEqu(iNode)] for iNode in range(1, nNode+1) if iTree_IA[FortEqu(Status_), FortEqu(iNode)] == Used_]
+Procs = [iTree_IA[FortEqu(Proc_), FortEqu(iNode)] for iNode in range(1, nNode+1) if iTree_IA[FortEqu(Status_), FortEqu(iNode)] == Used_]
+
+print((256./8.)*0.5**max(Levels))
+print((256./8.)*0.5**min(Levels))
+
 
 print('#############\n\n')
-print(set(minlevels))
-print(set(maxlevels))
+print(set(MinLevels))
+print(set(MaxLevels))
 print('#############\n\n')
 
 #print('#############\n\n')
@@ -174,7 +181,6 @@ def get_tree_position(iNode, returnall=False):
     else:
         return PositionMin_D, PositionMax_D
 
-print(len(blockused_))
 
 counter = 0
 for iNode in blockused_:
@@ -183,41 +189,47 @@ for iNode in blockused_:
     xmax = 256.*PositionMax_D[0] + -224.
     ymin = 256.*PositionMin_D[1] + -128.
     ymax = 256.*PositionMax_D[1] + -128.
-    zmin = 256.*PositionMin_D[1] + -128.
-    zmax = 256.*PositionMax_D[1] + -128.
+    zmin = 256.*PositionMin_D[2] + -128.
+    zmax = 256.*PositionMax_D[2] + -128.
     iLevel = iTree_IA[FortEqu(Level_), FortEqu(iNode)]
     gridspacing = (256./8.)*0.5**iLevel
     xlims = (xmin+gridspacing/2., xmax-gridspacing/2.)
     ylims = (ymin+gridspacing/2., ymax-gridspacing/2.)
     zlims = (zmin+gridspacing/2., zmax-gridspacing/2.)
 
-    print('############\n\n\n')
-    print((PositionMin_D, PositionMax_D))
-    print(xlims)
-    print(ylims)
-    print(zlims)
-    print(gridspacing)
+    if iLevel == 2:
+        print('############\n')
+        print(counter)
+        print((PositionMin_D, PositionMax_D))
+        print(xlims)
+        print(ylims)
+        print(zlims)
+        print(gridspacing)
+        if False:
+            print('iNode = ' + str(iNode))
 
-    print('iNode = ' + str(iNode))
+            print('Status_ --> ' + str(iTree_IA[FortEqu(Status_), FortEqu(iNode)]))
+            print('Level_ --> ' + str(iTree_IA[FortEqu(Level_), FortEqu(iNode)]))
+            print('Proc_ --> ' + str(iTree_IA[FortEqu(Proc_), FortEqu(iNode)]))
+            print('Block_ --> ' + str(iTree_IA[FortEqu(Block_), FortEqu(iNode)]))
+            print('MinLevel_ --> ' + str(iTree_IA[FortEqu(MinLevel_), FortEqu(iNode)]))
+            print('MaxLevel_ --> ' + str(iTree_IA[FortEqu(MaxLevel_), FortEqu(iNode)]))
+            print('Coord0_ --> ' + str(iTree_IA[FortEqu(Coord0_), FortEqu(iNode)]))
+            print('Coord1_ --> ' + str(iTree_IA[FortEqu(Coord1_), FortEqu(iNode)]))
+            print('Coord2_ --> ' + str(iTree_IA[FortEqu(Coord2_), FortEqu(iNode)]))
+            print('Coord3_ --> ' + str(iTree_IA[FortEqu(Coord3_), FortEqu(iNode)]))
+            print('CoordLast_ --> ' + str(iTree_IA[FortEqu(CoordLast_), FortEqu(iNode)]))
+            print('Parent_ --> ' + str(iTree_IA[FortEqu(Parent_), FortEqu(iNode)]))
+            print('Child0_ --> ' + str(iTree_IA[FortEqu(Child0_), FortEqu(iNode)]))
+            print('Child1_ --> ' + str(iTree_IA[FortEqu(Child1_), FortEqu(iNode)]))
+            print('ChildLast_ --> ' + str(iTree_IA[FortEqu(ChildLast_), FortEqu(iNode)]))
 
-    print('Status_ --> ' + str(iTree_IA[FortEqu(Status_), FortEqu(iNode)]))
-    print('Level_ --> ' + str(iTree_IA[FortEqu(Level_), FortEqu(iNode)]))
-    print('Proc_ --> ' + str(iTree_IA[FortEqu(Proc_), FortEqu(iNode)]))
-    print('Block_ --> ' + str(iTree_IA[FortEqu(Block_), FortEqu(iNode)]))
-    print('MinLevel_ --> ' + str(iTree_IA[FortEqu(MinLevel_), FortEqu(iNode)]))
-    print('MaxLevel_ --> ' + str(iTree_IA[FortEqu(MaxLevel_), FortEqu(iNode)]))
-    print('Coord0_ --> ' + str(iTree_IA[FortEqu(Coord0_), FortEqu(iNode)]))
-    print('Coord1_ --> ' + str(iTree_IA[FortEqu(Coord1_), FortEqu(iNode)]))
-    print('Coord2_ --> ' + str(iTree_IA[FortEqu(Coord2_), FortEqu(iNode)]))
-    print('Coord3_ --> ' + str(iTree_IA[FortEqu(Coord3_), FortEqu(iNode)]))
-    print('CoordLast_ --> ' + str(iTree_IA[FortEqu(CoordLast_), FortEqu(iNode)]))
-    print('Parent_ --> ' + str(iTree_IA[FortEqu(Parent_), FortEqu(iNode)]))
-    print('Child0_ --> ' + str(iTree_IA[FortEqu(Child0_), FortEqu(iNode)]))
-    print('Child1_ --> ' + str(iTree_IA[FortEqu(Child1_), FortEqu(iNode)]))
-    print('ChildLast_ --> ' + str(iTree_IA[FortEqu(ChildLast_), FortEqu(iNode)]))
+        counter += 1
 
-    counter += 1
     if counter>100: break
+
+
+assert(False)
 
 
 from config import conf

@@ -185,6 +185,49 @@ Notes:
     in misc/pyvista/structured_grid_from_unstructured_grid.py shows how to directly write unstructured grid vtk file that has connectivity
     \   to trace field lines. Uses pyvista and normal open(,'w'). Note pyvista exports to vtk DataFile version 5.1, instead 3.0 that we've been using.
 
+
+more points
+use B1
+earlier time (t=0)
+use step size of 1/8th outside 5 R_E
+
+https://github.com/spacecataz/spacepy/tree/octtree
+https://github.com/spacecataz/spacepy/blob/octtree/spacepy/pybats/bats.py line 589
+
+        while(block):
+            # Grab locations of points in block:
+            loc = bats.otree[block].locs
+            # Trace through this block.
+            x,y,z = trc(bats[self.xvar][loc],
+                        bats[self.yvar][loc],
+                        bats[self.zvar][loc],
+                        xnow, ynow, znow,
+                        bats[grid[0]][loc][0,0,:], 
+                        bats[grid[1]][loc][0,:,0],
+                        bats[grid[2]][loc][:,0,0],
+                        ds=0.01)
+            # Update location and block:
+            xnow, ynow, znow = x[-1], y[-1], z[-1]
+            newblock = bats.find_block(xnow,ynow,znow)
+            # If we didn't leave the block, stop tracing.
+            # Additionally, if inside rBody, stop.
+            if(block==newblock) or (xnow**2+ynow**2+znow**2)<rbody*.8 :
+                block=False
+            elif newblock:
+                block=newblock
+            else:
+                block=False
+            # Append to full trace vectors.
+            xfwd = np.append(xfwd, x[1:])
+            yfwd = np.append(yfwd, y[1:])
+            zfwd = np.append(zfwd, z[1:])
+            del(x,y,z)
+            # It's possible to get stuck swirling around across
+            # a few blocks.  If we spend a lot of time tracing,
+            # call it quits.
+            if xfwd.size>maxPoints: block=False
+
+
 Q's:
     what does IDL stand for in swmf idl files
     what are ghost cells and do we have to worry about them
