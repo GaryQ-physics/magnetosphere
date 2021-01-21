@@ -17,7 +17,8 @@ log.write('current working directory      '  + os.getcwd() + '\n')
 
 ####################
 run = 'DIPTSUR2'
-pntlist = 'native_random_sampled2'
+#pntlist = 'native_random_sampled2'
+pntlist = 'nativeLike_xz_plane'
 skip_computing = False
 para = True
 debug = False
@@ -54,8 +55,8 @@ log.write('to plot with epsilons = %s and corresponding_max_radii = %s\n'%(str(e
 import time as tm
 t0 = tm.time()
 
-def GetDerivativesArray(epsilon):
-    results_fname = direct + 'partial_derivatives_epsilon=%f.bin'%(epsilon)
+def GetDerivativesArray(epsil):
+    results_fname = direct + 'partial_derivatives_epsilon=%f.bin'%(epsil)
     if not skip_computing:
         results = np.nan*np.empty((3, points.shape[0], 3, 3))
 
@@ -63,8 +64,8 @@ def GetDerivativesArray(epsilon):
 
         types = ['j_batsrus', 'b_batsrus', 'b1_batsrus']
         for i in range(3):
-            results[i,:,:,:] = GetDel(run, time, types[i], points, epsilon=epsilon, para=para, debug=debug)
-        log.write('epsilon=%f\n'%(epsilon))
+            results[i,:,:,:] = GetDel(run, time, types[i], points, epsilon=epsil, para=para, debug=debug)
+        log.write('epsilon=%f\n'%(epsil))
 
         if debug: print('writing arrays')
         results.tofile(results_fname)
@@ -207,6 +208,7 @@ Re_div_B1bats = data['div_B1bats']/normB1
 Re_div_Jbats = data['div_Jbats']/normJ
 
     ###save png###
+assert(False)
 
 import matplotlib
 matplotlib.use("Agg")
