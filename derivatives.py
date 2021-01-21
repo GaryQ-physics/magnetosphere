@@ -1,9 +1,14 @@
+import os
+import numpy as np
+
+from config import conf
+from probe import GetRunData
+from units_and_constants import phys
+import biot_savart as bs
+import dissection as di
 
 
-
-def GetDel(run, time, field, points, para=False, epsilon=0.0625, debug=False):
-    filename = util.time2CDFfilename(run, time)
-
+def GetDel(run, time, field, points, epsilon=0.0625, para=False, debug=False):
     # field = 'b_biotsavart' ; 'b_batsrus' ; 'b1_batsrus' ; 'j_batsrus' ; 'testinterp'
 
     def func(i):
@@ -31,7 +36,7 @@ def GetDel(run, time, field, points, para=False, epsilon=0.0625, debug=False):
         elif '_batsrus' in field:
             fi = field.split('_batsrus')[0]
             if debug: print('fi=%s'%(fi))
-            Fs = probe(filename, pts, var=[fi+'x',fi+'y',fi+'z'], library='kameleon')
+            Fs = GetRunData(run, time, pts, fi)
         else:
             raise ValueError('invalid field string')
 
@@ -47,9 +52,19 @@ def GetDel(run, time, field, points, para=False, epsilon=0.0625, debug=False):
     if para:
         assert(field != 'b_biotsavart') #would run out of memory anyway
 
-        #paralelize
+        from joblib import Parallel, delayed
+        import multiprocessing
+        num_cores = multiprocessing.cpu_count()
+        if num_cores is not None and num_cores > points.shape[0]:
+            num_cores = points.shape[0]
+        if debug: print('Parallel processing {0:d} point(s) using {1:d} cores'\
+              .format(points.shape[0], num_cores))
+        ret = Parallel(n_jobs=num_cores)(\
+                delayed(func)(i) for i in range(points.shape[0]))
 
     else:
+        if debug: print('Serial processing {0:d} point(s)'\
+              .format(points.shape[0],))
         ret = []
         for i in range(points.shape[0]):
             ret.append(func(i))

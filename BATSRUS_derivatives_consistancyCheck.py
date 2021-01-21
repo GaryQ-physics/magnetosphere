@@ -1,13 +1,12 @@
-# for derivatives.md
 import os
 import numpy as np
+import pandas as pd
 
 from config import conf
 from probe import GetRunData
 import util
 from units_and_constants import phys
-import biot_savart as bs
-import dissection as di
+
 from datetime import datetime
 from derivatives import GetDel, GetDivergence, GetCurl, GetFrobeniusNormDel, GetOperatorNormDel
 
@@ -18,15 +17,21 @@ log.write('current working directory      '  + os.getcwd() + '\n')
 
 ####################
 run = 'DIPTSUR2'
-pntlist = 'native_random_sampled'
+pntlist = 'native_random_sampled2'
+skip_computing = False
+para = True
 debug = False
 ####################
 
-###### calculating partial derivatives ######
 if run == 'DIPTSUR2':
-    time = (2019,9,2,6,30,0,0)
+    #time = (2019,9,2,6,30,0,0)
+    time = (2019,9,2,4,10,0,0)
     rCurrents = 1.8
     rBody = 1.5
+
+    epsilons = [1./16., 1./8.]
+    corresponding_max_radii = [5., np.inf]
+
 if run == 'IMP10_RUN_SAMPLE':
     time = (2019,9,2,7,0,0,0)
     rCurrents = 1.7
@@ -34,61 +39,79 @@ if run == 'TESTANALYTIC':
     time = (2000,1,1,0,10,0,0)
     rCurrents = 1.5
 
-direct = conf[run+'_derived'] + 'regions/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
+direct = conf[run+'_derived'] + 'derivatives/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
 direct = direct + pntlist + '/'
-
-points = np.loadtxt(direct + pntlist + '_points.txt')
-if debug: print(points)
-log.write('loading points from ' + direct + pntlist + '_points.txt')
-
-if cut:
-    rmin = rCurrents
-    direct = direct + 'excluding_currents_before_rCurrents/'
-else:
-    rmin = 0.
-    direct = direct + 'including_currents_before_rCurrents/'
-
 if not os.path.exists(direct):
-    os.mkdir(direct)
+    os.makedirs(direct)
+
+points_fname = conf['storage'] + 'pointlists/' + pntlist + '__points.txt'
+points = np.loadtxt(points_fname)
+if debug: print(points)
+
+log.write('loaded points from ' + points_fname + '\n')
+log.write('to plot with epsilons = %s and corresponding_max_radii = %s\n'%(str(epsilons),str(corresponding_max_radii)))
 
 import time as tm
 t0 = tm.time()
 
-results = np.nan*np.empty((3, points.shape[0], 3, 3))
+def GetDerivativesArray(epsilon):
+    results_fname = direct + 'partial_derivatives_epsilon=%f.bin'%(epsilon)
+    if not skip_computing:
+        results = np.nan*np.empty((3, points.shape[0], 3, 3))
 
-if debug: print('computing arrays')
+        if debug: print('computing arrays')
 
-types = ['j_batsrus', 'b_batsrus', 'b1_batsrus']
-epsilon=0.0625
-for i in range(3):
-    results[i,:,:,:] = GetDel(run, time, types[i], points, epsilon=epsilon, debug=debug)
-log.write('epsilon=%f\n'%(epsilon))
+        types = ['j_batsrus', 'b_batsrus', 'b1_batsrus']
+        for i in range(3):
+            results[i,:,:,:] = GetDel(run, time, types[i], points, epsilon=epsilon, para=para, debug=debug)
+        log.write('epsilon=%f\n'%(epsilon))
 
-results_fname = direct + 'derivatives_results_epsilon=%f.bin'%(epsilon)
-if debug: print('writing arrays')
-results.tofile(results_fname)
-points.tofile(direct + 'derivatives_points.bin')
-log.write('wrote "results" array to ' + results_fname + '\n')
-log.write('flattened from shape %s\n with first index indexing:\n'%(str(results.shape)))
-[log.write('    %d  ->  %s\n'%(i,types[i])) for i in range(3)]
+        if debug: print('writing arrays')
+        results.tofile(results_fname)
+        points.tofile(direct + 'derivatives_points.bin')
+        if debug: print('wrote "results" array to ' + results_fname + '\n')
+        log.write('wrote "results" array to ' + results_fname + '\n')
+        log.write('flattened from shape %s\n with first index indexing:\n'%(str(results.shape)))
+        [log.write('    %d  ->  %s\n'%(i,types[i])) for i in range(3)]
 
-if debug: print('wrote arrays')
-if debug: print(results)
+        if debug: print('wrote arrays')
+        if debug: print(results)
 
-log.write('derivatives computed in %f minutes\n'%((tm.time()-t0)/60.))
-if debug: print('derivatives computed in %f minuts'%((tm.time()-t0)/60.))
+        log.write('derivatives computed in %f minutes\n'%((tm.time()-t0)/60.))
+        if debug: print('derivatives computed in %f minuts'%((tm.time()-t0)/60.))
+    else:
+        results = np.fromfile(results_fname).reshape((3, points.shape[0], 3, 3))
+        if debug: print('loaded "results" array from ' + results_fname + '\n')
+        log.write('loaded "results" array from ' + results_fname + '\n')
 
-###### ploting #############
-import pandas as pd
+        pointsloaded = np.fromfile(direct + 'derivatives_points.bin').reshape((points.shape[0], 3))
+        assert(np.all(points == pointsloaded))
 
-imagedir = conf['base'] + 'images/' + run + '/'
+    return results
+
+
+###### process data #############
+dels = [GetDerivativesArray(epsilon) for epsilon in epsilons]
+
+DISTANCE = np.sqrt(points[:,0]**2 + points[:,1]**2 + points[:,2]**2)
+
+imagedir = conf['base'] + 'images/' + run + '/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
 if not os.path.exists(imagedir):
-    os.mkdir(imagedir)
+    os.makedirs(imagedir)
 
-assert(types == ['j_batsrus', 'b_batsrus', 'b1_batsrus'])
-del_j_batsrus = results[0,:,:,:]
-del_b_batsrus = results[1,:,:,:]
-del_b1_batsrus = results[2,:,:,:]
+
+#assert(types == ['j_batsrus', 'b_batsrus', 'b1_batsrus'])
+del_j_batsrus = dels[0][0,:,:,:]
+del_b_batsrus = dels[0][1,:,:,:]
+del_b1_batsrus = dels[0][2,:,:,:]
+
+for i in range(1, len(epsilons)):
+    distanceSlice = np.logical_and(corresponding_max_radii[i-1] < DISTANCE,
+                                    DISTANCE <= corresponding_max_radii[i])
+    del_j_batsrus[distanceSlice,:,:] = dels[i][0,distanceSlice,:,:]
+    del_b_batsrus[distanceSlice,:,:] = dels[i][1,distanceSlice,:,:]
+    del_b1_batsrus[distanceSlice,:,:] = dels[i][2,distanceSlice,:,:]
+
 
 div_Bbats = GetDivergence(del_b_batsrus)
 div_B1bats = GetDivergence(del_b1_batsrus)
@@ -138,25 +161,21 @@ arr = np.column_stack([ points,
 data = pd.DataFrame(data=arr, columns=header.split(' '))
 
 if True:
-    outname = direct + 'derivatives_df.txt'
-    if debug: print('writing ' + outname)
-    f = open(outname, 'w')
+    data_fname = direct + 'derivatives_df.txt'
+    if debug: print('writing ' + data_fname)
+    f = open(data_fname, 'w')
     f.write(header)
     f.write('\n')
     np.savetxt(f, arr)
     f.close()
-    log.write('wrote all data in text file ' + outname + ' to be imported as pandas dataframe\n')
-    if debug: print('wrote ' + outname)
+    log.write('wrote all data in text file ' + data_fname + ' to be imported as pandas dataframe\n')
+    if debug: print('wrote ' + data_fname)
 
-    dataload = pd.read_csv(outname, sep=" ")
+    dataload = pd.read_csv(data_fname, sep=" ")
     log.write('max diff columns:\n%s\n'%(str(np.max(np.abs(dataload-data)))))
     if np.all( np.abs(np.array(dataload-data)) > 1e-6 ):
         log.write('ERROR: abs > 1e-6')#!!!!!!!!
 
-
-#import pickle
-#with open('derpic.pkl', 'wb') as handle:
-#    pickle.dump(data, handle)
 
 ###### plotting #####
 
@@ -196,22 +215,62 @@ from matplotlib.ticker import AutoMinorLocator
 
 fig, axes = plt.subplots(figsize=(12,4), nrows=1, ncols=3, dpi=300)
 
+axes[0].plot(distance[cut], data['div_Jbats'][cut], '.')
+#axes[0].xaxis.set_minor_locator(AutoMinorLocator())
+axes[0].set_xscale('symlog', linthreshx=10., subsx=[2, 3, 4, 5, 6, 7, 8, 9])
+axes[0].set_yscale('symlog', linthreshy=0.01)
+axes[0].set_xlabel('distance from center [$R_E$]')
+axes[0].set_ylabel('div(J) [$\\frac{\mu A / m^2}{R_E}$]')
+axes[0].set_title('swmf units')
+
+axes[1].plot(distance[cut], Re_div_Jbats[cut], '.')
+#axes[1].xaxis.set_minor_locator(AutoMinorLocator())
+axes[1].set_xscale('symlog', linthreshx=10., subsx=[2, 3, 4, 5, 6, 7, 8, 9])
+axes[1].set_yscale('symlog', linthreshy=0.01, subsy=[2, 3, 4, 5, 6, 7, 8, 9])
+axes[1].set_xlabel('distance from center [$R_E$]')
+axes[1].set_ylabel('$\\frac{div(J)}{norm(J)}$ [$\\frac{1}{R_E}$]', fontsize=12)
+axes[1].set_title('relative divergence')
+
+axes[2].plot(distance[cut], ON_div_Jbats[cut], '.')
+#axes[2].xaxis.set_minor_locator(AutoMinorLocator())
+axes[2].set_xscale('symlog', linthreshx=10., subsx=[2, 3, 4, 5, 6, 7, 8, 9])
+axes[2].set_yscale('symlog', linthreshy=0.01, subsy=[2, 3, 4, 5, 6, 7, 8, 9])
+axes[2].set_xlabel('distance from center [$R_E$]')
+axes[2].set_ylabel('$\\frac{div(J)}{NormD(J)}$', fontsize=12)
+axes[2].set_title('normalize divergence')
+
+fig.suptitle('Divergence of J', fontsize=16)
+#https://stackoverflow.com/questions/8248467/matplotlib-tight-layout-doesnt-take-into-account-figure-suptitle/45161551#45161551
+fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+fig.savefig(imagedir+'divergence_J.png')
+if debug: print('saved png ' + imagedir+'divergence_J.png')
+log.write('saved png ' + imagedir+'divergence_J.png\n')
+
+del axes
+del fig
+
+fig, axes = plt.subplots(figsize=(12,4), nrows=1, ncols=3, dpi=300)
+
 axes[0].plot(distance[cut], data['div_Bbats'][cut], '.')
-axes[0].xaxis.set_minor_locator(AutoMinorLocator())
+#axes[0].xaxis.set_minor_locator(AutoMinorLocator())
+axes[0].set_xscale('symlog', linthreshx=10., subsx=[2, 3, 4, 5, 6, 7, 8, 9])
 axes[0].set_yscale('symlog', linthreshy=0.01)
 axes[0].set_xlabel('distance from center [$R_E$]')
 axes[0].set_ylabel('div(B) [$\\frac{nT}{R_E}$]')
 axes[0].set_title('swmf units')
 
 axes[1].plot(distance[cut], Re_div_Bbats[cut], '.')
-axes[1].xaxis.set_minor_locator(AutoMinorLocator())
+#axes[1].xaxis.set_minor_locator(AutoMinorLocator())
+axes[1].set_xscale('symlog', linthreshx=10., subsx=[2, 3, 4, 5, 6, 7, 8, 9])
 axes[1].set_yscale('symlog', linthreshy=0.01, subsy=[2, 3, 4, 5, 6, 7, 8, 9])
 axes[1].set_xlabel('distance from center [$R_E$]')
 axes[1].set_ylabel('$\\frac{div(B)}{norm(B)}$ [$\\frac{1}{R_E}$]', fontsize=12)
 axes[1].set_title('relative divergence')
 
 axes[2].plot(distance[cut], ON_div_Bbats[cut], '.')
-axes[2].xaxis.set_minor_locator(AutoMinorLocator())
+#axes[2].xaxis.set_minor_locator(AutoMinorLocator())
+axes[2].set_xscale('symlog', linthreshx=10., subsx=[2, 3, 4, 5, 6, 7, 8, 9])
 axes[2].set_yscale('symlog', linthreshy=0.01, subsy=[2, 3, 4, 5, 6, 7, 8, 9])
 axes[2].set_xlabel('distance from center [$R_E$]')
 axes[2].set_ylabel('$\\frac{div(B)}{NormD(B)}$', fontsize=12)
@@ -230,34 +289,37 @@ del fig
 
 fig, axes = plt.subplots(figsize=(12,4), nrows=1, ncols=3, dpi=300)
 
-axes[0].plot(distance[cut], data['div_Jbats'][cut], '.')
-axes[0].xaxis.set_minor_locator(AutoMinorLocator())
+axes[0].plot(distance[cut], data['div_B1bats'][cut], '.')
+#axes[0].xaxis.set_minor_locator(AutoMinorLocator())
+axes[0].set_xscale('symlog', linthreshx=10., subsx=[2, 3, 4, 5, 6, 7, 8, 9])
 axes[0].set_yscale('symlog', linthreshy=0.01)
 axes[0].set_xlabel('distance from center [$R_E$]')
-axes[0].set_ylabel('div(J) [$\\frac{\mu A / m^2}{R_E}$]')
+axes[0].set_ylabel('div(B1) [$\\frac{nT}{R_E}$]')
 axes[0].set_title('swmf units')
 
-axes[1].plot(distance[cut], Re_div_Jbats[cut], '.')
-axes[1].xaxis.set_minor_locator(AutoMinorLocator())
+axes[1].plot(distance[cut], Re_div_B1bats[cut], '.')
+#axes[1].xaxis.set_minor_locator(AutoMinorLocator())
+axes[1].set_xscale('symlog', linthreshx=10., subsx=[2, 3, 4, 5, 6, 7, 8, 9])
 axes[1].set_yscale('symlog', linthreshy=0.01, subsy=[2, 3, 4, 5, 6, 7, 8, 9])
 axes[1].set_xlabel('distance from center [$R_E$]')
-axes[1].set_ylabel('$\\frac{div(J)}{norm(J)}$ [$\\frac{1}{R_E}$]', fontsize=12)
+axes[1].set_ylabel('$\\frac{div(B1)}{norm(B1)}$ [$\\frac{1}{R_E}$]', fontsize=12)
 axes[1].set_title('relative divergence')
 
-axes[2].plot(distance[cut], ON_div_Jbats[cut], '.')
-axes[2].xaxis.set_minor_locator(AutoMinorLocator())
+axes[2].plot(distance[cut], ON_div_B1bats[cut], '.')
+#axes[2].xaxis.set_minor_locator(AutoMinorLocator())
+axes[2].set_xscale('symlog', linthreshx=10., subsx=[2, 3, 4, 5, 6, 7, 8, 9])
 axes[2].set_yscale('symlog', linthreshy=0.01, subsy=[2, 3, 4, 5, 6, 7, 8, 9])
 axes[2].set_xlabel('distance from center [$R_E$]')
-axes[2].set_ylabel('$\\frac{div(J)}{NormD(J)}$', fontsize=12)
+axes[2].set_ylabel('$\\frac{div(B1)}{NormD(B1)}$', fontsize=12)
 axes[2].set_title('normalize divergence')
 
-fig.suptitle('Divergence of J', fontsize=16)
+fig.suptitle('Divergence of B1', fontsize=16)
 #https://stackoverflow.com/questions/8248467/matplotlib-tight-layout-doesnt-take-into-account-figure-suptitle/45161551#45161551
 fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-fig.savefig(imagedir+'divergence_J.png')
-if debug: print('saved png ' + imagedir+'divergence_J.png')
-log.write('saved png ' + imagedir+'divergence_J.png\n')
+fig.savefig(imagedir+'divergence_B1.png')
+if debug: print('saved png ' + imagedir+'divergence_B1.png')
+log.write('saved png ' + imagedir+'divergence_B1.png\n')
 
 del axes
 del fig
@@ -316,5 +378,5 @@ del fig
 
 
 now = datetime.now()
-log.write('script ended' + now.strftime("%Y-%m-%d T%H:%M:%S") + '\n')
+log.write('script ended ' + now.strftime("%Y-%m-%d T%H:%M:%S") + '\n')
 log.close()
