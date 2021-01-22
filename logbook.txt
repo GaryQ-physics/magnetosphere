@@ -186,10 +186,8 @@ Notes:
     \   to trace field lines. Uses pyvista and normal open(,'w'). Note pyvista exports to vtk DataFile version 5.1, instead 3.0 that we've been using.
 
 
-more points
-use B1
-earlier time (t=0)
-use step size of 1/8th outside 5 R_E
+todo:
+xz_cutplane in magnetovis/magnetovis/objects2.py (upload vtk for just the plane to mag server url)
 
 https://github.com/spacecataz/spacepy/tree/octtree
 https://github.com/spacecataz/spacepy/blob/octtree/spacepy/pybats/bats.py line 589

@@ -18,7 +18,7 @@ log.write('current working directory      '  + os.getcwd() + '\n')
 ####################
 run = 'DIPTSUR2'
 #pntlist = 'native_random_sampled2'
-pntlist = 'nativeLike_xz_plane'
+pntlist = 'xz_plane_y=0.062500'
 skip_computing = False
 para = True
 debug = False
