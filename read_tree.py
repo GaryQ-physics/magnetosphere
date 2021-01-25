@@ -44,7 +44,10 @@ MaxCoord_I =  [ 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192,
                 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 
                 4194304, 8388608, 16777216, 33554432, 67108864, 134217728,
                 268435456, 536870912, 1073741824 ]
+
+# check the copied hardcoded things are what I think they are
 assert(len(MaxCoord_I) == MaxLevel+1)
+assert(MaxCoord_I == [2**i for i in range(len(MaxCoord_I))])
 
 # Named indexes of iTree_IA
 Status_   =  1
@@ -149,6 +152,7 @@ Procs = [iTree_IA[FortEqu(Proc_), FortEqu(iNode)] for iNode in range(1, nNode+1)
 
 print((256./8.)*0.5**max(Levels))
 print((256./8.)*0.5**min(Levels))
+print(len(blockused_)*8**3)
 
 
 print('#############\n\n')
@@ -161,7 +165,7 @@ print('#############\n\n')
 #print(set(TEST)==set(range(837))) for Proc_
 #print(blockused_)
 
-# from SWMF/GM/BATSRUS/srcBATL_/BATL_tree.f90 line 951 (they dont return MaxIndex_D
+# from SWMF/GM/BATSRUS/srcBATL_/BATL_tree.f90 line 951
 def get_tree_position(iNode, returnall=False):
     # Calculate normalized position of the edges of node inode.
     # Zero is at the minimum boundary of the grid, one is at the max boundary
@@ -171,39 +175,80 @@ def get_tree_position(iNode, returnall=False):
     # For non-AMR directions MaxIndex_D = nRoot_D
     # For AMR     directions MaxIndex_D = nRoot_D*MaxCoord_I(iLevel)
     MaxIndex_D = ((MaxCoord_I[FortEqu(iLevel)]-1)*(iRatio_D-1) + 1)*nRoot_D
+    # in this case:
+    # MaxIndex_D[all] = ((2**(iLevel-1)-1)*(2-1) + 1)*1
+    #                 = 2**(iLevel-1)
+    assert(MaxIndex_D.shape == (3,))
+    assert(np.all( MaxIndex_D == 2**(iLevel-1) ))
+    # note that if gridspacing = (256./8.)*0.5**iLevel, then gridspacing * MaxIndex_D[all] == 16. )
 
     # Convert to real by adding -1.0 or 0.0 for the two edges, respectively
-    PositionMin_D = (iTree_IA[FortEqu(Coord1_):FortEqu(CoordLast_)+1,FortEqu(iNode)] - 1.0)/MaxIndex_D
-    PositionMax_D = (iTree_IA[FortEqu(Coord1_):FortEqu(CoordLast_)+1,FortEqu(iNode)] + 0.0)/MaxIndex_D
+    BlockCoord_D = iTree_IA[FortEqu(Coord1_):FortEqu(CoordLast_)+1,FortEqu(iNode)] # not seperated defined in original. rename???
+    PositionMin_D = (BlockCoord_D - 1.0)/MaxIndex_D
+    PositionMax_D = (BlockCoord_D + 0.0)/MaxIndex_D
 
     if returnall:
-        return PositionMin_D, PositionMax_D, MaxIndex_D
+        return PositionMin_D, PositionMax_D, MaxIndex_D, BlockCoord_D
     else:
-        return PositionMin_D, PositionMax_D
+        return PositionMin_D, PositionMax_D # what was returned in original
 
-
-counter = 0
+block_coords = []
+position_mins = []
+position_maxs = []
 for iNode in blockused_:
-    PositionMin_D, PositionMax_D = get_tree_position(iNode)
-    xmin = 256.*PositionMin_D[0] + -224.
-    xmax = 256.*PositionMax_D[0] + -224.
-    ymin = 256.*PositionMin_D[1] + -128.
-    ymax = 256.*PositionMax_D[1] + -128.
-    zmin = 256.*PositionMin_D[2] + -128.
-    zmax = 256.*PositionMax_D[2] + -128.
+    PositionMin_D, PositionMax_D, MaxIndex_D, BlockCoord_D = get_tree_position(iNode, returnall=True)
+
+    block_coords.append(BlockCoord_D)
+    position_mins.append(PositionMin_D)
+    position_maxs.append(PositionMax_D)
+
+block_coords = np.array(block_coords)
+position_mins = np.array(position_mins)
+position_maxs = np.array(position_maxs)
+print(block_coords.shape)
+print(np.min(block_coords, axis=0))
+print(np.max(block_coords, axis=0))
+print(np.min(position_mins, axis=0))
+print(np.max(position_maxs, axis=0))
+
+
+def get_physical_dimensions(iNode, returnCenterData=False):
     iLevel = iTree_IA[FortEqu(Level_), FortEqu(iNode)]
     gridspacing = (256./8.)*0.5**iLevel
+
+    PositionMin_D, PositionMax_D = get_tree_position(iNode)
+    xmin = 256.*(PositionMin_D[0]*0.5) + -224.
+    xmax = 256.*(PositionMax_D[0]*0.5) + -224.
+    ymin = 256.*(PositionMin_D[1]*0.5) + -128.
+    ymax = 256.*(PositionMax_D[1]*0.5) + -128.
+    zmin = 256.*(PositionMin_D[2]*0.5) + -128.
+    zmax = 256.*(PositionMax_D[2]*0.5) + -128.
+
     xlims = (xmin+gridspacing/2., xmax-gridspacing/2.)
     ylims = (ymin+gridspacing/2., ymax-gridspacing/2.)
     zlims = (zmin+gridspacing/2., zmax-gridspacing/2.)
 
+    xminmax = (xmin, xmax)
+    yminmax = (ymin, ymax)
+    zminmax = (zmin, zmax)
+
+    if returnCenterData:
+        return xlims, ylims, zlims, gridspacing
+    else:
+        return xminmax, yminmax, zminmax, gridspacing
+
+counter = 0
+for iNode in blockused_:
+    xminmax, yminmax, zminmax, gridspacing = get_physical_dimensions(iNode, returnCenterData=False)
+
+    iLevel = iTree_IA[FortEqu(Level_), FortEqu(iNode)]
     if iLevel == 2:
         print('############\n')
         print(counter)
-        print((PositionMin_D, PositionMax_D))
-        print(xlims)
-        print(ylims)
-        print(zlims)
+        #print((PositionMin_D, PositionMax_D))
+        print(xminmax)
+        print(yminmax)
+        print(zminmax)
         print(gridspacing)
         if False:
             print('iNode = ' + str(iNode))
@@ -229,32 +274,19 @@ for iNode in blockused_:
     if counter>100: break
 
 
-assert(False)
-
-
 from config import conf
 from make_grid import make_axes, make_grid
-counter = 0
+
 allgrid = []
 gridspacings = []
+counter = 0
 for iNode in blockused_:
-    PositionMin_D, PositionMax_D = get_tree_position(iNode)
-    xmin = 256.*PositionMin_D[0] + -224.
-    xmax = 256.*PositionMax_D[0] + -224.
-    ymin = 256.*PositionMin_D[1] + -128.
-    ymax = 256.*PositionMax_D[1] + -128.
-    zmin = 256.*PositionMin_D[1] + -128.
-    zmax = 256.*PositionMax_D[1] + -128.
-    iLevel = iTree_IA[FortEqu(Level_), FortEqu(iNode)]
-    gridspacing = (256./8.)*0.5**iLevel
-    xlims = (xmin+gridspacing/2., xmax-gridspacing/2.)
-    ylims = (ymin+gridspacing/2., ymax-gridspacing/2.)
-    zlims = (zmin+gridspacing/2., zmax-gridspacing/2.)
+    xlims, ylims, zlims, gridspacing = get_physical_dimensions(iNode, returnCenterData=True)
 
     axes = make_axes(xlims, ylims, zlims, gridspacing)
     grid = make_grid(axes)
 
-    if counter<100:
+    if counter<10:
         print(axes[0].shape,axes[1].shape,axes[2].shape)
 
     gridspacings.append(gridspacing)
@@ -267,9 +299,18 @@ print(allgrid)
 print(min(gridspacings))
 print(allgrid.shape)
 
+import spacepy.pybats.bats as bats
+import numpy as np
 
-#print(iTree_IA[FortEqu(Level_), FortEqu(iNode)])
-#print(iTree_IA[FortEqu(Coord1_):FortEqu(CoordLast_)+1,FortEqu(iNode)])
+
+mhd = bats.IdlFile(filetag + '.out')
+loadgrid = np.column_stack([mhd['x'],mhd['y'],mhd['z']])
+
+allgrid = set([tuple(tup) for tup in list(allgrid)])
+loadgrid = set([tuple(tup) for tup in list(loadgrid)])
+
+print('\n\n\n\n######pleasebetrue####\n')
+print(allgrid == loadgrid)
 
 
 '''from julia
