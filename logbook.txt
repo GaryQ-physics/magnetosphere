@@ -173,7 +173,7 @@ Notes:
 
 2021/01/24:
     used read_tree.py and .tree file, along with global min maxes of the volume, to recreate the points (as a set) in the corresponding .out file
-    this should be able to be used to provide the nessesary tree structure to the list of points in the .out file
+    this should be able to be used to provide the nessesary tree structure to the list of points in the .out file. (nope, turns out the order n^2 operation to reindex is too much)
 
 TODO:
     fieldline tracing function
@@ -187,6 +187,11 @@ Q's:
     #SAVEBINARY is false in PARAM.in (for DIPTSUR2)
     why is there no #GRID in PARAM.in when theres supposedly no default values according to the manual
 
+things to say:
+    worth using python logging module?
+    dictionaries args kwargs for cutplane and cutplane_plot functions?
+
+GAMERA (Grid Agnostic MHD for Extended Research Applications)
 
 https://matplotlib.org/3.1.1/gallery/color/color_cycle_default.html
 git clone https://github.com/rweigel/magnetovis

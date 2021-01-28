@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../' )
 from config import conf
 
 from niceticks import niceticks
-import cutplane_plot as cp
+import cutplane_plot2 as cp
 import util
 import magnetometers as mg
 
@@ -172,8 +172,8 @@ def main(run):
     #high_only   = False  # Execute only high-res second processing
     process_types = [1, 2, 3]
 
-    test_serial   = False   # Process few files in serial
-    test_parallel = True  # Process few files in parallel
+    test_serial   = True   # Process few files in serial
+    test_parallel = False  # Process few files in parallel
 
     opts = {
             'run' : run,
@@ -207,9 +207,10 @@ def main(run):
 
     if test_serial:
         para = False
-        #built_in_vars = ['jy']
-        built_in_vars = ['bx','by','bz','ux','uy','uz','jx','jz','rho','e']
-        nf = 4
+        #built_in_vars = ['bx','by','bz','ux','uy','uz','jx','jy','jz','rho','p','e']
+        built_in_vars = ['bx','by','bz','uy','jx','jz','p']
+        dB_vars = ['dB_Magnitude', 'dB_north', 'dB_east', 'dB_down']
+        nf = 1
         opts["showplot"] = False
 
     if test_parallel:

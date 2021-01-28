@@ -1,0 +1,40 @@
+\documentclass[a4paper,12pt]{book}
+
+\usepackage[english]{babel}
+%\usepackage{esint}
+
+\begin{document}
+
+\title{\Large{\textbf{LaTeXtEsT}}}
+\author{Gary}
+\date{2001-01-01}
+
+\maketitle
+
+\section{Important Results}
+
+\noindent main results on general divergence and curl
+
+\indent given arbitrary vector field $J(x)$ with any divergence and curl:
+ 
+\indent define $B(x) = \frac{1}{4\pi} \int d^3x' J(x') \times \frac{x - x'}{|x-x'|^3}$
+ 
+\indent then it follows $\nabla\cdot B(x) = 0$
+
+\indent it also follows $\nabla\times B(x) = J(x) + \frac{-1}{4\pi}\int d^3x' \frac{x-x'}{|x-x'|^3} (\nabla\cdot J)(x') + \frac{1}{4\pi} \int \frac{x-x'}{|x-x'|^3} J(x')\cdot~n' da$
+
+\noindent given any vector field $B(x)$ with $\nabla\cdot B=0$ and such that $B->0$ as $x->inf$ sufficiently rapidly:
+
+\indent define $J = \nabla \times B$
+
+\indent then it follows, $B(x) = \frac{1}{4\pi} \int d^3x' J(x') \times \frac{x - x'}{|x-x'|^3}$
+
+\indent note, this says nothing of whether J is physical current or not. If B is magnetic field, J could be current + dE/dt
+
+\section{Derivations}
+
+Derive the important results in the previous section
+
+$B = \int J$
+
+\end{document}
