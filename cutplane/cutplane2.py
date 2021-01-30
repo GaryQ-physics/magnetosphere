@@ -18,16 +18,7 @@ import biot_savart as bs
 from biot_savart_kameleon_interpolated_grid import toMAGLocalComponents #TODO, get rid
 
 
-#xlims = [-100., 15.]
-#ylims = [-10., 10.] #!!!!!!!!!!!!!!!!
-#zlims = [-15., 15.]
-#dx = 0.3
-#dy = 0.3
-#dz = 0.3
-
-
-
-def data_in_plane(run, time, variable, plane, mlat_dB=None, mlon_dB=None):
+def data_in_plane(run, time, variable, plane, **kwargs):
     """Data in U coordinates
 
     isinstance(plane, dict) is True
@@ -80,7 +71,8 @@ def data_in_plane(run, time, variable, plane, mlat_dB=None, mlon_dB=None):
         if variable == 'bu3':
             return np.dot(B, U3)
     elif 'dB' in variable:
-        assert(mlat_dB is not None and mlon_dB is not None)
+        assert('mlat_dB' in kwargs.keys())
+        assert('mlon_dB' in kwargs.keys())
         if 'V_char' in plane.keys():
             V_char = plane['V_char']
             if V_char is None:
@@ -89,14 +81,14 @@ def data_in_plane(run, time, variable, plane, mlat_dB=None, mlon_dB=None):
             V_char = 1
 
         J = GetRunData(run, time, grid_in_space, 'j')*(phys['muA']/phys['m']**2)
-        x0 = cx.MAGtoGSM(np.array([1.,mlat_dB,mlon_dB]), time, 'sph', 'car')
+        x0 = cx.MAGtoGSM(np.array([1.,kwargs['mlat_dB'],kwargs['mlon_dB']]), time, 'sph', 'car')
         dB = bs.deltaB('dB', x0, grid_in_space, J, V_char=V_char)
 
         if variable == 'dB_Magnitude':
             #print('dB.shape =' + str(dB.shape))
             return np.sqrt(np.einsum('ij,ij->i',dB, dB))
         else:
-            dB_loc = toMAGLocalComponents(time, mlat_dB, mlon_dB, dB)
+            dB_loc = toMAGLocalComponents(time, kwargs['mlat_dB'], kwargs['mlon_dB'], dB)
             if variable == 'dB_north':
                 return dB_loc[:, 0]
             if variable == 'dB_east':

@@ -58,15 +58,14 @@ def set_colorbar(ax, pcm, zticks, Nbt, title=None, logz=False):
     if title is not None:
         cb.ax.set_title(title, va='bottom', fontsize=10)
 
-def plot(run, time, parameter, arg3,
+
+def plot(run, time, parameter, plane,
          field_lines=None,
          axes=None,
-         logz=False,
-         xlims=[-10,10], ylims=[-10,10], zlims=None, 
+         logz=False, zlims=None, 
          xticks=None, yticks=None, zticks=None,
-         dx=0.1, dy=0.1,
          dpi=100, showplot=True,
-         png=True, pngfile=None, debug=False, mlat_dB=None, mlon_dB=None):
+         png=True, pngfile=None, debug=False, **kwargs):#mlat_dB=None, mlon_dB=None):
 
     """
     # Plot p in x-z plane
@@ -79,6 +78,44 @@ def plot(run, time, parameter, arg3,
     # Plot p in plane_vs plane
     plot(time, 'p', plane_vs) 
     """
+    if isinstance(plane, str):
+        plane_str = plane
+        plane = {}
+        if   plane_str == 'xy':
+            xlabel = '$X_{GSM}$ [$R_E$]'
+            ylabel = '$Y_{GSM}$ [$R_E$]'
+            U1 = np.array([1, 0, 0])
+            U2 = np.array([0, 1, 0])
+        elif plane_str == 'xz':
+            xlabel = '$X_{GSM}$ [$R_E$]'
+            ylabel = '$Z_{GSM}$ [$R_E$]'
+            U1 = np.array([1, 0, 0])
+            U2 = np.array([0, 0, 1])
+        elif plane_str == 'yz':
+            xlabel = '$Y_{GSM}$ [$R_E$]'
+            ylabel = '$Z_{GSM}$ [$R_E$]'
+            U1 = np.array([0, 1, 0])
+            U2 = np.array([0, 0, 1])
+        else:
+            raise ValueError ('not a valid coordinate plane')
+        plane['e1'] = U1
+        plane['e2'] = U2
+        plane['e3'] = np.cross(U1, U2)
+        plane['ulims'] = (-10,10)
+        plane['vlims'] = (-10,10)
+        plane['du'] = 0.1
+        plane['dv'] = 0.1
+    else:
+        plane_str = None
+        if not isinstance(plane, dict): raise ValueError ('plane must be dict or str')
+
+    try:
+        xlabel = kwargs['xlabel']
+        ylabel = kwargs['ylabel']
+    except KeyError:
+        if plane_str is None:
+            xlabel = 'u_axis [$R_E$]'
+            ylabel = 'v_axis [$R_E$]'
 
     import matplotlib
     if not showplot:
@@ -91,50 +128,13 @@ def plot(run, time, parameter, arg3,
     # TODO: Use with ... to set these.
     matplotlib.rc('font', family='serif')
     matplotlib.rcParams['mathtext.fontset'] = 'dejavuserif'
-    
-    xlabel = ''
-    ylabel = ''
+
     title = run + ' %04d-%02d-%02dT%02d:%02d:%02d.%03d' % tuple(time)
     if 'dB' in parameter:
+        assert('mlat_dB' in kwargs.keys())
+        assert('mlon_dB' in kwargs.keys())
         import cxtransform as cx
-        assert(mlat_dB is not None and mlon_dB is not None)
-        title = title + '\nat mlat=%.3f, mlon=%.3f, MLT=%.3f hrs'%(mlat_dB, mlon_dB, cx.MAGtoMLT(mlon_dB, time))
-    if type(arg3) == str:
-        if arg3 == 'xy':
-            xlabel = '$X_{GSM}$ [$R_E$]'
-            ylabel = '$Y_{GSM}$ [$R_E$]'
-            U1 = np.array([1, 0, 0])
-            U2 = np.array([0, 1, 0])
-        if arg3 == 'xz':
-            xlabel = '$X_{GSM}$ [$R_E$]'
-            ylabel = '$Z_{GSM}$ [$R_E$]'
-            U1 = np.array([1, 0, 0])
-            U2 = np.array([0, 0, 1])
-        if arg3 == 'yz':
-            xlabel = '$Y_{GSM}$ [$R_E$]'
-            ylabel = '$Z_{GSM}$ [$R_E$]'
-            U1 = np.array([0, 1, 0])
-            U2 = np.array([0, 0, 1])
-    else:
-        arg3 = np.array(arg3)
-        if arg3.size == 3:
-            title = title + "\n" + "[mlat, mlon]=[{0:.1f}$^o$, {1:.1f}$^o$]" \
-                    .format(arg3[1], arg3[2])
-            U = unitvector(run, time, arg3)
-            U1 = U[0]
-            U2 = U[1]
-            assert(arg3[1] == mlat_dB and arg3[2] == mlon_dB) #TODO: should be better
-        else:
-            U1 = arg3[0]
-            U2 = arg3[1]
-    
-        # Normalize the U vectors.
-        U1 = U1/np.linalg.norm(U1)
-        U2 = U2/np.linalg.norm(U2)
-        xlabel = '[%.1f, %.1f, %.1f]' % tuple(U1) + ' dir' + " [$R_E$]"
-        ylabel = '[%.1f, %.1f, %.1f]' % tuple(U2) + ' dir' + " [$R_E$]"
-
-    U3 = np.cross(U1, U2)
+        title = title + '\nat mlat=%.3f, mlon=%.3f, MLT=%.3f hrs'%(kwargs['mlat_dB'], kwargs['mlon_dB'], cx.MAGtoMLT(kwargs['mlon_dB'], time))
  
     filename = util.time2CDFfilename(run, time)
 
@@ -146,44 +146,39 @@ def plot(run, time, parameter, arg3,
     else:
         filename_out = pngfile
 
-    x_1d = np.arange(xlims[0], xlims[1] + dx, dx)
-    y_1d = np.arange(ylims[0], ylims[1] + dy, dy)
+    x_1d = np.arange(plane['ulims'][0], plane['ulims'][1] + plane['du'], plane['du'])
+    y_1d = np.arange(plane['vlims'][0], plane['vlims'][1] + plane['dv'], plane['dv'])
     X, Y = np.meshgrid(x_1d, y_1d) # grid of points on the cut plane
     # note: np.column_stack[X.flatten(), Y.flatten()] == makegrid([x_1d, y_1d, None])[:,:2]
     assert(np.all( np.column_stack([X.flatten(), Y.flatten()]) == make_grid([x_1d, y_1d, None])[:,:2] ))
 
-    plane = {'ulims' : xlims, 'du' : dx,
-             'vlims' : ylims, 'dv' : dy,
-             'e1' : U1, 'e2' : U2, 'e3' : U3
-            }
+    if plane_str is None: plane_str = 'na'
 
-
-    if type(arg3) == str:
-        ext = "-" + parameter + '_plane_' + arg3 \
-                + '-dx_' + str(dx) \
-                + '-dy_' + str(dy) \
-                + '-xlims' + str(xlims[0]) + ',' + str(xlims[1]) \
-                + '-ylims' + str(ylims[0]) + ',' + str(ylims[1]) \
-                + '.npy'
-        cachedir = conf[run + '_derived'] + "cutplanes/cache/" + parameter + "/"
-        if 'dB' in parameter:
-            cachedir = cachedir + '_%.3f_%.3f/'%(mlat_dB, mlon_dB)
-        if not os.path.exists(cachedir):
-            os.makedirs(cachedir)
-        npfile = filename.replace(conf[run + '_cdf'], cachedir) + ext
-        if os.path.exists(npfile):
-            print("Reading " + npfile)
-            Z = np.load(npfile)
-            print("Read " + npfile)
-        else:
-            if debug:
-                print("Interpolating {0:s} onto {1:d}x{2:d} grid" \
-                      .format(parameter,len(x_1d),len(y_1d)))
-            Z = data_in_plane(run, time, parameter, plane,
-                      mlat_dB=mlat_dB, mlon_dB=mlon_dB).reshape(X.shape)
-            print("Writing " + npfile)
-            np.save(npfile, Z)
-            print("Wrote " + npfile)
+    ext = "-" + parameter + '_plane_' + plane_str \
+            + '-du_' + str(plane['du']) \
+            + '-dv_' + str(plane['dv']) \
+            + '-ulims' + str(plane['ulims'][0]) + ',' + str(plane['ulims'][1]) \
+            + '-vlims' + str(plane['vlims'][0]) + ',' + str(plane['vlims'][1]) \
+            + '.npy'
+    cachedir = conf[run + '_derived'] + "cutplanes/cache/" + parameter + "/"
+    if 'dB' in parameter:
+        cachedir = cachedir + '_%.3f_%.3f/'%(kwargs['mlat_dB'], kwargs['mlon_dB'])
+    if not os.path.exists(cachedir):
+        os.makedirs(cachedir)
+    npfile = filename.replace(conf[run + '_cdf'], cachedir) + ext
+    if os.path.exists(npfile):
+        print("Reading " + npfile)
+        Z = np.load(npfile)
+        print("Read " + npfile)
+    else:
+        if debug:
+            print("Interpolating {0:s} onto {1:d}x{2:d} grid" \
+                  .format(parameter,len(x_1d),len(y_1d)))
+        Z = data_in_plane(run, time, parameter, plane,
+                          **kwargs).reshape(X.shape)
+        print("Writing " + npfile)
+        np.save(npfile, Z)
+        print("Wrote " + npfile)
 
     if field_lines is not None:
         raise RuntimeWarning ('WARNING: need to revisit')
@@ -266,8 +261,8 @@ def plot(run, time, parameter, arg3,
     axes.set(xlabel=xlabel)
     axes.set(ylabel=ylabel)
     axes.axis('square')
-    axes.set_xlim(xlims[0], xlims[1])
-    axes.set_ylim(ylims[0], ylims[1])
+    axes.set_xlim(*plane['ulims'])
+    axes.set_ylim(*plane['vlims'])
 
     if logz:
         import matplotlib.colors as colors

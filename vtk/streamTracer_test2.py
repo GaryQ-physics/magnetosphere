@@ -158,7 +158,113 @@ def traceFile(filename, IC, method='vtk', debug=True):
         pass #copied
 
 
+def _trace(IC, Field):
+    import types
+    assert isinstance(Field, types.FunctionType):
 
+    sign = +1
+
+    from scipy.integrate import odeint
+
+    def dXds(X, s):
+        F = Field(X)
+        Fmag = np.linalg.norm(F)
+        if 1e-9 < Fmag < 1e+7:
+            return (sign/Fmag)*F
+        return [0., 0., 0.]
+
+    s_grid = np.arange(0., 10., 0.1)
+    max_iterations = 100
+
+    if IC.shape == (3,):
+        IC = [IC]
+    ret = []
+    linenum = 0
+    for X0 in list(IC):
+        if debug:
+            print('linenum = ' + str(linenum))
+        done = False
+        solns = np.empty((0, 3)) # Combined solutions
+        i = 0
+        while not done:
+            if debug:
+                print('i = ' + str(i))
+            soln = odeint(dXds, X0, s_grid)
+            R = soln[:, 0]**2+soln[:, 1]**2 + soln[:, 2]**2
+            # define condition on the field line points
+            # Find first location where soln steps out-of-bounds
+            #tr = np.where( False == (R >= 1) & (soln[:,0] > -30.) & (np.abs(soln[:, 2]) < 20.) )        
+            # Boolean array.
+
+
+            tr = (R >= 1) & (soln[:,0] > -30.) & (np.abs(soln[:, 2]) < 20.)
+            # RuntimeWarning: invalid value encountered in greater_equal
+
+
+            # Indices where stop conditions satisfied
+            tr_out = np.where(tr == False)
+            if debug:
+                print(tr)
+            if tr_out[0].size > 0:
+                # Stop condition found at least once. Use solution up to that point.s
+                solns = np.vstack((solns, soln[0:tr_out[0][0] + 1, :]))
+                done = True
+            elif max_iterations == i + 1:
+                solns = np.vstack((solns, soln))   # return soln   faster?
+                done = True
+            else:
+                # New initial condition is stop point.
+                X0 = soln[-1, :]
+                # Append solution but exclude last value, which is the
+                # new initial condition.
+                solns = np.vstack((solns, soln[0:-1, :]))
+            i = i + 1
+        ret.append(solns)
+        linenum += 1
+
+    if len(ret) == 1:
+        return ret[0]
+    return ret
+
+def traceVTK(IC, vtk_object):
+
+
+def interpolate_and_trace(IC, Field, Domain):
+
+    from scipy.interpolate import RegularGridInterpolator, NearestNDInterpolator
+
+    Space = np.array(Space)
+    Field = np.array(Field)
+
+    if Space.shape == (3,3):
+        xlims = 
+        ...
+
+        from make_grid import make_axes
+        ax_list = make_axes(xlims,ylims,zlims,d)
+
+        # https://stackoverflow.com/questions/21836067/interpolate-3d-volume-with-numpy-and-or-scipy
+        Fx_interp = RegularGridInterpolator(tuple(ax_list), Field[0, :,:,:])
+        Fy_interp = RegularGridInterpolator(tuple(ax_list), Field[1, :,:,:])
+        Fz_interp = RegularGridInterpolator(tuple(ax_list), Field[2, :,:,:])
+
+        def Fcallable(v):
+            return np.array([Fx_interp(v)[0], Fy_interp(v)[0], Fz_interp(v)[0]])
+
+    else:
+        assert(Space.shape == Field.shape)
+        if Space.shape[0]==3 and Space.shape[1]!=3:
+            Space = Space.transpose()
+            Field = Field.transpose()
+
+        Fx = NearestNDInterpolator(Space,Field[:,0])
+        Fy = NearestNDInterpolator(Space,Field[:,0])
+        Fz = NearestNDInterpolator(Space,Field[:,0])
+
+        def Fcallable(v):
+            return np.array([Fx_interp(v)[0], Fy_interp(v)[0], Fz_interp(v)[0]])
+
+    return _trace(IC, Fcallable)
 
 
 def trace(Space, Field, IC, method='scipy', debug=True):
@@ -300,7 +406,7 @@ def trace(Space, Field, IC, method='scipy', debug=True):
 
 
 
-
+'''
 def _trace(IC, Field, region=None, method='scipy', debug=True):
     ''' Field = file.npy, file.vtk, file.cdf, tkObject, foo, 
        method = 'scipy','vtk'  '''
@@ -468,7 +574,7 @@ def _trace(IC, Field, region=None, method='scipy', debug=True):
         pass #TODO later
 
     else: raise ValueError
-
+'''
 
 def trace_old(X, view=False, write=False):
     datafile = "/tmp/tmp.vtk" # from ./magnetovis_vtk_demo.py
