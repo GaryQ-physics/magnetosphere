@@ -175,6 +175,11 @@ Notes:
     used read_tree.py and .tree file, along with global min maxes of the volume, to recreate the points (as a set) in the corresponding .out file
     this should be able to be used to provide the nessesary tree structure to the list of points in the .out file. (nope, turns out the order n^2 operation to reindex is too much)
 
+2021/02/01:
+    commited misc/vtk/streamline_from_datafile_demo.py which can read the julia vtu files and trace stream lines from them using only vtk python library
+    it only works right now for "UseNewPipeline = False", which doesnt use the ".GetOutputPort()" that was being used earlier to get the streamlines from structured grid .vtk files.
+    It should in theory be possible in a different way, the "new pipeline" https://vtk.org/Wiki/VTK/Tutorials/New_Pipeline
+
 TODO:
     fieldline tracing function
     upload biot-savart derivation and conditions
@@ -357,6 +362,11 @@ The radial component of B1 on the ghost face is set as B1rGhost = B1rCoef*B1rTru
 peter.willliam.schuck@gmail.com 240-810-6807
 
 
+two body pair correlation function
+https://en.wikipedia.org/wiki/Radial_distribution_function
+percolation model
+
+https://opensource.com/article/17/4/grok-gil
 
 SWMF_user_man.pdf pg 147 "Since the normalized current is defined as curl B"
 SWMF.pdf pg 155 "Since the normalized current is defined as curl B"

@@ -9,6 +9,9 @@ from config import conf
 from probe import probe
 import vtk
 from vtk.numpy_interface import dataset_adapter as dsa
+from vtk.vtkCommonDataModel import vtkDataSet
+from vtk.vtkCommonExecutionModel import vtkAlgorithmOutput
+
 
 def trace(IC, Field, debug=False):
     import types
@@ -114,18 +117,26 @@ def interpolate_and_trace(IC, Field, Domain, debug=False):
 
 
 def trace_vtk(IC, vtk_object, debug=False):
-    assert(isinstance(vtk_object,vtk.vtkObject))
-    print(vtk_object)
-    print(type(vtk_object))
-
+    if IC.shape == (3,):
+        IC = [IC]
     ret = []
-    if True:
-        X = IC
+    linenum = 0
+    for X0 in list(IC):
+        # Create integrator
         rk = vtk.vtkRungeKutta45()
         # Create source for streamtubes
         streamer = vtk.vtkStreamTracer()
-        streamer.SetInputConnection(vtk_object.GetOutputPort())
-        streamer.SetStartPosition(X[0],X[1],X[2])#SetSourceData()
+
+        if isinstance(vtk_object, vtkDataSet):
+            streamer.SetInputDataObject(vtk_object)
+        elif isinstance(vtk_object, vtkAlgorithmOutput):
+            streamer.SetInputConnection(vtk_object)
+            raise RuntimeWarning ('cannot at present select the apropriate vector field. '\
+                                  +  'will use whatever defaults.')
+        else:
+            raise ValueError ('not a supported vtk object for streamlines')
+
+        streamer.SetStartPosition(X0) #cannot pass multiple IC's in an array
         streamer.SetMaximumPropagation(20) ###
         #streamer.SetIntegrationStepUnit(2) # apperars overiden by next lines, see https://vtk.org/doc/nightly/html/classvtkStreamTracer.html#afe365e81e110f354065f5adc8401d589
         streamer.SetMinimumIntegrationStep(0.01)
@@ -138,19 +149,19 @@ def trace_vtk(IC, vtk_object, debug=False):
         streamer.SetIntegrator(rk)
         streamer.SetRotationScale(0.5)
         streamer.SetMaximumError(1.0e-8)
-
         #https://stackoverflow.com/questions/38504907/reading-a-vtk-polydata-file-and-converting-it-into-numpy-array
         ## either order works ##
         polydata = streamer.GetOutput()
-        print("\npolydata:\n")
-        print(polydata)
-        streamer.Update()
-        ret.append(dsa.WrapDataObject(polydata).Points)
+        streamer.Update() # forces the computation of the stream lines
+
+        ret.append( dsa.WrapDataObject(polydata).Points ) # convert the result to array and put in list
+        del polydata 
+        del streamer
 
     return ret
 
-
 def trace_file(IC, filename, method='vtk', debug=False):
+    if not os.path.exists(fname): raise FileNotFoundError ('no file ' + fname)
     ext = filename[-4:]
 
     if method == 'scipy':
@@ -176,14 +187,17 @@ def trace_file(IC, filename, method='vtk', debug=False):
 
     elif method == 'vtk':
         if ext in ['.vtk','.vtu']:
-            # read data
-            #reader = vtk.vtkStructuredGridReader()
-            #reader = vtk.vtkUnstructuredGridReader()
-            # https://stackoverflow.com/questions/54044958/reading-data-from-a-raw-vtk-vtu-file
-            reader = vtk.vtkXMLUnstructuredGridReader()
-            reader.SetFileName(filename)
-            reader.Update()
-            return traceVTK(IC, reader, debug=debug)
+            ## open file
+            if ext == '.vtk':
+                reader = vtk.vtkGenericDataObjectReader()
+            elif ext == '.vtu':
+                reader = vtk.vtkXMLUnstructuredGridReader() # https://stackoverflow.com/questions/54044958/reading-data-from-a-raw-vtk-vtu-file
+            reader.SetFileName(fname)
+            reader.Update() # forces loading the file into memory
+            # get nessesary vtk info from Reader object
+            reader_output = reader.GetOutput()
+            reader_output.GetPointData().SetActiveVectors('b')
+            return trace_vtk(IC, reader_output, debug=debug)
         elif ext == '.out':
             #todo: call julia script
             VTKfilename = filename[:-4]+'.vtk'
@@ -198,6 +212,7 @@ def trace_file(IC, filename, method='vtk', debug=False):
         #TODO: copy from elsewhere
 
 if __name__ == '__main__':
-    fname = '/home/gary/Batsrus.jl-master/'+'3d__var_3_e20031120-070000-000.vtu'
-    IC = np.array([1.,1.,1.])
-    print(traceFile(IC, fname, method='vtk', debug=True))
+    fname = '/home/gary/temp/'+'3d__var_3_e20031120-070000-000.vtu'
+    #IC = np.array([1.,1.,1.])
+    IC = np.column_stack([np.ones(20), np.ones(20), np.ones(20)])
+    print(trace_file(IC, fname, method='vtk', debug=True))

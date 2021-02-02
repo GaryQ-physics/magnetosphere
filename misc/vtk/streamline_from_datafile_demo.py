@@ -36,6 +36,7 @@ if debug: printl(reader)
 if UseNewPipeline:
     output_port = reader.GetOutputPort()
     printl(output_port)
+    # how to set which field to use?
 else:
     output = reader.GetOutput()
     if debug: printl(output)
@@ -53,11 +54,13 @@ else:
 rk = vtk.vtkRungeKutta45()
 # Create source for streamtubes
 streamer = vtk.vtkStreamTracer()
-if False:
+if UseNewPipeline:
     streamer.SetInputConnection(output_port)
 else:
     streamer.SetInputDataObject(output)
-streamer.SetStartPosition(1.,1.,1.)#SetSourceData()
+IC = np.array([1.,1.,1.])
+streamer.SetStartPosition(IC)
+#streamer.SetStartPosition(1., 1., 1.)# also works, but either way cannot pass multiple IC's in an array
 streamer.SetMaximumPropagation(20) ###
 #streamer.SetIntegrationStepUnit(2) # apperars overiden by next lines, see https://vtk.org/doc/nightly/html/classvtkStreamTracer.html#afe365e81e110f354065f5adc8401d589
 streamer.SetMinimumIntegrationStep(0.01)
@@ -85,4 +88,5 @@ if debug: printl(streamer)
 
 arr = dsa.WrapDataObject(polydata).Points  # convert the result to array
 
+print(arr.shape)
 print(arr)
