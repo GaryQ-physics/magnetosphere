@@ -210,6 +210,9 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
         assert(P.shape[1] == 2)
         sys.path.append(conf['interpolator'] + 'pycdf_with_scipy')
         import ionosphere_interpolator as ii
+    if library == 'vtk':
+        import vtk
+        from vtk.util import numpy_support as VN
     ###################
 
 
@@ -240,16 +243,62 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
         interpolator = kameleon.createNewInterpolator()
 
         def interpolate(variable, Q):
-            kameleon.loadVariable(variable)
-            arr = np.nan*np.empty((Q.shape[0],))
-            for k in range(Q.shape[0]):
-                arr[k] = interpolator.interpolate(variable, Q[k,0], Q[k,1], Q[k,2])
+            if variable in ['j','b','b1']:
+                kameleon.loadVariable(variable+'x')
+                kameleon.loadVariable(variable+'y')
+                kameleon.loadVariable(variable+'z')
+                arr = np.nan*np.empty((Q.shape[0],3))
+                for k in range(Q.shape[0]):
+                    arr[k,0] = interpolator.interpolate(variable+'x', Q[k,0], Q[k,1], Q[k,2])
+                    arr[k,1] = interpolator.interpolate(variable+'y', Q[k,0], Q[k,1], Q[k,2])
+                    arr[k,2] = interpolator.interpolate(variable+'z', Q[k,0], Q[k,1], Q[k,2])
+            else:
+                kameleon.loadVariable(variable)
+                arr = np.nan*np.empty((Q.shape[0],))
+                for k in range(Q.shape[0]):
+                    arr[k] = interpolator.interpolate(variable, Q[k,0], Q[k,1], Q[k,2])
+
             return arr
         if debug: print('aft int')
 
     elif library == 'pycdf':
         def interpolate(variable, Q):
             return ii.interpolate(Q[:,0], Q[:,1], variable, filename)
+
+    elif library == 'vtk':
+        if filename[-4:] == '.vtk':
+            reader = vtk.vtkGenericDataObjectReader()
+        elif filename[-4:] == '.vtu':
+            reader = vtk.vtkXMLUnstructuredGridReader()
+        else:
+            raise ValueError ('invalid vtk type file extension')
+        reader.SetFileName(filename)
+        reader.Update() # forces loading the file into memory
+        known_values = reader.GetOutput()
+
+        def interpolate(variable, Q):
+            vtk_arr = VN.numpy_to_vtk(Q)
+            vtk_pts = vtk.vtkPoints()
+            vtk_pts.SetData(vtk_arr)
+            interpolate_onto = vtk.vtkUnstructuredGrid()
+            interpolate_onto.SetPoints(vtk_pts)
+            vtk_probe_filter = vtk.vtkProbeFilter()
+            vtk_probe_filter.SetInputData(interpolate_onto)
+            vtk_probe_filter.SetSourceData(known_values)
+            vtk_probe_filter.Update()
+            if variable in ['jx','jy','jz','bx','by','bz','b1x','b1y','b1z']:#!!! todo: do better
+                retvect = VN.vtk_to_numpy(vtk_probe_filter.GetOutput().GetPointData().GetArray(variable[:-1]))
+                if variable[-1] == 'x':
+                    return retvect[:, 0]
+                if variable[-1] == 'y':
+                    return retvect[:, 1]
+                if variable[-1] == 'z':
+                    return retvect[:, 2]
+            else:
+                return VN.vtk_to_numpy(vtk_probe_filter.GetOutput().GetPointData().GetArray(variable))
+
+    else:
+        raise ValueError ('invalid library')
     ###################
 
     if var is None:
@@ -259,12 +308,20 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
         for key in meta['parameters']:
             ret[key] = interpolate(key, P)
 
+    elif isinstance(var, list) or isinstance(var, tuple):
+        # Get data for all parameters listed in var, store in dictionary
+        ret = {}
+        for key in var:
+            ret[key] = interpolate(key, P)
+
     elif type(var) == str:
         ret = interpolate(var, P)
-        if ret.size == 1:
-            ret = ret[0]
+        #if ret.size == 1:
+        #    ret = ret[0]
 
     else:
+        assert(False)
+        '''
         if type(var) != list and type(var) != tuple:
             raise ValueError('var must be None, str, list, or tuple')
         if dictionary:
@@ -286,6 +343,7 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
         if not dictionary:
             if P.shape[0] == 1:
                 ret = ret.flatten()
+        '''
 
     if library == 'kameleon' and not TESTANALYTIC:
         kameleon.close()
@@ -293,21 +351,15 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
     return ret
 
 
-def GetRunData(run, time, P, var):
-    if var=='j':
-        var = ['jx','jy','jz']
-    elif var=='b':
-        var = ['bx','by','bz']
-    elif var=='b1':
-        var = ['b1x','b1y','b1z']
-
-    '''
-    if 'TESTANALYTIC' == run:
-        TESTANALYTIC = True
-    else:
-        TESTANALYTIC = False
-    '''
-
+def GetRunData(run, time, P, var, library='vtk'):
+    P = np.array(P)
     filename = util.time2CDFfilename(run, time)
-    return probe(filename, P, var=var, library='kameleon')
+    if library == 'vtk':
+        filename = filename[:-8] + '.vtu'
+
+    arr = probe(filename, P, var=var, library=library)
+
+    if P.shape == (3,):
+        return arr[0] # equivalent to arr[0,:] for the vector vars
+    return np.array(arr, dtype=np.float64)#!!!!!
 

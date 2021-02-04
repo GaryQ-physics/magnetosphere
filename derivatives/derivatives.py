@@ -71,6 +71,43 @@ def GetDel(run, time, field, points, epsilon=0.0625, para=False, debug=False):
 
     return np.array(ret)
 
+
+def GetDel_vectorized(run, time, field, points, epsilon=0.0625, para=False, debug=False,library='kameleon'):
+
+    pts = np.empty((points.shape[0], 6, 3))
+    for i in range(points.shape[0]):
+        pts[i,0,:] = points[i,:] + epsilon*np.array([1,0,0])
+        pts[i,1,:] = points[i,:] - epsilon*np.array([1,0,0])
+        pts[i,2,:] = points[i,:] + epsilon*np.array([0,1,0])
+        pts[i,3,:] = points[i,:] - epsilon*np.array([0,1,0])
+        pts[i,4,:] = points[i,:] + epsilon*np.array([0,0,1])
+        pts[i,5,:] = points[i,:] - epsilon*np.array([0,0,1])
+
+    assert('_batsrus' in field)
+    if para:
+        print('para is irrelevantly True')
+    else:
+        print('para is irrelevantly False')
+
+
+    fi = field.split('_batsrus')[0]
+    if debug: print('fi=%s'%(fi))
+
+    if debug: print(pts)
+    pts = pts.reshape((6*points.shape[0], 3))
+    Fs = GetRunData(run, time, pts, fi, library=library).reshape((points.shape[0], 6, 3))
+    pts = pts.reshape((points.shape[0], 6, 3))
+    if debug: print(pts)
+
+    delF = np.nan*np.empty((points.shape[0], 3, 3))
+    for i in range(points.shape[0]):
+        delF[i,0,:] = ( Fs[i,0,:] - Fs[i,1,:] )/(2.*epsilon)
+        delF[i,1,:] = ( Fs[i,2,:] - Fs[i,3,:] )/(2.*epsilon)
+        delF[i,2,:] = ( Fs[i,4,:] - Fs[i,5,:] )/(2.*epsilon)
+
+    return delF
+
+
 def GetDivergence(delF):
     divF = np.nan*np.empty(delF.shape[0])
     for i in range(delF.shape[0]):

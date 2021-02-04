@@ -116,7 +116,9 @@ def interpolate_and_trace(IC, Field, Domain, debug=False):
     return trace(IC, Fcallable, debug=debug)
 
 
-def trace_vtk(IC, vtk_object, debug=False):
+def trace_vtk(IC, vtk_object, debug=False, var='b'):
+    vtk_object.GetPointData().SetActiveVectors(var)
+
     if IC.shape == (3,):
         IC = [IC]
     ret = []
@@ -196,7 +198,6 @@ def trace_file(IC, filename, method='vtk', debug=False):
             reader.Update() # forces loading the file into memory
             # get nessesary vtk info from Reader object
             reader_output = reader.GetOutput()
-            reader_output.GetPointData().SetActiveVectors('b')
             return trace_vtk(IC, reader_output, debug=debug)
         elif ext == '.out':
             #todo: call julia script

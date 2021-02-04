@@ -61,6 +61,7 @@ else:
 IC = np.array([1.,1.,1.])
 streamer.SetStartPosition(IC)
 #streamer.SetStartPosition(1., 1., 1.)# also works, but either way cannot pass multiple IC's in an array
+#TODO vectorze via SetSourceData (vtkDataSet *source) ?
 streamer.SetMaximumPropagation(20) ###
 #streamer.SetIntegrationStepUnit(2) # apperars overiden by next lines, see https://vtk.org/doc/nightly/html/classvtkStreamTracer.html#afe365e81e110f354065f5adc8401d589
 streamer.SetMinimumIntegrationStep(0.01)

@@ -186,16 +186,13 @@ TODO:
     upload proof that interpolation and symetric difference commute (for native step size)
     Improve biot-savart when point has nonzero J
 
-
 Q's:
     line qotree.py 78 and 329 in Dan's branch. whats with the logs?
     #SAVEBINARY is false in PARAM.in (for DIPTSUR2)
     why is there no #GRID in PARAM.in when theres supposedly no default values according to the manual
 
 things to say:
-    worth using python logging module?
-    dictionaries args kwargs for cutplane and cutplane_plot functions?
-
+    modified vtk_export
 
 GAMERA (Grid Agnostic MHD for Extended Research Applications)
 
