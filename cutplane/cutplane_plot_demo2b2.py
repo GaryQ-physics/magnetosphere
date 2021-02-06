@@ -252,4 +252,4 @@ def main(run):
 
 if __name__ == '__main__':
     #util.generate_TESTANALYTIC_cdflist()
-    main('DIPTSUR2')
+    main('LUHMANN1979')

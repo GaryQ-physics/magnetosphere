@@ -55,6 +55,9 @@ conf = {
         'DIPTSUR2_cdf' : storage + 'DIPTSUR2/GM/IO2/',
         'DIPTSUR2_derived' : storage + 'DIPTSUR2-derived/',
 
+        'LUHMANN1979_cdf' : storage + 'LUHMANN1979/',
+        'LUHMANN1979_derived' : storage + 'LUHMANN1979-derived/',
+
         'mag_server_url': 'http://mag.gmu.edu/git-data/sblake/',
 
         'SWPC_raw': storage + 'SWPC_SWMF_052811_2/raw_output/',

@@ -1,7 +1,8 @@
 import os
+import sys
 import numpy as np
 import pandas as pd
-
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 from probe import GetRunData
 import util
@@ -16,14 +17,14 @@ log.write('script began' + now.strftime("%Y-%m-%d T%H:%M:%S") + '\n')
 log.write('current working directory      '  + os.getcwd() + '\n')
 log.write('USING VTK\n')
 ####################
-run = 'DIPTSUR2'
+run = 'LUHMANN1979'
 pntlist = 'native_random_sampled'
 #pntlist = 'xz_plane_y=0.062500'
 skip_computing = False
 para = True
 debug = False
 
-library = 'kameleon' #temporarily
+library = 'vtk' #temporarily
 log.write('using '+ library+' library')
 ####################
 
@@ -42,6 +43,12 @@ if run == 'IMP10_RUN_SAMPLE':
 if run == 'TESTANALYTIC':
     time = (2000,1,1,0,10,0,0)
     rCurrents = 1.5
+if run == 'LUHMANN1979':
+    time = (2000,1,1,0,0,0,0)
+    rCurrents = 1.1
+    rBody = 1.
+    epsilons = [1./16., 1./8.]
+    corresponding_max_radii = [5., np.inf]
 
 direct = conf[run+'_derived'] + library+'_library/derivatives/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
 direct = direct + pntlist + '/'
