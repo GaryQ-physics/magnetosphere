@@ -1,3 +1,4 @@
+#todo put in seperate repository
 import os
 import sys
 
@@ -43,43 +44,3 @@ class Fortran_Subroutine:
 
         return self.activeSubroutine(*args)
 
-
-def main():
-    import numpy as np
-    n = 10
-    c = np.zeros(n)
-    a = np.ones(n)
-    b = 2.*np.ones(n)
-
-    # mind indentation, even though we are within function, we need to have 
-    # the multiline string start at no tab to generate the correct string
-    foo_fortran = '''!FOO
-subroutine FOO(A,B,C,N)
-    implicit none
-    !will pass the transposed np array (which is in fortran order) having shape (3, N, M)
-
-    integer, intent(in) :: N
-    real(8), intent(in), dimension(0:N-1) :: A, B
-!f2py intent(in) :: A, B
-    real(8), intent(inout), dimension(0:N-1) :: C
-!f2py intent(in,out) :: C
-
-    integer :: i
-
-    do i=0,N-1
-        C(i) = C(i) + A(i) + B(i)
-    end do
-end subroutine FOO
-'''
-
-    foo_F = Fortran_Subroutine(foo_fortran, 'FOO')
-
-    #foo_F.compile()
-    print(c)
-    foo_F.execute(a,b,c,n)
-    print(c)
-    foo_F.execute(a,b,c,n)
-    print(c)
-
-if __name__=='__main__':
-    main()

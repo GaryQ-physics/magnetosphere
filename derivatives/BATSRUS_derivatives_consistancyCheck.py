@@ -47,6 +47,7 @@ if run == 'LUHMANN1979':
     time = (2000,1,1,0,0,0,0)
     rCurrents = 1.1
     rBody = 1.
+
     epsilons = [1./16., 1./8.]
     corresponding_max_radii = [5., np.inf]
 

@@ -181,8 +181,9 @@ Notes:
     It should in theory be possible in a different way, the "new pipeline" https://vtk.org/Wiki/VTK/Tutorials/New_Pipeline
 
 TODO:
-    fieldline tracing function
-    upload biot-savart derivation and conditions
+    dont use os.system on jitFORTAN and move it into seperate folder
+    look into irbem for analytic models and coordinate transformations
+
     upload proof that interpolation and symetric difference commute (for native step size)
     Improve biot-savart when point has nonzero J
 
@@ -192,8 +193,15 @@ Q's:
     why is there no #GRID in PARAM.in when theres supposedly no default values according to the manual
 
 things to say:
+    interpolated using vtk
     modified vtk_export
     fortran jit
+
+https://sourceforge.net/p/irbem/code/HEAD/tree/trunk/source/mead.f
+svn
+http://svn.code.sf.net/p/irbem/code/trunk/
+
+
 
 https://sourceforge.net/projects/irbem/
 
