@@ -17,8 +17,8 @@ log.write('script began' + now.strftime("%Y-%m-%d T%H:%M:%S") + '\n')
 log.write('current working directory      '  + os.getcwd() + '\n')
 log.write('USING VTK\n')
 ####################
-run = 'DIPTSUR2'
-pntlist = 'native_random_sampled'
+run = 'LUHMANN1979'
+pntlist = 'native_random_sampled2'
 #pntlist = 'xz_plane_y=0.062500'
 skip_computing = False
 para = True
@@ -51,8 +51,9 @@ if run == 'LUHMANN1979':
     epsilons = [1./16., 1./8.]
     corresponding_max_radii = [5., np.inf]
 
-direct = conf[run+'_derived'] + library+'_library/derivatives/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
-direct = direct + pntlist + '/'
+direct = conf[run+'_derived'] + '%s_library/'%(library) \
+        + 'derivatives/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6) \
+        + pntlist + '/'
 if not os.path.exists(direct):
     os.makedirs(direct)
 
@@ -107,10 +108,11 @@ dels = [GetDerivativesArray(epsilon) for epsilon in epsilons]
 
 DISTANCE = np.sqrt(points[:,0]**2 + points[:,1]**2 + points[:,2]**2)
 
-imagedir = conf['base'] + 'images/'+library+'_library/' + run + '/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6)
+imagedir = conf['base'] + 'images/' + run+'/' + 'using_%s/'%(library) \
+        + 'derivatives/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6) \
+        + pntlist + '/'
 if not os.path.exists(imagedir):
     os.makedirs(imagedir)
-
 
 #assert(types == ['j_batsrus', 'b_batsrus', 'b1_batsrus'])
 del_j_batsrus = dels[0][0,:,:,:]
