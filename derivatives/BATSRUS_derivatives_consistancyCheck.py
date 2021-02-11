@@ -17,7 +17,7 @@ log.write('script began' + now.strftime("%Y-%m-%d T%H:%M:%S") + '\n')
 log.write('current working directory      '  + os.getcwd() + '\n')
 log.write('USING VTK\n')
 ####################
-run = 'LUHMANN1979'
+run = 'DIPTSUR2'
 pntlist = 'native_random_sampled'
 #pntlist = 'xz_plane_y=0.062500'
 skip_computing = False
@@ -29,8 +29,8 @@ log.write('using '+ library+' library')
 ####################
 
 if run == 'DIPTSUR2':
-    time = (2019,9,2,6,30,0,0)
-    #time = (2019,9,2,4,10,0,0)
+    #time = (2019,9,2,6,30,0,0)
+    time = (2019,9,2,4,10,0,0)
     rCurrents = 1.8
     rBody = 1.5
 

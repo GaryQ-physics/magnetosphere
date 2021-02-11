@@ -1,4 +1,4 @@
-# BATSRUS_derivatives_consistancyCheck.py LUHMANN1979
+# BATSRUS_derivatives_consistancyCheck.py DIPTSUR2 at 6:30
 
 ## checking divergences
 ![](divergence_J.png)
