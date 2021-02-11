@@ -29,8 +29,8 @@ log.write('using '+ library+' library')
 ####################
 
 if run == 'DIPTSUR2':
-    #time = (2019,9,2,6,30,0,0)
-    time = (2019,9,2,4,10,0,0)
+    time = (2019,9,2,6,30,0,0)
+    #time = (2019,9,2,4,10,0,0)
     rCurrents = 1.8
     rBody = 1.5
 
