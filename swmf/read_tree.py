@@ -88,7 +88,7 @@ ChildLast_= Child0_ + nChild
 '''
 
 
-filetag = "/home/gary/Batsrus.jl-master/3d__var_3_e20031120-070000-000"
+filetag = "/home/gary/temp/3d__var_3_e20031120-070000-000"
 
 
 
@@ -141,6 +141,13 @@ iRatio_D = filebytes[4:4+nDim] # Array of refinement ratios
 nRoot_D = filebytes[4+nDim:4+2*nDim]  # The number of root nodes in all dimension
 iTree_IA = filebytes[4+2*nDim:4+2*nDim+nInfo*nNode].reshape((nInfo,nNode))
 '''
+
+print('nDim = ' + str(nDim))
+print('nInfo = ' + str(nInfo))
+print('nNode = ' + str(nNode))
+print('iRatio_D = ' + str(iRatio_D))
+print('nRoot_D = ' + str(nRoot_D))
+
 
 print(nDim)
 print(nInfo)
@@ -318,7 +325,7 @@ def order_tree(): # from subroutine order_tree in BATL_tree.f90
         if iTree_IA[FortEqu(Status_), FortEqu(iNode_tmp)] >= Used_:
             iMorton_dict['iMorton'] = iMorton_dict['iMorton'] + 1
             iNodeMorton_I[FortEqu(iMorton_dict['iMorton'])] = iNode_tmp
-            print('iNode_tmp = ' + str(iNode_tmp))
+            #print('iNode_tmp = ' + str(iNode_tmp))
             iMortonNode_A[FortEqu(iNode_tmp)] = iMorton_dict['iMorton']
         else:
            for iChild in range(Child1_, ChildLast_+1):
@@ -347,6 +354,20 @@ def order_tree(): # from subroutine order_tree in BATL_tree.f90
        nLevelMax = np.maximum(iLevel, nLevelMax)
 
     return nLevelMin, nLevelMax
+
+############ from SWMF/GM/BATSRUS/srcBATL/BATL_size_orig.f90 
+# Maximum dimensionality of grid is 3 (cannot be modified)
+MaxDim = 3
+
+# Indexes of AMR dimensions.
+# The magic formulas should be correct from 1 to nDimAmr.
+iDimAmrTmp_D = np.empty((MaxDim,))
+iDimAmrTmp_D = np.array([1 + (2-iRatio)*(3-jRatio), 6-iRatio-jRatio, 3 ], dtype=np.int8)
+print('iDimAmrTmp_D = ' + str(iDimAmrTmp_D))
+
+iDimAmr_D = iDimAmrTmp_D[0:nDimAmr]
+############
+print('iDimAmr_D = ' + str(iDimAmr_D))
 
 # from SWMF/GM/BATSRUS/srcBATL/BATL_tree.f90 line 975
 def find_tree_node(CoordIn_D):

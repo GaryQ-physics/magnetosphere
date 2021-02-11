@@ -622,3 +622,14 @@ def printmetadata(filename):
         print('----------------------------------------------------------------------')
     else:
         raise ValueError("File name does not end in cdf or out. " + filename)
+
+def isclose_32(arr1, arr2):
+    if arr1.shape != arr2.shape: return False
+
+    ret = np.empty(arr1.shape ,dtype=bool)
+    ret[arr1 == arr2] = True
+    tr = arr1 > arr2
+    ret[tr] = (1./eps)*(arr1-arr2)/(arr1)
+    ret[np.logical_not(tr)] = (1./eps)*(arr1-arr2)/(arr2)
+
+

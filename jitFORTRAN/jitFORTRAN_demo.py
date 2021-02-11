@@ -58,4 +58,3 @@ end subroutine FOO
     foo_fortran = foo_fortran + lines
 
 demo1()
-demo2()

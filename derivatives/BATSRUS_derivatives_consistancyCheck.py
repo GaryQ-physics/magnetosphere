@@ -254,9 +254,10 @@ fig.suptitle('Divergence of J', fontsize=16)
 #https://stackoverflow.com/questions/8248467/matplotlib-tight-layout-doesnt-take-into-account-figure-suptitle/45161551#45161551
 fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-fig.savefig(imagedir+'divergence_J.png')
-if debug: print('saved png ' + imagedir+'divergence_J.png')
-log.write('saved png ' + imagedir+'divergence_J.png\n')
+figname = 'divergence_J.png'
+fig.savefig(imagedir+figname)
+if debug: print('saved png ' + imagedir+figname)
+log.write('saved png ' + imagedir+figname+'\n')
 
 del axes
 del fig
@@ -291,9 +292,10 @@ fig.suptitle('Divergence of B', fontsize=16)
 #https://stackoverflow.com/questions/8248467/matplotlib-tight-layout-doesnt-take-into-account-figure-suptitle/45161551#45161551
 fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-fig.savefig(imagedir+'divergence_B.png')
-if debug: print('saved png ' + imagedir+'divergence_B.png')
-log.write('saved png ' + imagedir+'divergence_B.png\n')
+figname = 'divergence_B.png'
+fig.savefig(imagedir+figname)
+if debug: print('saved png ' + imagedir+figname)
+log.write('saved png ' + imagedir+figname+'\n')
 
 del axes
 del fig
@@ -328,13 +330,15 @@ fig.suptitle('Divergence of B1', fontsize=16)
 #https://stackoverflow.com/questions/8248467/matplotlib-tight-layout-doesnt-take-into-account-figure-suptitle/45161551#45161551
 fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-fig.savefig(imagedir+'divergence_B1.png')
-if debug: print('saved png ' + imagedir+'divergence_B1.png')
-log.write('saved png ' + imagedir+'divergence_B1.png\n')
+figname = 'divergence_B1.png'
+fig.savefig(imagedir+figname)
+if debug: print('saved png ' + imagedir+figname)
+log.write('saved png ' + imagedir+figname+'\n')
 
 del axes
 del fig
 
+#### ampere using B ####
 for cp in ['x', 'y', 'z']:
     fig, axes = plt.subplots(figsize=(12,4), nrows=1, ncols=2, dpi=300)
 
@@ -346,9 +350,9 @@ for cp in ['x', 'y', 'z']:
     axes[0].set_xlabel('distance from center [$R_E$]')
     axes[0].set_ylabel('values in  $\\frac{nT}{R_E}$')
 
-    axes[1].plot(distance, (data['curl_Bbats_'+cp] - unitmu0*data['Jbats_'+cp])/(unitmu0*normJ),'.',
+    axes[1].plot(distance, (data['curl_Bbats_'+cp] - unitmu0*data['Jbats_'+cp])/(unitmu0*normJ),'x',
                  label='$\\frac{curl(B) - \mu_0 J}{\mu_0 norm(J)}$', color='LightBlue')
-    axes[1].plot(distance, (data['curl_Bbats_'+cp] - unitmu0*data['Jbats_'+cp])/(unitmu0*data['Jbats_'+cp]),'.',
+    axes[1].plot(distance, (data['curl_Bbats_'+cp] - unitmu0*data['Jbats_'+cp])/(unitmu0*data['Jbats_'+cp]),'+',
                  label='$\\frac{curl(B) - \mu_0 J}{\mu_0 J}$', color='Orange')
     axes[1].set_yscale('symlog', linthreshy=1e-4)
     axes[1].legend()
@@ -358,9 +362,10 @@ for cp in ['x', 'y', 'z']:
     fig.suptitle(cp+' component', fontsize=16)
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-    fig.savefig(imagedir+'ampere_check_'+cp+'_component.png')
-    if debug: print('saved png ' + imagedir+'ampere_check_'+cp+'_component.png')
-    log.write('saved png ' + imagedir+'ampere_check_'+cp+'_component.png\n')
+    figname = 'curlB_and_J_'+cp+'_component.png'
+    fig.savefig(imagedir+figname)
+    if debug: print('saved png ' + imagedir+figname)
+    log.write('saved png ' + imagedir+figname+'n')
 
     del axes
     del fig
@@ -380,12 +385,69 @@ ax.set_title('percent error in amperes law')
 ax.set_xlabel('distance from center [$R_E$]')
 ax.set_ylabel('percent error (%)')
 
-fig.savefig(imagedir+'ampere_percent_error.png')
-if debug: print('saved png ' + imagedir+'ampere_percent_error.png')
-log.write('saved png ' + imagedir+'ampere_percent_error.png\n')
+figname = 'curlB_and_J_percent_error.png'
+fig.savefig(imagedir+figname)
+if debug: print('saved png ' + imagedir+figname)
+log.write('saved png ' + imagedir+figname+'n')
 
 del ax
 del fig
+
+### ampere using B1 ###
+for cp in ['x', 'y', 'z']:
+    fig, axes = plt.subplots(figsize=(12,4), nrows=1, ncols=2, dpi=300)
+
+    axes[0].plot(distance, data['curl_B1bats_'+cp], '+', color='DarkRed', label='$curl(B1)$')
+    axes[0].plot(distance, unitmu0*data['Jbats_'+cp], 'x', color='Orange', label='$\\mu_0 J$')
+    axes[0].set_yscale('symlog', linthreshy=1e-2)
+    axes[0].legend()
+    axes[0].set_title('dimensionfull values')
+    axes[0].set_xlabel('distance from center [$R_E$]')
+    axes[0].set_ylabel('values in  $\\frac{nT}{R_E}$')
+
+    axes[1].plot(distance, (data['curl_B1bats_'+cp] - unitmu0*data['Jbats_'+cp])/(unitmu0*normJ),'x',
+                 label='$\\frac{curl(B1) - \mu_0 J}{\mu_0 norm(J)}$', color='LightBlue')
+    axes[1].plot(distance, (data['curl_B1bats_'+cp] - unitmu0*data['Jbats_'+cp])/(unitmu0*data['Jbats_'+cp]),'+',
+                 label='$\\frac{curl(B1) - \mu_0 J}{\mu_0 J}$', color='Orange')
+    axes[1].set_yscale('symlog', linthreshy=1e-4)
+    axes[1].legend()
+    axes[1].set_title('fractional errors')
+    axes[1].set_xlabel('distance from center [$R_E$]')
+
+    fig.suptitle(cp+' component', fontsize=16)
+    fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+    figname = 'curlB1_and_J_'+cp+'_component.png'
+    fig.savefig(imagedir+figname)
+    if debug: print('saved png ' + imagedir+figname)
+    log.write('saved png ' + imagedir+figname+'n')
+
+    del axes
+    del fig
+
+amp_err = np.sqrt( (data['curl_B1bats_x'] - unitmu0*data['Jbats_x'])**2
+                  +(data['curl_B1bats_y'] - unitmu0*data['Jbats_y'])**2
+                  +(data['curl_B1bats_z'] - unitmu0*data['Jbats_z'])**2 )
+
+amp_percent_err = 100.*amp_err/(unitmu0*normJ)
+
+fig, ax = plt.subplots(figsize=(12,4), dpi=300)
+
+ax.plot(distance, amp_percent_err, '.')
+ax.set_yscale('symlog', linthreshy=1e-2)
+ax.vlines(rCurrents, 0, 100, linewidths=1.)
+ax.set_title('percent error in amperes law using only B1')
+ax.set_xlabel('distance from center [$R_E$]')
+ax.set_ylabel('percent error (%)')
+
+figname = 'curlB1_and_J_percent_error.png'
+fig.savefig(imagedir+figname)
+if debug: print('saved png ' + imagedir+figname)
+log.write('saved png ' + imagedir+figname+'n')
+
+del ax
+del fig
+
 
 
 now = datetime.now()

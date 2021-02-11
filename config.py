@@ -96,8 +96,8 @@ if base + 'cutplane/' not in sys.path:
 #if kameleon + 'ccmc/' not in sys.path:
 #    sys.path.append(kameleon + 'ccmc/')
 
-if base + 'misc/' not in sys.path:
-    sys.path.append(base + 'misc/')
+#if base + 'misc/' not in sys.path:
+#    sys.path.append(base + 'misc/')
 
 if base + 'regions/' not in sys.path:
     sys.path.append(base + 'regions/')
