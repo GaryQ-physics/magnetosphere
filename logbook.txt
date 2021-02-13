@@ -199,6 +199,9 @@ things to say:
     modified vtk_export
     fortran jit
 
+for tree meet:
+    julia generated .vtu have the same points as .out but in DIFFERENT order
+
 https://sourceforge.net/p/irbem/code/HEAD/tree/docs/
 http://svn.code.sf.net/p/irbem/code/trunk/
 https://sourceforge.net/p/irbem/code/HEAD/tree/trunk/source/mead.f

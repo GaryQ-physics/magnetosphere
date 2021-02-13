@@ -1,6 +1,8 @@
 import numpy as np
 import struct
 
+debug = False
+
 def FortEqu(fortranindex):
     return fortranindex - 1
 
@@ -93,36 +95,37 @@ filetag = "/home/gary/temp/3d__var_3_e20031120-070000-000"
 
 
 ## Loading AMR tree
+usesp = True
 
 # directly read bytes
 f = open(filetag+".tree", 'rb')
 filebytes = np.fromfile(f, dtype=np.int32)
 f.close()
-print(filebytes[:20])
+if debug: print(filebytes[:20])
 
-if False:
-	# use scipy FortranFile
-	from scipy.io import FortranFile
-	ff = FortranFile(filetag+".tree", 'r')
-	if False:
-		nDim, nInfo, nNode = ff.read_reals(dtype=np.int32)
-		iRatio_D = ff.read_reals(dtype=np.int32) # Array of refinement ratios
-		nRoot_D = ff.read_reals(dtype=np.int32) # The number of root nodes in all dimension
-		iTree_IA = ff.read_reals(dtype=np.int32).reshape((nInfo,nNode), order='fortran')
-		#iTree_IA = ff.read_reals(dtype=np.int32).reshape((nNode,nInfo)).transpose()
-	else:
-		nDim, nInfo, nNode = ff.read_ints(dtype='i4')
-		iRatio_D = ff.read_ints(dtype='i4') # Array of refinement ratios
-		nRoot_D = ff.read_ints(dtype='i4') # The number of root nodes in all dimension
-		iTree_IA = ff.read_ints(dtype='i4').reshape((nInfo,nNode), order='fortran')
+if usesp:
+    # use scipy FortranFile
+    from scipy.io import FortranFile
+    ff = FortranFile(filetag+".tree", 'r')
+    if True:
+        nDim, nInfo, nNode = ff.read_reals(dtype=np.int32)
+        iRatio_D = ff.read_reals(dtype=np.int32) # Array of refinement ratios
+        nRoot_D = ff.read_reals(dtype=np.int32) # The number of root nodes in all dimension
+        iTree_IA = ff.read_reals(dtype=np.int32).reshape((nInfo,nNode), order='F')
+        #iTree_IA = ff.read_reals(dtype=np.int32).reshape((nNode,nInfo)).transpose()
+    else:
+        nDim, nInfo, nNode = ff.read_ints(dtype='i4')
+        iRatio_D = ff.read_ints(dtype='i4') # Array of refinement ratios
+        nRoot_D = ff.read_ints(dtype='i4') # The number of root nodes in all dimension
+        iTree_IA = ff.read_ints(dtype='i4').reshape((nInfo,nNode), order='fortran')
 else:
-	# use fortranfile
-	from fortranfile import FortranFile
-	ff = FortranFile(filetag+".tree") # read or write ???
-	nDim, nInfo, nNode = ff.readInts()
-	iRatio_D = ff.readInts() # Array of refinement ratios
-	nRoot_D = ff.readInts() # The number of root nodes in all dimension
-	iTree_IA = ff.readInts().reshape((nInfo,nNode), order='fortran')
+    # use fortranfile
+    from fortranfile import FortranFile
+    ff = FortranFile(filetag+".tree") # read or write ???
+    nDim, nInfo, nNode = ff.readInts()
+    iRatio_D = ff.readInts() # Array of refinement ratios
+    nRoot_D = ff.readInts() # The number of root nodes in all dimension
+    iTree_IA = ff.readInts().reshape((nInfo,nNode), order='fortran')
 
 
 assert(np.isfortran(iTree_IA))
@@ -141,24 +144,23 @@ iRatio_D = filebytes[4:4+nDim] # Array of refinement ratios
 nRoot_D = filebytes[4+nDim:4+2*nDim]  # The number of root nodes in all dimension
 iTree_IA = filebytes[4+2*nDim:4+2*nDim+nInfo*nNode].reshape((nInfo,nNode))
 '''
+if debug:
+    print('nDim = ' + str(nDim))
+    print('nInfo = ' + str(nInfo))
+    print('nNode = ' + str(nNode))
+    print('iRatio_D = ' + str(iRatio_D))
+    print('nRoot_D = ' + str(nRoot_D))
 
-print('nDim = ' + str(nDim))
-print('nInfo = ' + str(nInfo))
-print('nNode = ' + str(nNode))
-print('iRatio_D = ' + str(iRatio_D))
-print('nRoot_D = ' + str(nRoot_D))
+    print(nDim)
+    print(nInfo)
+    print(nNode)
+    print(iRatio_D)
+    print(nRoot_D)
+    print(iTree_IA.shape)
 
-
-print(nDim)
-print(nInfo)
-print(nNode)
-print(iRatio_D)
-print(nRoot_D)
-print(iTree_IA.shape)
-
-print(iTree_IA)
-print(iTree_IA[:,0])
-print(iTree_IA[0,:])
+    print(iTree_IA)
+    print(iTree_IA[:,0])
+    print(iTree_IA[0,:])
 
 
 # Get all the used blocks
@@ -172,15 +174,16 @@ Blocks = [iTree_IA[FortEqu(Block_), FortEqu(iNode)] for iNode in range(1, nNode+
 Levels = [iTree_IA[FortEqu(Level_), FortEqu(iNode)] for iNode in range(1, nNode+1) if iTree_IA[FortEqu(Status_), FortEqu(iNode)] == Used_]
 Procs = [iTree_IA[FortEqu(Proc_), FortEqu(iNode)] for iNode in range(1, nNode+1) if iTree_IA[FortEqu(Status_), FortEqu(iNode)] == Used_]
 
-print((256./8.)*0.5**max(Levels))
-print((256./8.)*0.5**min(Levels))
-print(len(blockused_)*8**3)
+if debug:
+    print((256./8.)*0.5**max(Levels))
+    print((256./8.)*0.5**min(Levels))
+    print(len(blockused_)*8**3)
 
 
-print('#############\n\n')
-print(set(MinLevels))
-print(set(MaxLevels))
-print('#############\n\n')
+    print('#############\n\n')
+    print(set(MinLevels))
+    print(set(MaxLevels))
+    print('#############\n\n')
 
 #print('#############\n\n')
 #print(set(allblocks))
@@ -363,11 +366,11 @@ MaxDim = 3
 # The magic formulas should be correct from 1 to nDimAmr.
 iDimAmrTmp_D = np.empty((MaxDim,))
 iDimAmrTmp_D = np.array([1 + (2-iRatio)*(3-jRatio), 6-iRatio-jRatio, 3 ], dtype=np.int8)
-print('iDimAmrTmp_D = ' + str(iDimAmrTmp_D))
+if debug: print('iDimAmrTmp_D = ' + str(iDimAmrTmp_D))
 
 iDimAmr_D = iDimAmrTmp_D[0:nDimAmr]
 ############
-print('iDimAmr_D = ' + str(iDimAmr_D))
+if debug: print('iDimAmr_D = ' + str(iDimAmr_D))
 
 # from SWMF/GM/BATSRUS/srcBATL/BATL_tree.f90 line 975
 def find_tree_node(CoordIn_D):
@@ -435,11 +438,10 @@ def find_tree_node(CoordIn_D):
     iNode = Unset_
     return iNode
 
-
-print(nNodeUsed)
-nLevelMin, nLevelMax = order_tree()
-print(nLevelMin, nLevelMax)
-assert(False)
+if debug: print(nNodeUsed)
+#nLevelMin, nLevelMax = order_tree()
+#print(nLevelMin, nLevelMax)
+#assert(False)
 
 block_coords = []
 position_mins = []
@@ -454,11 +456,13 @@ for iNode in blockused_:
 block_coords = np.array(block_coords)
 position_mins = np.array(position_mins)
 position_maxs = np.array(position_maxs)
-print(block_coords.shape)
-print(np.min(block_coords, axis=0))
-print(np.max(block_coords, axis=0))
-print(np.min(position_mins, axis=0))
-print(np.max(position_maxs, axis=0))
+
+if debug:
+    print(block_coords.shape)
+    print(np.min(block_coords, axis=0))
+    print(np.max(block_coords, axis=0))
+    print(np.min(position_mins, axis=0))
+    print(np.max(position_maxs, axis=0))
 
 
 def get_physical_dimensions(iNode, returnCenterData=False):
@@ -492,126 +496,130 @@ for iNode in blockused_:
 
     iLevel = iTree_IA[FortEqu(Level_), FortEqu(iNode)]
     if iLevel == 2:
-        print('############\n')
-        print(counter)
-        #print((PositionMin_D, PositionMax_D))
-        print(xminmax)
-        print(yminmax)
-        print(zminmax)
-        print(gridspacing)
-        if False:
-            print('iNode = ' + str(iNode))
+        if debug:
+            print('############\n')
+            print(counter)
+            #print((PositionMin_D, PositionMax_D))
+            print(xminmax)
+            print(yminmax)
+            print(zminmax)
+            print(gridspacing)
+            if False:
+                print('iNode = ' + str(iNode))
 
-            print('Status_ --> ' + str(iTree_IA[FortEqu(Status_), FortEqu(iNode)]))
-            print('Level_ --> ' + str(iTree_IA[FortEqu(Level_), FortEqu(iNode)]))
-            print('Proc_ --> ' + str(iTree_IA[FortEqu(Proc_), FortEqu(iNode)]))
-            print('Block_ --> ' + str(iTree_IA[FortEqu(Block_), FortEqu(iNode)]))
-            print('MinLevel_ --> ' + str(iTree_IA[FortEqu(MinLevel_), FortEqu(iNode)]))
-            print('MaxLevel_ --> ' + str(iTree_IA[FortEqu(MaxLevel_), FortEqu(iNode)]))
-            print('Coord0_ --> ' + str(iTree_IA[FortEqu(Coord0_), FortEqu(iNode)]))
-            print('Coord1_ --> ' + str(iTree_IA[FortEqu(Coord1_), FortEqu(iNode)]))
-            print('Coord2_ --> ' + str(iTree_IA[FortEqu(Coord2_), FortEqu(iNode)]))
-            print('Coord3_ --> ' + str(iTree_IA[FortEqu(Coord3_), FortEqu(iNode)]))
-            print('CoordLast_ --> ' + str(iTree_IA[FortEqu(CoordLast_), FortEqu(iNode)]))
-            print('Parent_ --> ' + str(iTree_IA[FortEqu(Parent_), FortEqu(iNode)]))
-            print('Child0_ --> ' + str(iTree_IA[FortEqu(Child0_), FortEqu(iNode)]))
-            print('Child1_ --> ' + str(iTree_IA[FortEqu(Child1_), FortEqu(iNode)]))
-            print('ChildLast_ --> ' + str(iTree_IA[FortEqu(ChildLast_), FortEqu(iNode)]))
+                print('Status_ --> ' + str(iTree_IA[FortEqu(Status_), FortEqu(iNode)]))
+                print('Level_ --> ' + str(iTree_IA[FortEqu(Level_), FortEqu(iNode)]))
+                print('Proc_ --> ' + str(iTree_IA[FortEqu(Proc_), FortEqu(iNode)]))
+                print('Block_ --> ' + str(iTree_IA[FortEqu(Block_), FortEqu(iNode)]))
+                print('MinLevel_ --> ' + str(iTree_IA[FortEqu(MinLevel_), FortEqu(iNode)]))
+                print('MaxLevel_ --> ' + str(iTree_IA[FortEqu(MaxLevel_), FortEqu(iNode)]))
+                print('Coord0_ --> ' + str(iTree_IA[FortEqu(Coord0_), FortEqu(iNode)]))
+                print('Coord1_ --> ' + str(iTree_IA[FortEqu(Coord1_), FortEqu(iNode)]))
+                print('Coord2_ --> ' + str(iTree_IA[FortEqu(Coord2_), FortEqu(iNode)]))
+                print('Coord3_ --> ' + str(iTree_IA[FortEqu(Coord3_), FortEqu(iNode)]))
+                print('CoordLast_ --> ' + str(iTree_IA[FortEqu(CoordLast_), FortEqu(iNode)]))
+                print('Parent_ --> ' + str(iTree_IA[FortEqu(Parent_), FortEqu(iNode)]))
+                print('Child0_ --> ' + str(iTree_IA[FortEqu(Child0_), FortEqu(iNode)]))
+                print('Child1_ --> ' + str(iTree_IA[FortEqu(Child1_), FortEqu(iNode)]))
+                print('ChildLast_ --> ' + str(iTree_IA[FortEqu(ChildLast_), FortEqu(iNode)]))
 
         counter += 1
 
     if counter>100: break
 
+if __name__ == '__main__':
+    import os
+    import sys
+    sys.path.append( os.path.dirname(os.path.abspath(__file__)) + '/../' )
+    from config import conf
+    from make_grid import make_axes, make_grid
 
-from config import conf
-from make_grid import make_axes, make_grid
+    import spacepy.pybats.bats as bats
+    import numpy as np
 
-import spacepy.pybats.bats as bats
-import numpy as np
+    mhd = bats.IdlFile(filetag + '.out')
+    loaded_grid = np.column_stack([mhd['x'],mhd['y'],mhd['z']])
+    npts = loaded_grid.shape[0]
 
-mhd = bats.IdlFile(filetag + '.out')
-loaded_grid = np.column_stack([mhd['x'],mhd['y'],mhd['z']])
-npts = loaded_grid.shape[0]
+    allgrids = []
+    gridspacings = []
+    counter = 0
+    for iNode in blockused_:
+        xlims, ylims, zlims, gridspacing = get_physical_dimensions(iNode, returnCenterData=True)
 
-allgrids = []
-gridspacings = []
-counter = 0
-for iNode in blockused_:
-    xlims, ylims, zlims, gridspacing = get_physical_dimensions(iNode, returnCenterData=True)
+        axes = make_axes(xlims, ylims, zlims, gridspacing)
+        grid = make_grid(axes)
 
-    axes = make_axes(xlims, ylims, zlims, gridspacing)
-    grid = make_grid(axes)
+        if counter<10:
+            print(axes[0].shape,axes[1].shape,axes[2].shape)
 
-    if counter<10:
-        print(axes[0].shape,axes[1].shape,axes[2].shape)
+        gridspacings.append(gridspacing)
+        allgrids.append(grid)
 
-    gridspacings.append(gridspacing)
-    allgrids.append(grid)
+        #ind = np.empty((nI*nJ*nK,))
+        #for k in range(nI*nJ*nK):
+        #    tr = loaded_grid == grid[k,:]
+        #    ind[k] = np.where(tr[:,0] & tr[:,1] & tr[:,2])[0][0]
 
-    #ind = np.empty((nI*nJ*nK,))
-    #for k in range(nI*nJ*nK):
-    #    tr = loaded_grid == grid[k,:]
-    #    ind[k] = np.where(tr[:,0] & tr[:,1] & tr[:,2])[0][0]
+        counter += 1
 
-    counter += 1
+    TreeGrid = np.array(allgrids)
+    print('TreeGrid.shape == ' + str(TreeGrid.shape))
+    reconstructed_grid = np.vstack(allgrids)
+    print(np.all( reconstructed_grid.reshape(TreeGrid.shape) == TreeGrid ))
+    print(reconstructed_grid)
+    print(min(gridspacings))
+    print(reconstructed_grid.shape)
 
-TreeGrid = np.array(allgrids)
-print('TreeGrid.shape == ' + str(TreeGrid.shape))
-reconstructed_grid = np.vstack(allgrids)
-print(np.all( reconstructed_grid.reshape(TreeGrid.shape) == TreeGrid ))
-print(reconstructed_grid)
-print(min(gridspacings))
-print(reconstructed_grid.shape)
+    '''
+    indecesReordered = np.empty((npts,))
+    for k in range(npts):
+        for ind in range(npts):
+            bl = np.all(reconstructed_grid[k,:] == loaded_grid[ind,:])
+            if bl:
+                indecesReordered[k] = ind
+                break
 
-'''
-indecesReordered = np.empty((npts,))
-for k in range(npts):
-    for ind in range(npts):
-        bl = np.all(reconstructed_grid[k,:] == loaded_grid[ind,:])
-        if bl:
-            indecesReordered[k] = ind
-            break
+    print('checkpoint')
+    assert(True)
+    assert(np.all(  reconstructed_grid == loaded_grid[indecesReordered, :]  ))
+    print('checkpoint2')
+    '''
 
-print('checkpoint')
-assert(True)
-assert(np.all(  reconstructed_grid == loaded_grid[indecesReordered, :]  ))
-print('checkpoint2')
-'''
+    #TreeVars = {}
+    #TreeVars['p'] = np.empty((TreeGrid.shape[0],nI*nJ*nK))
+    #for i in range(TreeGrid.shape[0]):
+    #    TreeVars['p'][i,:] = mhd['p'][indexing[i]]
+    #
+    #print(TreeVars)
 
-#TreeVars = {}
-#TreeVars['p'] = np.empty((TreeGrid.shape[0],nI*nJ*nK))
-#for i in range(TreeGrid.shape[0]):
-#    TreeVars['p'][i,:] = mhd['p'][indexing[i]]
-#
-#print(TreeVars)
+    reconstructed_grid = set([tuple(tup) for tup in list(reconstructed_grid)])
+    loaded_grid = set([tuple(tup) for tup in list(loaded_grid)])
 
-reconstructed_grid = set([tuple(tup) for tup in list(reconstructed_grid)])
-loaded_grid = set([tuple(tup) for tup in list(loaded_grid)])
-
-print('\n\n\n\n######pleasebetrue####')
-print(reconstructed_grid == loaded_grid)
-print('\n\n')
-print(len(reconstructed_grid))
+    print('\n\n\n\n######pleasebetrue####')
+    print(reconstructed_grid == loaded_grid)
+    print('\n\n')
+    print(len(reconstructed_grid))
 
 
-#np.where(a[:,0] & a[:,1] & a[:,2])[0][0]
+    #np.where(a[:,0] & a[:,1] & a[:,2])[0][0]
 
-'''from julia
-println(nDim)
-println(nInfo)
-println(nNode)
-println(iRatio_D)
-println(nRoot_D)
-println(size(iTree_IA))
-println(iTree_IA[:,1])
-println(iTree_IA[1,:])
+    '''from julia
+    println(nDim)
+    println(nInfo)
+    println(nNode)
+    println(iRatio_D)
+    println(nRoot_D)
+    println(size(iTree_IA))
+    println(iTree_IA[:,1])
+    println(iTree_IA[1,:])
 
-3
-18
-13161
-Int32[2, 2, 2]
-Int32[1, 1, 1]
-(18, 13161)
-Int32[-1, 0, -100, -100, 0, 30, 1, 1, 1, -100, 2, 3, 4, 5, 6, 7, 8, 9]
-'''
+    3
+    18
+    13161
+    Int32[2, 2, 2]
+    Int32[1, 1, 1]
+    (18, 13161)
+    Int32[-1, 0, -100, -100, 0, 30, 1, 1, 1, -100, 2, 3, 4, 5, 6, 7, 8, 9]
+    '''
 

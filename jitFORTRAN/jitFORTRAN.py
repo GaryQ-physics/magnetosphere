@@ -18,6 +18,10 @@ class Fortran_Subroutine:
     called, but not for sucessive calls so long as the class instance remains in memory. 
     A compilation (or recompilation) can be forced by calling:
     instance.compile()
+
+    the subroutine must have any array dimensions passed as well, but if you place them
+    as the last arguments, then you can ignore them when calling calling instance.execute(*args),
+    since the last arguments will be auto filled in by the f2py created module
     """
     def __init__(self, script, subroutineName):#todo, determine name from top of script
         self.script = script
