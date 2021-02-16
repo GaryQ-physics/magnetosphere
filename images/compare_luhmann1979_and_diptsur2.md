@@ -37,34 +37,34 @@ expected to *exactly* reproduce "j".
 First lets look at "b1", which does not include the dipole field and so we
 can isolate effects from that. It's divergence should be (close to) 0.
 
-###LUHMANN1979
+### LUHMANN1979
 > ![](LUHMANN1979/using_vtk/derivatives/20000101T000000/native_random_sampled/divergence_B1.png)
 > ![](LUHMANN1979/using_vtk/derivatives/20000101T000000/native_random_sampled2/divergence_B1.png)
 > for luhmann1979, normalized divergence of B1 is almost always well within 10^-2 of the regions
 
-###DIPTSUR2
+### DIPTSUR2
 > ![](DIPTSUR2/using_vtk/derivatives/20190902T063000/native_random_sampled/divergence_B1.png)
 > ![](DIPTSUR2/using_vtk/derivatives/20190902T063000/native_random_sampled2/divergence_B1.png)
 > for Diptsur2, normalized divergence of B1 is much higher, from 1 to 100%, across all distances.
 
 Now lets put back the dipole field and look at the divergence of "b".
 
-###LUHMANN1979
-!> [](LUHMANN1979/using_vtk/derivatives/20000101T000000/native_random_sampled/divergence_B.png)
-!> [](LUHMANN1979/using_vtk/derivatives/20000101T000000/native_random_sampled2/divergence_B.png)
+### LUHMANN1979
+> ![](LUHMANN1979/using_vtk/derivatives/20000101T000000/native_random_sampled/divergence_B.png)
+> ![](LUHMANN1979/using_vtk/derivatives/20000101T000000/native_random_sampled2/divergence_B.png)
 > for luhmann1979, normalized divergence of B starts at arround 10^-2 then rapidly drops to near zero with distance,
 > until very large distances where larger value appear in the normalized divergence, but not the relative divergence.
 > Since we know the divergence of "b1" is so close to zero, this is almost entirely due to the dipole field.
 > The large distances larger values of the normalized divergence are likely due to all the dipole partial derivatives being so close to zero.
 
-###DIPTSUR2
+### DIPTSUR2
 > ![](DIPTSUR2/using_vtk/derivatives/20190902T063000/native_random_sampled/divergence_B.png)
 > ![](DIPTSUR2/using_vtk/derivatives/20190902T063000/native_random_sampled2/divergence_B.png)
 > for diptsur2, normalized divergence of B apears much the same as for B1
 
 Now lets look at the error in amperes law.
 
-###LUHMANN1979
+### LUHMANN1979
 > ![](LUHMANN1979/using_vtk/derivatives/20000101T000000/native_random_sampled/curlB1_and_J_percent_error.png)
 > ![](LUHMANN1979/using_vtk/derivatives/20000101T000000/native_random_sampled2/curlB1_and_J_percent_error.png)
 > The error starts out small at small distances, it gets noticably larger at around 5 Re (expected) but not that large,
@@ -72,7 +72,7 @@ Now lets look at the error in amperes law.
 > leading to larger discretization errors. The grid continues to get larger farther away
 > I don't know why, but for large distances there appears to be a sharp line at around 10% error. 
 
-###DIPTSUR2
+### DIPTSUR2
 > ![](DIPTSUR2/using_vtk/derivatives/20190902T063000/native_random_sampled/curlB1_and_J_percent_error.png)
 > ![](DIPTSUR2/using_vtk/derivatives/20190902T063000/native_random_sampled2/curlB1_and_J_percent_error.png)
 > Again, based on what I know, this computation of discrete curl B1 should reproduce J exactly. But the errors are actually
