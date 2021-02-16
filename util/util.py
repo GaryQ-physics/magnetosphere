@@ -1,5 +1,6 @@
 import os
 import sys
+import numpy as np
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
@@ -631,5 +632,48 @@ def isclose_32(arr1, arr2):
     tr = arr1 > arr2
     ret[tr] = (1./eps)*(arr1-arr2)/(arr1)
     ret[np.logical_not(tr)] = (1./eps)*(arr1-arr2)/(arr2)
+
+def get_rCurrents(run):  # todo:  get from PARAM file
+    if run == 'DIPTSUR2':
+        return 1.8
+    if run == 'IMP10_RUN_SAMPLE':
+        return 1.7
+    if run == 'TESTANALYTIC':
+        return 1.5
+    if run == 'LUHMANN1979':
+        return 1.1
+    assert(False)
+
+def get_rBody(run):  # todo:  get from PARAM file
+    if run == 'DIPTSUR2':
+        return 1.5
+    if run == 'IMP10_RUN_SAMPLE':
+        pass
+    if run == 'TESTANALYTIC':
+        pass
+    if run == 'LUHMANN1979':
+        return 1.
+    assert(False)
+
+
+def make_data_file(run, time, data_name, data_arr, note=''):
+    direct = conf[run+'_derived'] \
+              + time2CDFfilename(run, time, split=True)[:-4]+'/'
+    if not os.path.exists(direct): os.makedirs(direct)
+    arrname = direct + data_name +'.bin'
+
+    if np.isfortran(data_arr):
+        order = 'F'
+    else:
+        order = 'C'
+    with open(arrname+'-meta.txt','w') as headerfile:
+        headerfile.write('shape = '+str(data_arr.shape)+'\n')
+        headerfile.write('arrayorder = '+order+'\n')
+        headerfile.write('dtype = '+str(data_arr.dtype)+'\n')
+        headerfile.write('byteorder = '+str(data_arr.dtype.byteorder)+'\n')
+        headerfile.write(note+'\n')
+
+    data_arr.tofile(arrname)
+
 
 

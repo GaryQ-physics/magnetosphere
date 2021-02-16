@@ -188,9 +188,6 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
         P = np.array([P])
 
     assert(filename[0] == '/')
-    TESTANALYTIC = 'TESTANALYTIC' in filename
-    if debug: print('TESTANALYTIC = %s'%(str(TESTANALYTIC)))
-
 
     if not os.path.exists(filename):# and not TESTANALYTIC:
         raise ValueError('Not found: ' + filename)
@@ -217,22 +214,7 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
 
 
     ################### define interpolate(variable, Q) funtion within this probe
-    if TESTANALYTIC:
-        def interpolate(variable, Q):
-            if variable == 'jx':
-                return J_analytic(Q)[:, 0]
-            if variable == 'jy':
-                return J_analytic(Q)[:, 1]
-            if variable == 'jz':
-                return J_analytic(Q)[:, 2]
-            if variable in ['bx', 'b1x']:
-                return B_analytic(Q)[:, 0]
-            if variable in ['by', 'b1y']:
-                return B_analytic(Q)[:, 1]
-            if variable in ['bz', 'b1z']:
-                return B_analytic(Q)[:, 2]
-
-    elif library == 'kameleonV':
+    if library == 'kameleonV':
         def interpolate(variable, Q):
             return kameleonV.interpolate(filename, Q[:,0], Q[:,1], Q[:,2], variable)
 
@@ -345,7 +327,7 @@ def probe(filename, P, var=None, debug=False, dictionary=False, library='kameleo
                 ret = ret.flatten()
         '''
 
-    if library == 'kameleon' and not TESTANALYTIC:
+    if library == 'kameleon':
         kameleon.close()
     if debug: print('DONE PROBING')
     return ret

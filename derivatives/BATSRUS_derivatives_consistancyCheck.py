@@ -31,25 +31,19 @@ log.write('using '+ library+' library')
 if run == 'DIPTSUR2':
     time = (2019,9,2,6,30,0,0)
     #time = (2019,9,2,4,10,0,0)
-    rCurrents = 1.8
-    rBody = 1.5
-
     epsilons = [1./16., 1./8.]
     corresponding_max_radii = [5., np.inf]
-
 if run == 'IMP10_RUN_SAMPLE':
     time = (2019,9,2,7,0,0,0)
-    rCurrents = 1.7
 if run == 'TESTANALYTIC':
     time = (2000,1,1,0,10,0,0)
-    rCurrents = 1.5
 if run == 'LUHMANN1979':
     time = (2000,1,1,0,0,0,0)
-    rCurrents = 1.1
-    rBody = 1.
-
     epsilons = [1./16., 1./8.]
     corresponding_max_radii = [5., np.inf]
+
+rCurrents = util.get_rCurrents(run)
+rBody = util.get_rBody(run)
 
 direct = conf[run+'_derived'] + '%s_library/'%(library) \
         + 'derivatives/%.2d%.2d%.2dT%.2d%.2d%.2d/'%util.tpad(time, length=6) \
