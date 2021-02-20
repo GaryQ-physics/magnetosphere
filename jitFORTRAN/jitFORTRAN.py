@@ -23,16 +23,29 @@ class Fortran_Subroutine:
     as the last arguments, then you can ignore them when calling calling instance.execute(*args),
     since the last arguments will be auto filled in by the f2py created module
     """
-    def __init__(self, script, subroutineName):#todo, determine name from top of script
+    def __init__(self, script, subroutineName, include=None):#todo, determine name from top of script
         self.script = script
         self.subroutineName = subroutineName
         self.activeSubroutine = None
-
+        self.include = include
     def compile(self):
         with open('/tmp/jitFORTRAN_script.f90', 'w') as f:
             f.write(self.script)
 
-        os.system('f2py -c /tmp/jitFORTRAN_script.f90 -m jitFORTRAN_exe -DF2PY_REPORT_ON_ARRAY_COPY=1')
+        if isinstance(self.include, str):
+            if os.path.exists(self.include+'.o'):
+                pass ## TODO: check if existing .o was properly compiled with -fPIC
+            elif os.path.exists(self.include+'.f'):
+                os.system('gfortran -c -fPIC %s.f -o %s.o'%(self.include,self.include))
+            elif os.path.exists(self.include+'.f90'):
+                os.system('gfortran -c -fPIC %s.f90 -o %s.o'%(self.include,self.include))
+            else:
+                raise FileNotFoundError ('no file for %s{.f,.f90,.o}'%(self.include))
+
+            os.system('f2py -c /tmp/jitFORTRAN_script.f90 -I %s.o -m jitFORTRAN_exe -DF2PY_REPORT_ON_ARRAY_COPY=1'%(self.include))
+        else:
+            os.system('f2py -c /tmp/jitFORTRAN_script.f90 -m jitFORTRAN_exe -DF2PY_REPORT_ON_ARRAY_COPY=1')
+
         os.system('mv jitFORTRAN_exe.so /tmp/jitFORTRAN_exe.so')
 
         sys.path.append('/tmp/')

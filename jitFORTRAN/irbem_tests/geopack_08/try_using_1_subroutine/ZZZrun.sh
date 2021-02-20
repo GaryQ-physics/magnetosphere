@@ -7,8 +7,11 @@ gfortran -c main.f
 gfortran main.o subroutine.o
 ./a.out
 rm *.o
+rm a.out
 
 f2py -c subroutine.f -m pymod
-python -c "import pymod; print(pymod.meadv)"
+python main.py
 rm pymod.so
-rm a.out
+
+python jit.py
+

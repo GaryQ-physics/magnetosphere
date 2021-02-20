@@ -183,6 +183,8 @@ if debug:
     print('#############\n\n')
     print(set(MinLevels))
     print(set(MaxLevels))
+    print(set(Procs))
+    print(max(Procs))
     print('#############\n\n')
 
 #print('#############\n\n')
