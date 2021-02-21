@@ -1,6 +1,7 @@
 #todo put in seperate repository
 import os
 import sys
+import shutil
 
 class Fortran_Subroutine:
     """python class allowing for the definition of jit compiled fortran subroutines using f2py
@@ -29,9 +30,15 @@ class Fortran_Subroutine:
         self.activeSubroutine = None
         self.include = include
     def compile(self):
-        with open('/tmp/jitFORTRAN_script.f90', 'w') as f:
+        backup_sys_argv = sys.argv[:]
+        tempdir = os.tmpnam()
+
+        scriptfile = os.path.join(tempdir,'jitFORTRAN_script.f90')
+        os.mkdir(tempdir)
+        with open(scriptfile, 'w') as f:
             f.write(self.script)
 
+        ###### set f2py_args , a list such that ' '.join(f2py_args) would be executed in terminal on linux to compile to *.so file
         if isinstance(self.include, str):
             if os.path.exists(self.include+'.o'):
                 pass ## TODO: check if existing .o was properly compiled with -fPIC
@@ -42,16 +49,30 @@ class Fortran_Subroutine:
             else:
                 raise FileNotFoundError ('no file for %s{.f,.f90,.o}'%(self.include))
 
-            os.system('f2py -c /tmp/jitFORTRAN_script.f90 -I %s.o -m jitFORTRAN_exe -DF2PY_REPORT_ON_ARRAY_COPY=1'%(self.include))
+            f2py_args = ['f2py','-c',scriptfile, '-I', '%s.o'(self.include), '-m', 'jitFORTRAN_exe', '-DF2PY_REPORT_ON_ARRAY_COPY=1']
         else:
-            os.system('f2py -c /tmp/jitFORTRAN_script.f90 -m jitFORTRAN_exe -DF2PY_REPORT_ON_ARRAY_COPY=1')
+            f2py_args = ['f2py','-c',scriptfile, '-m', 'jitFORTRAN_exe', '-DF2PY_REPORT_ON_ARRAY_COPY=1']
 
-        os.system('mv jitFORTRAN_exe.so /tmp/jitFORTRAN_exe.so')
+        ###### try to use numpy.f2py directly to get *.so file, if fails use os.system() to mimick terminal
+        try:
+            from numpy.f2py.f2py2e import main
+            sys.argv = f2py_args[:]
+            main()
+            sys.argv = backup_sys_argv[:]
+        except:
+            raise RuntimeWarning ('EXCEPTED')
+            print(' '.join(f2py_args))
+            sys.argv = backup_sys_argv[:]
+            os.system(' '.join(f2py_args))
 
-        sys.path.append('/tmp/')
+        ### move *.so to temporary directory, import the library now in the temporary directory, and store callable subroutine
+        shutil.move('jitFORTRAN_exe.so', os.path.join(tempdir, 'jitFORTRAN_exe.so'))
+        sys.path.append(tempdir)
         import jitFORTRAN_exe
         exec('sub = jitFORTRAN_exe.'+self.subroutineName.lower())
-        sys.path.remove('/tmp/')
+        sys.path.remove(tempdir)
+        os.remove(os.path.join(tempdir, 'jitFORTRAN_exe.so'))
+        del jitFORTRAN_exe
 
         self.activeSubroutine = sub
 

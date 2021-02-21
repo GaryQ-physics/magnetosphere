@@ -1,0 +1,75 @@
+. == /home/gary/miniconda3/envs/python2.7/lib/python2.7/
+
+./site-packages/numpy/f2py/__main__.py:
+	# See http://cens.ioc.ee/projects/f2py2e/
+	from __future__ import division, print_function
+
+	from numpy.f2py.f2py2e import main
+
+	main()
+	
+./site-packages/numpy/f2py/f2py2e.py:
+	def main():
+	    ... other stuff ...
+	    
+	    if '-c' in sys.argv[1:]:
+		run_compile()
+	    else:
+		run_main(sys.argv[1:])
+		
+	def run_compile()
+	    ... bunch of stuff using sys.argv ...
+
+
+#########################
+
+jitFORTRAN/simple_tests/f77/ex4$ f2py -c subroutine.f -m pymod
+
+jitFORTRAN/simple_tests/f77/ex4$ python /home/gary/miniconda3/envs/python2.7/bin/f2py -c subroutine.f -m pymod
+
+################
+
+$ python
+Python 2.7.18 |Anaconda, Inc.| (default, Apr 23 2020, 22:42:48) 
+[GCC 7.3.0] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import sys
+>>> sys.argv
+['']
+>>> sys.argv = ['f2py','-c','subroutine.f','-m','pymod']
+>>> execfile('/home/gary/miniconda3/envs/python2.7/bin/f2py')
+
+works but then exits python shell...
+
+
+$ python
+>>> import os
+>>> a = os.system('f2py -c subroutine.f -m pymod')
+... works and prints ..
+>>> a
+0
+>>> exit()
+
+$ python
+>>> import sys
+>>> sys.argv
+['']
+>>> sys.argv = ['f2py','-c','subroutine.f','-m','pymod']
+>>> import numpy.f2py.f2py2e as f2py2e
+>>> sys.argv
+['f2py', '-c', 'subroutine.f', '-m', 'pymod']
+>>> a = f2py2e.main()
+ .. works and prints..
+>>> a
+>>> a is None
+True
+>>> sys.argv
+['f2py', 'build', '--build-temp', '/tmp/tmpXIyMCY', '--build-base', '/tmp/tmpXIyMCY', '--build-platlib', '.']
+>>> sys.argv = ['']
+>>> sys.argv
+['']
+>>> exit()
+
+
+
+
