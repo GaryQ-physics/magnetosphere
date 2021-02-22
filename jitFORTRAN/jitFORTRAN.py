@@ -49,7 +49,7 @@ class Fortran_Subroutine:
             else:
                 raise FileNotFoundError ('no file for %s{.f,.f90,.o}'%(self.include))
 
-            f2py_args = ['f2py','-c',scriptfile, '-I', '%s.o'(self.include), '-m', 'jitFORTRAN_exe', '-DF2PY_REPORT_ON_ARRAY_COPY=1']
+            f2py_args = ['f2py','-c',scriptfile, '-I', '%s.o'%(self.include), '-m', 'jitFORTRAN_exe', '-DF2PY_REPORT_ON_ARRAY_COPY=1']
         else:
             f2py_args = ['f2py','-c',scriptfile, '-m', 'jitFORTRAN_exe', '-DF2PY_REPORT_ON_ARRAY_COPY=1']
 

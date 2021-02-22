@@ -181,10 +181,8 @@ Notes:
     It should in theory be possible in a different way, the "new pipeline" https://vtk.org/Wiki/VTK/Tutorials/New_Pipeline
 
 TODO:
-    try make irbem-code
-    run derivatives on new analytic vtu
-    write meadV.f90 so it will compile
-    dont use os.system on jitFORTRAN
+    use mead to write new vtu and run derivatives on it
+    branch for modified vtk_export
 
     upload proof that interpolation and symetric difference commute (for native step size)
     Improve biot-savart when point has nonzero J
@@ -192,12 +190,9 @@ TODO:
 Q's:
     line qotree.py 78 and 329 in Dan's branch. whats with the logs?
     #SAVEBINARY is false in PARAM.in (for DIPTSUR2)
-    why is there no #GRID in PARAM.in when theres supposedly no default values according to the manual
 
 things to say:
-    interpolated using vtk
-    modified vtk_export
-    fortran jit
+    os.tmpnam() security warning
 
 for tree meet:
     julia generated .vtu have the same points as .out but in DIFFERENT order
