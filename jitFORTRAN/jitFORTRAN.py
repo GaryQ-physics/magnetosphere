@@ -69,12 +69,13 @@ class Fortran_Subroutine:
         shutil.move('jitFORTRAN_exe.so', os.path.join(tempdir, 'jitFORTRAN_exe.so'))
         sys.path.append(tempdir)
         import jitFORTRAN_exe
+        reload(jitFORTRAN_exe)
         exec('sub = jitFORTRAN_exe.'+self.subroutineName.lower())
         sys.path.remove(tempdir)
         os.remove(os.path.join(tempdir, 'jitFORTRAN_exe.so'))
         del jitFORTRAN_exe
-
         self.activeSubroutine = sub
+        del sub
 
     def execute(self, *args):
         if self.activeSubroutine is None:

@@ -360,19 +360,19 @@ def order_tree(): # from subroutine order_tree in BATL_tree.f90
 
     return nLevelMin, nLevelMax
 
-############ from SWMF/GM/BATSRUS/srcBATL/BATL_size_orig.f90 
-# Maximum dimensionality of grid is 3 (cannot be modified)
-MaxDim = 3
-
-# Indexes of AMR dimensions.
-# The magic formulas should be correct from 1 to nDimAmr.
-iDimAmrTmp_D = np.empty((MaxDim,))
-iDimAmrTmp_D = np.array([1 + (2-iRatio)*(3-jRatio), 6-iRatio-jRatio, 3 ], dtype=np.int8)
-if debug: print('iDimAmrTmp_D = ' + str(iDimAmrTmp_D))
-
-iDimAmr_D = iDimAmrTmp_D[0:nDimAmr]
-############
-if debug: print('iDimAmr_D = ' + str(iDimAmr_D))
+# ############ from SWMF/GM/BATSRUS/srcBATL/BATL_size_orig.f90 
+# # Maximum dimensionality of grid is 3 (cannot be modified)
+# MaxDim = 3
+# 
+# # Indexes of AMR dimensions.
+# # The magic formulas should be correct from 1 to nDimAmr.
+# iDimAmrTmp_D = np.empty((MaxDim,))
+# iDimAmrTmp_D = np.array([1 + (2-iRatio)*(3-jRatio), 6-iRatio-jRatio, 3 ], dtype=np.int8)
+# if debug: print('iDimAmrTmp_D = ' + str(iDimAmrTmp_D))
+# 
+# iDimAmr_D = iDimAmrTmp_D[0:nDimAmr]
+# ############
+# if debug: print('iDimAmr_D = ' + str(iDimAmr_D))
 
 # from SWMF/GM/BATSRUS/srcBATL/BATL_tree.f90 line 975
 def find_tree_node(CoordIn_D):
@@ -443,7 +443,8 @@ def find_tree_node(CoordIn_D):
 if debug: print(nNodeUsed)
 #nLevelMin, nLevelMax = order_tree()
 #print(nLevelMin, nLevelMax)
-#assert(False)
+order_tree()
+assert(False)
 
 block_coords = []
 position_mins = []

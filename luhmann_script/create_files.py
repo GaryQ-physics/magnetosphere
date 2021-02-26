@@ -3,8 +3,8 @@ import os
 import sys
 import numpy as np
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../../../')
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../../../jitFORTRAN')
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../jitFORTRAN')
 
 from config import conf
 import jitFORTRAN
