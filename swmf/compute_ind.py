@@ -7,7 +7,7 @@ import spacepy.pybats.bats as bats
 import read_swmf_files as rswmf
 
 #https://stackoverflow.com/questions/2706605/sorting-a-2d-numpy-array-by-multiple-axes
-def isReordering(arr1, arr2):
+def isReordering(arr1, arr2, debug=False):
     arr1 = np.array(arr1); arr2 = np.array(arr2)
     if arr1.shape != arr2.shape: return False
 
@@ -16,14 +16,15 @@ def isReordering(arr1, arr2):
     undo1 = np.argsort(sort1)
     undo2 = np.argsort(sort2)
 
-    print('#######')
-    print(np.all(np.arange(5896192) == sort1[undo1]))
-    print(np.all(np.arange(5896192) == sort2[undo2]))
-    print(np.all(arr1 == (arr1[sort1,:])[undo1,:]))
-    print(np.all(arr2 == (arr2[sort2,:])[undo2,:]))
-    print(np.all(arr2 == (arr1[sort1,:])[undo2,:]))
-    print(np.all( arr2 == (arr1[sort1[undo2],:]) ))
-    print('#######')
+    if debug:
+        print('#######')
+        print(np.all(np.arange(5896192) == sort1[undo1]))
+        print(np.all(np.arange(5896192) == sort2[undo2]))
+        print(np.all(arr1 == (arr1[sort1,:])[undo1,:]))
+        print(np.all(arr2 == (arr2[sort2,:])[undo2,:]))
+        print(np.all(arr2 == (arr1[sort1,:])[undo2,:]))
+        print(np.all( arr2 == (arr1[sort1[undo2],:]) ))
+        print('#######')
 
     return np.all(arr1[sort1,:] == arr2[sort2,:])
 
