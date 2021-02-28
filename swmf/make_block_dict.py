@@ -5,7 +5,6 @@ from make_grid import make_axes, make_grid
 import numpy as np
 import spacepy.pybats.bats as bats
 
-
 fname = "../../Batsrus.jl-master/3d__var_1_n00002500"
 
 data = bats.Bats2d(fname + ".out")

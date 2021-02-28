@@ -1,3 +1,5 @@
+# Depreciated
+
 import os
 import sys
 sys.path.append('/home/gary/magnetosphere/physics/')
