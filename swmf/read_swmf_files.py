@@ -221,7 +221,7 @@ def read_all(filetag):
     #  the P in iNodeP and iBlockP stands for python like indexing (as oposed to fortran)
     #  
     #  iNodeP indexes all nodes of the tree, from 0 to nNode-1,
-    #  and thus the "iNode" to be used in the other functions is simply iNodeP+1, or P2P(iNodeP)
+    #  and thus the "iNode" to be used in the other functions is simply iNodeP+1, or P2F(iNodeP)
     # 
     #  iBlockP indexes all the blocks used, from 0 to nBlock-1.
     #  There is one for each node with a status of used. 

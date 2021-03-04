@@ -108,12 +108,16 @@ def GetDel_vectorized(run, time, field, points, epsilon=0.0625, para=False, debu
     return delF
 
 
-def GetDivergence(delF):
-    divF = np.nan*np.empty(delF.shape[0])
-    for i in range(delF.shape[0]):
-        divF[i] = delF[i,0,0] + delF[i,1,1] + delF[i,2,2]
+#def GetDivergence(delF):
+#    divF = np.nan*np.empty(delF.shape[0])
+#    for i in range(delF.shape[0]):
+#        divF[i] = delF[i,0,0] + delF[i,1,1] + delF[i,2,2]
+#
+#    return divF
 
-    return divF
+def GetDivergence(delF):
+    return delF[:,0,0] + delF[:,1,1] + delF[:,2,2]
+
 
 def GetCurl(delF):
     curlF = np.nan*np.empty((delF.shape[0], 3))
