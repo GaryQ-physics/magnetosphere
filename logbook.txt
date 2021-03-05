@@ -230,7 +230,7 @@ https://github.com/spacecataz/spacepy/tree/octtree
 https://github.com/spacecataz/spacepy/blob/octtree/spacepy/pybats/bats.py line 589
 https://github.com/spacecataz/spacepy/blob/octtree/spacepy/pybats/qotree.py 78 and 329
 
-
+Foundations of Multidimensional and Metric Data Structures, by Hanan Samet 
 
 SWMF/GM/BATSRUS/src/ModWritePlot.f90 writes .tree and .out files
 SWMF/GM/BATSRUS/srcPostProc/select_snapshot.f90
