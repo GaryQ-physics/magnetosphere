@@ -12,6 +12,10 @@ and those within 1.8 R_E from earths center.
 taking curl_b1, and dividing by mu_0 = 8014.956840
 (vacuum permeability in the apropriate units)
 
+In all the plots that follow, the dots are color coded based on
+whether the point is on the day side or the night side.
+Night side is Blue, Day side is Orange.
+
 ## divergence of b1
 
 ![](div_b1.png)
