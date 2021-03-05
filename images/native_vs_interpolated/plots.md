@@ -38,7 +38,7 @@ Night side is Blue, Day side is Orange.
 
 ## error in jR
 
-![](norm_j.png)
+![](jR_error.png)
 
 > this is the norm (magnitude) of the vector difference between jR and j,
 > and thus is still in microamperes per meter squared.

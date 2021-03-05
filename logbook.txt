@@ -190,7 +190,7 @@ Notes:
 TODO:
     use mead to write new vtu and run derivatives on it
     branch for modified vtk_export
-
+    StringIO
     upload proof that interpolation and symetric difference commute (for native step size)
     Improve biot-savart when point has nonzero J
 

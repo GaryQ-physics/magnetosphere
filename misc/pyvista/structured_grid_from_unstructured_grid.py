@@ -71,9 +71,8 @@ field = np.column_stack([ P[:,0]*P[:,2]**2+0.1 , P[:,0]*P[:,1]**2+0.1 , P[:,0]*P
 nE = E.shape[0]
 nF = F.shape[0]
 nV = V.shape[0]
-nV_Periodic = V_Periodic.shape[0]
 
-
+'''
 f = open('UNSTRUCTURED_GRID-volumesPeriodic.vtk','w')
 
 f.write('# vtk DataFile Version 3.0\n')
@@ -99,7 +98,7 @@ else:
 
 f.close()
 del f
-
+'''
 
 
 ##### using V can generate streamlines ####
@@ -129,7 +128,7 @@ else:
 f.close()
 del f
 
-if True:
+if False:
     import pyvista as pv
     import vtk
     #pyvista outbuts "# vtk DataFile Version 5.1"  instead of 3.0 , and it has extra sections 
