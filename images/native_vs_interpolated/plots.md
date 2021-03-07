@@ -1,6 +1,6 @@
 # Intro
 
-These plots are for from the DIPTSUR2 run.
+These plots are for the DIPTSUR2 run at 6:30.
 The 'old interpolated way' is using the VTK library interpolation, not Kameleon.
 
 b and b1 are in nanotesla, j in microamperes per meter squared. Divergence uses units of 1/R_E
@@ -16,21 +16,25 @@ In all the plots that follow, the dots are color coded based on
 whether the point is on the day side or the night side.
 Night side is Blue, Day side is Orange.
 
-## divergence of b1
-
-![](div_b1.png)
-
 ## divergence of b
 
 ![](div_b.png)
 
-## divergence of j
+## norm (magnitude) of b1
 
-![](div_j.png)
+![](norm_b1.png)
+
+## divergence of b1
+
+![](div_b1.png)
 
 ## norm (magnitude) of j
 
 ![](norm_j.png)
+
+## divergence of j
+
+![](div_j.png)
 
 ## norm (magnitude) of jR
 

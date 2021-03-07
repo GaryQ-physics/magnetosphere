@@ -127,6 +127,11 @@ def GetCurl(delF):
 
     return curlF
 
+def GetCurlV(delF):
+    curlF_tens = delF - delF.transpose((0,2,1))
+    curlF = np.column_stack([curlF_tens[:,1,2], curlF_tens[:,2,0], curlF_tens[:,0,1]])
+    return curlF
+
 def GetFrobeniusNormDel(delF):
     ret = np.nan*np.empty(delF.shape[0])
     for i in range(delF.shape[0]):
