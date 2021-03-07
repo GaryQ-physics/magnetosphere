@@ -46,3 +46,23 @@ Night side is Blue, Day side is Orange.
 
 > this is the norm (magnitude) of the vector difference between jR and j,
 > and thus is still in microamperes per meter squared.
+
+# Closer Look
+
+It appears from the above "error in jR" and "norm (magnitude) of jR" plots
+that the error is tends to be several orders of magnitude smaller than the magnitude.
+
+In order to quantify this, we will plot the ratio of the two:
+
+# jR fractional error
+
+![](jR_fractional_error.png)
+
+For completeness, also plot the ratio of divergence of b1 and magnitude of b1:
+
+# relative divergence of B1
+
+![](rel_div_b1.png)
+
+
+
