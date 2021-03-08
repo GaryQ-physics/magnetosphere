@@ -21,8 +21,8 @@ averages = np.empty((len(epsilons), len(times))); averages[:,:]=np.nan
 integrals = np.empty(len(times)); integrals[:]=np.nan
 dtimes = []
 for i in range(len(times)):
+    if (i%10 == 0): print('i=%d'%(i))
     time = times[i]
-    dtimes.append(datetime.datetime(time[0],time[1],time[2],time[3],time[4],time[5]))
     direct = conf[run+'_derived'] + 'derivatives/native_grid/'
     fname_df = direct + '%.2d%.2d%.2dT%.2d%.2d%.2d_df.pkl'%util.tpad(time, length=6)
     fname_meta = direct + '%.2d%.2d%.2dT%.2d%.2d%.2d_meta.txt'%util.tpad(time, length=6)
@@ -48,23 +48,29 @@ for i in range(len(times)):
         nn = tmp.size
         averages[j,i] = summ/nn
 
+np.save("averages.npy",averages)
+np.save("integrals.npy",averages)
+
+dtimes = []
+for time in times:
+    dtimes.append(datetime.datetime(time[0],time[1],time[2],time[3],time[4],time[5]))
 
 plt.plot(dtimes, integrals,'.',)
 plt.savefig('integrals.png')
-plf.clf()
+plt.clf()
 
 plt.plot(dtimes, averages[0,:],'.',)
 plt.savefig('averages0.png')
-plf.clf()
+plt.clf()
 
 plt.plot(dtimes, averages[1,:],'.',)
 plt.savefig('averages1.png')
-plf.clf()
+plt.clf()
 
 plt.plot(dtimes, averages[2,:],'.',)
 plt.savefig('averages2.png')
-plf.clf()
+plt.clf()
 
 plt.plot(dtimes, averages[3,:],'.',)
 plt.savefig('averages3.png')
-plf.clf()
+plt.clf()
