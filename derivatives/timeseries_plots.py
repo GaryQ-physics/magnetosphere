@@ -3,7 +3,6 @@ import sys
 import numpy as np
 import pandas as pd
 import datetime
-import matplotlib.pyplot as plt
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
@@ -12,22 +11,30 @@ import util
 run = 'DIPTSUR2'
 n_times = None
 
+
 epsilons = [1./16., 1./8., 1./4., 1./2., 1., 2., 4., 8.]
+df_variables = ['b1x', 'b1y', 'b1z', 'bx', 'by', 'bz', 'curl_b1_x', 'curl_b1_y',
+       'curl_b1_z', 'curl_b_x', 'curl_b_y', 'curl_b_z', 'curl_j_x',
+       'curl_j_y', 'curl_j_z', 'div_b', 'div_b1', 'div_j', 'div_jR',
+       'gridspacing', 'jRx', 'jRy', 'jRz', 'jx', 'jy', 'jz', 'x', 'y',
+       'z', 'jR_error']
 
 times = list(util.get_available_slices(run)[1])
 if n_times is not None:
     times = times[:n_times]
 
-keys = []
-keys.append('integral')
-keys.append('absintegral')
-keys.append('num_total')
-for epsilon in epsilons:
-    keys.append('sum_epsilon_%f'%(epsilon))
-    keys.append('abssum_epsilon_%f'%(epsilon))
-    keys.append('num_epsilon_%f'%(epsilon))
-
-timeseries = pd.DataFrame(columns=keys, index=range(len(times)))
+columns = []
+for var in df_variables:
+    columns.append('%s_sum_tot'%(var))
+    columns.append('%s_sum_abs_tot'%(var))
+    columns.append('%s_sum_sqr_tot'%(var))
+    columns.append('%s_num_tot'%(var))
+    for epsilon in epsilons:
+        columns.append('%s_sum_epsilon_%f'%(var, epsilon))
+        columns.append('%s_sum_abs_epsilon_%f'%(var, epsilon))
+        columns.append('%s_sum_sqr_epsilon_%f'%(var, epsilon))
+        columns.append('%s_num_epsilon_%f'%(var, epsilon))
+timeseries = pd.DataFrame(columns=columns, index=range(len(times)))
 
 for i in range(len(times)):
     if i%10 == 0: print('i=%d'%(i))
@@ -40,28 +47,26 @@ for i in range(len(times)):
     #    meta = {}
     #    for line in handle.readlines():
     #        key, value = line.split(' ')
-    #        meta[key]=int(value)
+    #        meta[key] = int(value)
 
     df = pd.read_pickle(fname_df)
+    df['jR_error'] = np.sqrt( (df['jRx']-df['jx'])**2 \
+                            + (df['jRy']-df['jy'])**2 \
+                            + (df['jRz']-df['jz'])**2   )
 
-    tmp = df['div_b1']*df['gridspacing']
-    tmp = tmp[tmp!=np.nan]
-    timeseries['integral'][i] = np.sum(tmp)
-    timeseries['absintegral'][i] = np.sum(np.abs(tmp))
-    timeseries['num_total'][i] = tmp.size
-
-    for epsilon in epsilons:
-        tmp = df['div_b1'][df['gridspacing'] == epsilon]
+    for var in df_variables:
+        tmp = df[var]
         tmp = tmp[tmp!=np.nan]
-        timeseries['sum_epsilon_%f'%(epsilon)][i] = np.sum(tmp)
-        timeseries['abssum_epsilon_%f'%(epsilon)][i] = np.sum(np.abs(tmp))
-        timeseries['num_epsilon_%f'%(epsilon)][i] = tmp.size
+        timeseries['%s_sum_tot'%(var)] = np.sum(tmp)
+        timeseries['%s_sum_abs_tot'%(var)] = np.sum(np.abs(tmp))
+        timeseries['%s_sum_sqr_tot'%(var)] = np.sum(tmp**2)
+        timeseries['%s_num_tot'%(var)] = tmp.size
+        for epsilon in epsilons:
+            tmp = df[var][df['gridspacing'] == epsilon]
+            tmp = tmp[tmp!=np.nan]
+            timeseries['%s_sum_epsilon_%f'%(var, epsilon)] = np.sum(tmp)
+            timeseries['%s_sum_abs_epsilon_%f'%(var, epsilon)] = np.sum(np.abs(tmp))
+            timeseries['%s_sum_sqr_epsilon_%f'%(var,epsilon)] = np.sum(tmp**2)
+            timeseries['%s_num_epsilon_%f'%(var, epsilon)] = tmp.size
 
 timeseries.to_pickle('timeseries.pkl')
-
-
-
-dtimes = []
-for time in times:
-    dtimes.append(datetime.datetime(time[0],time[1],time[2],time[3],time[4],time[5]))
-
