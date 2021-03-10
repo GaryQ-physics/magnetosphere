@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../swmf/')
 import read_swmf_files as rswmf
 
 
-def main(run, time, debug=False):
+def main(run, time, debug=True):
     if debug: print('filetag '+util.time2CDFfilename(run,time)[:-8])
 
     data, dTREE, ind, block2node, node2block = rswmf.read_all(util.time2CDFfilename(run,time)[:-8])
@@ -106,7 +106,12 @@ def main(run, time, debug=False):
 
     block_data['div_jR'] = jRpartials[:,:,:,:,0,0]+jRpartials[:,:,:,:,1,1]+jRpartials[:,:,:,:,2,2]
 
-    block_data['relative_div_b'] = block_data['div_b']/block_data['norm_b']
+    for vvar in ['j','b','b1','jR']:
+        block_data['norm_'+vvar] = np.sqrt( block_data[vvar+'x']**2 \
+                                          + block_data[vvar+'y']**2 \
+                                          + block_data[vvar+'z']**2  )
+        block_data['relative_div_'+vvar] = block_data['div_'+vvar]/block_data['norm_'+vvar]
+
     block_data['relative_div_b1'] = block_data['div_b1']/block_data['norm_b1']
     block_data['jR_error'] = np.sqrt( 
                               (block_data['jRx']-block_data['jx'])**2 \
@@ -117,43 +122,71 @@ def main(run, time, debug=False):
     ######## check things work #############
     for key in block_data.keys():
         assert( block_data[key].shape == (nBlock,nI,nJ,nK) )
-    assert(
-            np.count_nonzero(np.isnan(block_data['div_b1'])) == \
-            nBlock*nI*nJ*nK - nBlock*(nI-1)*(nJ-1)*(nK-1)
-        )
-    assert(
-            np.count_nonzero(np.isnan(block_data['relative_div_b1'])) == \
-            nBlock*nI*nJ*nK - nBlock*(nI-1)*(nJ-1)*(nK-1)
-        )
-    assert(
-            np.count_nonzero(np.isnan(block_data['jR_error'])) == \
-            nBlock*nI*nJ*nK - nBlock*(nI-1)*(nJ-1)*(nK-1)
-        )
-    assert(
-            np.count_nonzero(np.isnan(block_data['div_jR'])) == \
-            nBlock*nI*nJ*nK - nBlock*(nI-2)*(nJ-2)*(nK-2)
-        )
+
+    #print(np.count_nonzero(block_data['norm_b1']))
+    #print(np.count_nonzero(np.isnan(block_data['norm_b1'])), nBlock*nI*nJ*nK)
+    #print(np.count_nonzero(np.isnan(block_data['div_b1']/block_data['norm_b1'])))
+    #print(np.count_nonzero(np.isnan(block_data['div_b1'])), nBlock*nI*nJ*nK - nBlock*(nI-2)*(nJ-2)*(nK-2))
+    #assert(
+    #        np.count_nonzero(np.isnan(block_data['div_b1'])) == \
+    #        nBlock*nI*nJ*nK - nBlock*(nI-2)*(nJ-2)*(nK-2)
+    #    )
+    #print(np.count_nonzero(np.isnan(block_data['relative_div_b1'])),nBlock*nI*nJ*nK - nBlock*(nI-2)*(nJ-2)*(nK-2))
+    #assert(
+    #        np.count_nonzero(np.isnan(block_data['relative_div_b1'])) == \
+    #        nBlock*nI*nJ*nK - nBlock*(nI-2)*(nJ-2)*(nK-2)
+    #    )
+    #assert(
+    #        np.count_nonzero(np.isnan(block_data['jR_error'])) == \
+    #        nBlock*nI*nJ*nK - nBlock*(nI-2)*(nJ-2)*(nK-2)
+    #    )
+    #assert(
+    #        np.count_nonzero(np.isnan(block_data['div_jR'])) == \
+    #        nBlock*nI*nJ*nK - nBlock*(nI-4)*(nJ-4)*(nK-4)
+    #    )
+    #assert(
+    #        np.count_nonzero(np.isnan(block_data['relative_div_jR'])) == \
+    #        nBlock*nI*nJ*nK - nBlock*(nI-4)*(nJ-4)*(nK-4)
+    #    )
     ########################################
 
     for key in block_data.keys():
         block_data[key] = block_data[key].ravel()
 
-    df_ends_as_nan = pd.DataFrame.from_dict(block_data)
+    df = pd.DataFrame.from_dict(block_data)
+    del block_data
 
     direct = conf[run+'_derived'] + 'derivatives/native_grid/'
     if not os.path.exists(direct): os.makedirs(direct)
 
-    fname_df = direct + '%.2d%.2d%.2dT%.2d%.2d%.2d_df.pkl'%util.tpad(time, length=6)
-    fname_meta = direct + '%.2d%.2d%.2dT%.2d%.2d%.2d_meta.txt'%util.tpad(time, length=6)
+    #fname_df = direct + '%.2d%.2d%.2dT%.2d%.2d%.2d_df.pkl'%util.tpad(time, length=6)
+    #fname_meta = direct + '%.2d%.2d%.2dT%.2d%.2d%.2d_meta.txt'%util.tpad(time, length=6)
+    #meta = {'nBlock':nBlock, 'nI':nI, 'nJ':nJ, 'nK':nK}
 
-    meta = {'nBlock':nBlock, 'nI':nI, 'nJ':nJ, 'nK':nK}
+    unique_epsilons = list(np.unique(epsilons))
+    globalprops = {}
+    for var in df.keys():
+        tmp = df[var]
+        globalprops['%s_nall_tot'%(var)] = tmp.size
+        globalprops['%s_nnonzero_tot'%(var)] = np.count_nonzero(tmp)
+        globalprops['%s_nnonnan_tot'%(var)] = np.count_nonzero(~np.isnan(tmp))
+        tmp = tmp[~np.isnan(tmp)]
+        assert(tmp.size == globalprops['%s_nnonnan_tot'%(var)])
+        globalprops['%s_sum_tot'%(var)] = np.sum(tmp)
+        globalprops['%s_sum_abs_tot'%(var)] = np.sum(np.abs(tmp))
+        globalprops['%s_sum_sqr_tot'%(var)] = np.sum(tmp**2)
+        for epsilon in unique_epsilons:
+            tmp = df[var][df['gridspacing'] == epsilon]
+            globalprops['%s_nall_epsilon_%f'%(var, epsilon)] = tmp.size
+            globalprops['%s_nnonzero_epsilon_%f'%(var, epsilon)] = np.count_nonzero(tmp)
+            globalprops['%s_nnonnan_epsilon_%f'%(var, epsilon)] = np.count_nonzero(~np.isnan(tmp))
+            tmp = tmp[~np.isnan(tmp)]
+            assert(tmp.size == globalprops['%s_nnonnan_epsilon_%f'%(var, epsilon)])
+            globalprops['%s_sum_epsilon_%f'%(var, epsilon)] = np.sum(tmp)
+            globalprops['%s_sum_abs_epsilon_%f'%(var, epsilon)] = np.sum(np.abs(tmp))
+            globalprops['%s_sum_sqr_epsilon_%f'%(var,epsilon)] = np.sum(tmp**2)
 
-    with open(fname_meta,'w') as handle:
-        for key in meta.keys():
-            handle.write('%s %d\n'%(key, meta[key]))
-    if debug: print('saved ' + fname_meta)
-    df_ends_as_nan.to_pickle(fname_df)
-    if debug: print('saved ' + fname_df)
+    return globalprops
 
 if __name__ == '__main__':
     ##################

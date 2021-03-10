@@ -1,10 +1,12 @@
-from native_grid_nan_ends import main
+import numpy as np
+import pandas as pd
+from native_grid import main
 
 import util
 
 run = 'DIPTSUR2'
-n_times = 2
-para = False
+n_times = 500
+para = True
 
 times = list(util.get_available_slices(run)[1])
 if n_times is not None:
@@ -18,9 +20,21 @@ if para:
         num_cores = len(times)
     print('Parallel processing {0:d} time slices using {1:d} cores'\
           .format(len(times), num_cores))
-    Parallel(n_jobs=num_cores)(\
-            delayed(main)(run, time) for time in times)
+    timeseries = Parallel(n_jobs=num_cores)(\
+                    delayed(main)(run, time) for time in times)
 else:
+    timeseries = []
     for time in times:
-        main(run, time)
+        timeseries.append(main(run, time))
 
+
+#print(timeseries)
+print(len(timeseries[0].keys()))
+
+timeDF = pd.DataFrame(columns=timeseries[0].keys(), index=range(len(times)))
+
+for key in timeDF.keys():
+    for i in range(len(times)):
+        timeDF[key][i] = timeseries[i][key]
+
+timeDF.to_pickle('timeDF.pkl')

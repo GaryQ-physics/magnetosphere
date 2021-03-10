@@ -9,7 +9,7 @@ from config import conf
 import util
 
 run = 'DIPTSUR2'
-n_times = None
+n_times = 6
 
 
 epsilons = [1./16., 1./8., 1./4., 1./2., 1., 2., 4., 8.]
@@ -52,21 +52,21 @@ for i in range(len(times)):
     df = pd.read_pickle(fname_df)
     df['jR_error'] = np.sqrt( (df['jRx']-df['jx'])**2 \
                             + (df['jRy']-df['jy'])**2 \
-                            + (df['jRz']-df['jz'])**2   )
+                            + (df['jRz']-df['jz'])**2   )#!!!
 
     for var in df_variables:
         tmp = df[var]
-        tmp = tmp[tmp!=np.nan]
-        timeseries['%s_sum_tot'%(var)] = np.sum(tmp)
-        timeseries['%s_sum_abs_tot'%(var)] = np.sum(np.abs(tmp))
-        timeseries['%s_sum_sqr_tot'%(var)] = np.sum(tmp**2)
-        timeseries['%s_num_tot'%(var)] = tmp.size
+        tmp = tmp[~np.isnan(tmp)]
+        timeseries['%s_sum_tot'%(var)][i] = np.sum(tmp)
+        timeseries['%s_sum_abs_tot'%(var)][i] = np.sum(np.abs(tmp))
+        timeseries['%s_sum_sqr_tot'%(var)][i] = np.sum(tmp**2)
+        timeseries['%s_num_tot'%(var)][i] = tmp.size
         for epsilon in epsilons:
             tmp = df[var][df['gridspacing'] == epsilon]
-            tmp = tmp[tmp!=np.nan]
-            timeseries['%s_sum_epsilon_%f'%(var, epsilon)] = np.sum(tmp)
-            timeseries['%s_sum_abs_epsilon_%f'%(var, epsilon)] = np.sum(np.abs(tmp))
-            timeseries['%s_sum_sqr_epsilon_%f'%(var,epsilon)] = np.sum(tmp**2)
-            timeseries['%s_num_epsilon_%f'%(var, epsilon)] = tmp.size
+            tmp = tmp[~np.isnan(tmp)]
+            timeseries['%s_sum_epsilon_%f'%(var, epsilon)][i] = np.sum(tmp)
+            timeseries['%s_sum_abs_epsilon_%f'%(var, epsilon)][i] = np.sum(np.abs(tmp))
+            timeseries['%s_sum_sqr_epsilon_%f'%(var,epsilon)][i] = np.sum(tmp**2)
+            timeseries['%s_num_epsilon_%f'%(var, epsilon)][i] = tmp.size
 
 timeseries.to_pickle('timeseries.pkl')
