@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../swmf/')
 import read_swmf_files as rswmf
 
 
-def main(run, time, debug=True):
+def main(run, time, debug=False):
     if debug: print('filetag '+util.time2CDFfilename(run,time)[:-8])
 
     data, dTREE, ind, block2node, node2block = rswmf.read_all(util.time2CDFfilename(run,time)[:-8])
@@ -111,6 +111,7 @@ def main(run, time, debug=True):
                                           + block_data[vvar+'y']**2 \
                                           + block_data[vvar+'z']**2  )
         block_data['relative_div_'+vvar] = block_data['div_'+vvar]/block_data['norm_'+vvar]
+        block_data['relative_div_'+vvar][np.isinf(block_data['relative_div_'+vvar])] = np.nan
 
     block_data['relative_div_b1'] = block_data['div_b1']/block_data['norm_b1']
     block_data['jR_error'] = np.sqrt( 
@@ -118,37 +119,13 @@ def main(run, time, debug=True):
                             + (block_data['jRy']-block_data['jy'])**2 \
                             + (block_data['jRz']-block_data['jz'])**2  )
 
+    block_data['jR_fractional_error'] = 2.*block_data['jR_error']/(block_data['norm_jR']+block_data['norm_j'])
+    block_data['jR_fractional_error'][np.isinf(block_data['jR_fractional_error'])] = np.nan
 
     ######## check things work #############
     for key in block_data.keys():
         assert( block_data[key].shape == (nBlock,nI,nJ,nK) )
-
-    #print(np.count_nonzero(block_data['norm_b1']))
-    #print(np.count_nonzero(np.isnan(block_data['norm_b1'])), nBlock*nI*nJ*nK)
-    #print(np.count_nonzero(np.isnan(block_data['div_b1']/block_data['norm_b1'])))
-    #print(np.count_nonzero(np.isnan(block_data['div_b1'])), nBlock*nI*nJ*nK - nBlock*(nI-2)*(nJ-2)*(nK-2))
-    #assert(
-    #        np.count_nonzero(np.isnan(block_data['div_b1'])) == \
-    #        nBlock*nI*nJ*nK - nBlock*(nI-2)*(nJ-2)*(nK-2)
-    #    )
-    #print(np.count_nonzero(np.isnan(block_data['relative_div_b1'])),nBlock*nI*nJ*nK - nBlock*(nI-2)*(nJ-2)*(nK-2))
-    #assert(
-    #        np.count_nonzero(np.isnan(block_data['relative_div_b1'])) == \
-    #        nBlock*nI*nJ*nK - nBlock*(nI-2)*(nJ-2)*(nK-2)
-    #    )
-    #assert(
-    #        np.count_nonzero(np.isnan(block_data['jR_error'])) == \
-    #        nBlock*nI*nJ*nK - nBlock*(nI-2)*(nJ-2)*(nK-2)
-    #    )
-    #assert(
-    #        np.count_nonzero(np.isnan(block_data['div_jR'])) == \
-    #        nBlock*nI*nJ*nK - nBlock*(nI-4)*(nJ-4)*(nK-4)
-    #    )
-    #assert(
-    #        np.count_nonzero(np.isnan(block_data['relative_div_jR'])) == \
-    #        nBlock*nI*nJ*nK - nBlock*(nI-4)*(nJ-4)*(nK-4)
-    #    )
-    ########################################
+   ########################################
 
     for key in block_data.keys():
         block_data[key] = block_data[key].ravel()
