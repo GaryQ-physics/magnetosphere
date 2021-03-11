@@ -133,6 +133,9 @@ def main(run, time, debug=False):
     df = pd.DataFrame.from_dict(block_data)
     del block_data
 
+    rcut = 2.
+    df[df['x']**2 + df['y']**2 + df['z']**2 < rcut**2] = np.nan
+
     direct = conf[run+'_derived'] + 'derivatives/native_grid/'
     if not os.path.exists(direct): os.makedirs(direct)
 
