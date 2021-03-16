@@ -14,11 +14,7 @@ import read_swmf_files as rswmf
 def main(run, time, debug=False):
     if debug: print('filetag '+util.time2CDFfilename(run,time)[:-8])
 
-    data, dTREE, ind, block2node, node2block = rswmf.read_all(util.time2CDFfilename(run,time)[:-8])
-    nBlock, nI, nJ, nK = block2node.size, dTREE['nI'], dTREE['nJ'], dTREE['nK']
-    block_data = {}
-    for key in 'x y z jx jy jz bx by bz b1x b1y b1z'.split(' '):
-        block_data[key] = data[key][ind].reshape((nBlock, nI, nJ, nK))
+    block_data, nBlock, nI, nJ, nK = rswmf.get_block_data(util.time2CDFfilename(run,time)[:-8])
 
     gridspacing = np.zeros((nBlock, nI, nJ, nK), dtype=np.float32)
     epsilons = block_data['x'][:,1,0,0]-block_data['x'][:,0,0,0]
@@ -167,6 +163,191 @@ def main(run, time, debug=False):
             globalprops['%s_sum_sqr_epsilon_%f'%(var,epsilon)] = np.sum(tmp**2)
 
     return globalprops
+    # add keys : used, ONdel_b,b1,j
+    for i in range(-1,len(epsilons))
+        if i == -1:
+            epsilonkey = 'tot'
+            tr = df['used']
+        else:
+            epsilonkey = 'epsilon_%f'%(epsilon)
+            tr = np.logical_and(df['gridspacing'] == epsilon, df['used'])
+
+        numused = np.count_nonzero(tr)
+        globalprops[epsilonkey]['numused'                                        ] = numused
+    #                                                                            
+        globalprops[epsilonkey]['average_norm_b1'                                ] = np.sum(df['norm_b1'])/numused
+        globalprops[epsilonkey]['variance_norm_b1'                               ] = #np.sum(df['norm_b1']**2)/numused
+        globalprops[epsilonkey]['num_b1_greaterhalf'                             ] = 
+        globalprops[epsilonkey]['num_b1_lesserhalf'                              ] = 
+        globalprops[epsilonkey]['sum_div_b1_if_greaterhalf'                      ] = 
+        globalprops[epsilonkey]['sum_div_b1_if_lesserhalf'                       ] = 
+        globalprops[epsilonkey]['sum_abs_div_b1_if_greaterhalf'                  ] = 
+        globalprops[epsilonkey]['sum_abs_div_b1_if_lesserhalf'                   ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b1_if_greaterhalf'                  ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b1_if_lesserhalf'                   ] = 
+         lobalprops[epsilonkey][                                               g] = 
+        globalprops[epsilonkey]['sum_div_b1_over_curl_b1_if_greaterhalf'         ] = 
+        globalprops[epsilonkey]['sum_div_b1_over_curl_b1_if_lesserhalf'          ] = 
+        globalprops[epsilonkey]['sum_abs_div_b1_over_curl_b1_if_greaterhalf'     ] = 
+        globalprops[epsilonkey]['sum_abs_div_b1_over_curl_b1_if_lesserhalf'      ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b1_over_curl_b1_if_greaterhalf'     ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b1_over_curl_b1_if_lesserhalf'      ] = 
+         lobalprops[epsilonkey][                                               g] = 
+        globalprops[epsilonkey]['sum_div_b1_over_curl_b1_if_greaterhalf'         ] = 
+        globalprops[epsilonkey]['sum_div_b1_over_curl_b1_if_lesserhalf'          ] = 
+        globalprops[epsilonkey]['sum_abs_div_b1_over_curl_b1_if_greaterhalf'     ] = 
+        globalprops[epsilonkey]['sum_abs_div_b1_over_curl_b1_if_lesserhalf'      ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b1_over_curl_b1_if_greaterhalf'     ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b1_over_curl_b1_if_lesserhalf'      ] = 
+         lobalprops[epsilonkey][                                               g] = 
+        globalprops[epsilonkey]['sum_div_b1_over_ONdel_b1_if_greaterhalf'        ] = 
+        globalprops[epsilonkey]['sum_div_b1_over_ONdel_b1_if_lesserhalf'         ] = 
+        globalprops[epsilonkey]['sum_abs_div_b1_over_ONdel_b1_if_greaterhalf'    ] = 
+        globalprops[epsilonkey]['sum_abs_div_b1_over_ONdel_b1_if_lesserhalf'     ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b1_over_ONdel_b1_if_greaterhalf'    ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b1_over_ONdel_b1_if_lesserhalf'     ] = 
+        globalprops[epsilonkey][#                                                ] = 
+        globalprops[epsilonkey]['average_norm_b'                                 ] = 
+        globalprops[epsilonkey]['variance_norm_b'                                ] = 
+        globalprops[epsilonkey]['num_b_greaterhalf'                              ] = 
+        globalprops[epsilonkey]['num_b_lesserhalf'                               ] = 
+        globalprops[epsilonkey]['sum_div_b_if_greaterhalf'                       ] = 
+        globalprops[epsilonkey]['sum_div_b_if_lesserhalf'                        ] = 
+        globalprops[epsilonkey]['sum_abs_div_b_if_greaterhalf'                   ] = 
+        globalprops[epsilonkey]['sum_abs_div_b_if_lesserhalf'                    ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b_if_greaterhalf'                   ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b_if_lesserhalf'                    ] = 
+         lobalprops[epsilonkey][                                               g] = 
+        globalprops[epsilonkey]['sum_div_b_over_curl_b_if_greaterhalf'           ] = 
+        globalprops[epsilonkey]['sum_div_b_over_curl_b_if_lesserhalf'            ] = 
+        globalprops[epsilonkey]['sum_abs_div_b_over_curl_b_if_greaterhalf'       ] = 
+        globalprops[epsilonkey]['sum_abs_div_b_over_curl_b_if_lesserhalf'        ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b_over_curl_b_if_greaterhalf'       ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b_over_curl_b_if_lesserhalf'        ] = 
+         lobalprops[epsilonkey][                                               g] = 
+        globalprops[epsilonkey]['sum_div_b_over_curl_b_if_greaterhalf'           ] = 
+        globalprops[epsilonkey]['sum_div_b_over_curl_b_if_lesserhalf'            ] = 
+        globalprops[epsilonkey]['sum_abs_div_b_over_curl_b_if_greaterhalf'       ] = 
+        globalprops[epsilonkey]['sum_abs_div_b_over_curl_b_if_lesserhalf'        ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b_over_curl_b_if_greaterhalf'       ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b_over_curl_b_if_lesserhalf'        ] = 
+         lobalprops[epsilonkey][                                               g] = 
+        globalprops[epsilonkey]['sum_div_b_over_ONdel_b_if_greaterhalf'          ] = 
+        globalprops[epsilonkey]['sum_div_b_over_ONdel_b_if_lesserhalf'           ] = 
+        globalprops[epsilonkey]['sum_abs_div_b_over_ONdel_b_if_greaterhalf'      ] = 
+        globalprops[epsilonkey]['sum_abs_div_b_over_ONdel_b_if_lesserhalf'       ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b_over_ONdel_b_if_greaterhalf'      ] = 
+        globalprops[epsilonkey]['sum_sqr_div_b_over_ONdel_b_if_lesserhalf'       ] = 
+        globalprops[epsilonkey][#                                                ] = 
+        globalprops[epsilonkey]['average_norm_j'                                 ] = 
+        globalprops[epsilonkey]['variance_norm_j'                                ] = 
+        globalprops[epsilonkey]['num_j_greaterhalf'                              ] = 
+        globalprops[epsilonkey]['num_j_lesserhalf'                               ] = 
+        globalprops[epsilonkey]['sum_div_j_if_greaterhalf'                       ] = 
+        globalprops[epsilonkey]['sum_div_j_if_lesserhalf'                        ] = 
+        globalprops[epsilonkey]['sum_abs_div_j_if_greaterhalf'                   ] = 
+        globalprops[epsilonkey]['sum_abs_div_j_if_lesserhalf'                    ] = 
+        globalprops[epsilonkey]['sum_sqr_div_j_if_greaterhalf'                   ] = 
+        globalprops[epsilonkey]['sum_sqr_div_j_if_lesserhalf'                    ] = 
+         lobalprops[epsilonkey][                                               g] = 
+        globalprops[epsilonkey]['sum_jR_error_if_greaterhalf'                    ] = 
+        globalprops[epsilonkey]['sum_jR_error_if_lesserhalf'                     ] = 
+        globalprops[epsilonkey]['sum_sqr_jR_error_if_greaterhalf'                ] = 
+        globalprops[epsilonkey]['sum_sqr_jR_error_if_lesserhalf'                 ] = 
+        globalprops[epsilonkey]['sum_jR_error_over_norm_jR_if_greaterhalf'       ] = 
+        globalprops[epsilonkey]['sum_jR_error_over_norm_jR_if_lesserhalf'        ] = 
+        globalprops[epsilonkey]['sum_jR_error_over_norm_j_if_greaterhalf'        ] = 
+        globalprops[epsilonkey]['sum_jR_error_over_norm_j_if_lesserhalf'         ] = 
+
+def
+#####################################################
+    'numused'
+    #
+    'average_norm_b1'
+    'variance_norm_b1'
+    'num_b1_greaterhalf'
+    'num_b1_lesserhalf'
+    'sum_div_b1_if_greaterhalf'
+    'sum_div_b1_if_lesserhalf'
+    'sum_abs_div_b1_if_greaterhalf'
+    'sum_abs_div_b1_if_lesserhalf'
+    'sum_sqr_div_b1_if_greaterhalf'
+    'sum_sqr_div_b1_if_lesserhalf'
+
+    'sum_div_b1_over_curl_b1_if_greaterhalf'
+    'sum_div_b1_over_curl_b1_if_lesserhalf'
+    'sum_abs_div_b1_over_curl_b1_if_greaterhalf'
+    'sum_abs_div_b1_over_curl_b1_if_lesserhalf'
+    'sum_sqr_div_b1_over_curl_b1_if_greaterhalf'
+    'sum_sqr_div_b1_over_curl_b1_if_lesserhalf'
+
+    'sum_div_b1_over_curl_b1_if_greaterhalf'
+    'sum_div_b1_over_curl_b1_if_lesserhalf'
+    'sum_abs_div_b1_over_curl_b1_if_greaterhalf'
+    'sum_abs_div_b1_over_curl_b1_if_lesserhalf'
+    'sum_sqr_div_b1_over_curl_b1_if_greaterhalf'
+    'sum_sqr_div_b1_over_curl_b1_if_lesserhalf'
+
+    'sum_div_b1_over_ONdel_b1_if_greaterhalf'
+    'sum_div_b1_over_ONdel_b1_if_lesserhalf'
+    'sum_abs_div_b1_over_ONdel_b1_if_greaterhalf'
+    'sum_abs_div_b1_over_ONdel_b1_if_lesserhalf'
+    'sum_sqr_div_b1_over_ONdel_b1_if_greaterhalf'
+    'sum_sqr_div_b1_over_ONdel_b1_if_lesserhalf'
+    #
+    'average_norm_b'
+    'variance_norm_b'
+    'num_b_greaterhalf'
+    'num_b_lesserhalf'
+    'sum_div_b_if_greaterhalf'
+    'sum_div_b_if_lesserhalf'
+    'sum_abs_div_b_if_greaterhalf'
+    'sum_abs_div_b_if_lesserhalf'
+    'sum_sqr_div_b_if_greaterhalf'
+    'sum_sqr_div_b_if_lesserhalf'
+
+    'sum_div_b_over_curl_b_if_greaterhalf'
+    'sum_div_b_over_curl_b_if_lesserhalf'
+    'sum_abs_div_b_over_curl_b_if_greaterhalf'
+    'sum_abs_div_b_over_curl_b_if_lesserhalf'
+    'sum_sqr_div_b_over_curl_b_if_greaterhalf'
+    'sum_sqr_div_b_over_curl_b_if_lesserhalf'
+
+    'sum_div_b_over_curl_b_if_greaterhalf'
+    'sum_div_b_over_curl_b_if_lesserhalf'
+    'sum_abs_div_b_over_curl_b_if_greaterhalf'
+    'sum_abs_div_b_over_curl_b_if_lesserhalf'
+    'sum_sqr_div_b_over_curl_b_if_greaterhalf'
+    'sum_sqr_div_b_over_curl_b_if_lesserhalf'
+
+    'sum_div_b_over_ONdel_b_if_greaterhalf'
+    'sum_div_b_over_ONdel_b_if_lesserhalf'
+    'sum_abs_div_b_over_ONdel_b_if_greaterhalf'
+    'sum_abs_div_b_over_ONdel_b_if_lesserhalf'
+    'sum_sqr_div_b_over_ONdel_b_if_greaterhalf'
+    'sum_sqr_div_b_over_ONdel_b_if_lesserhalf'
+    #
+    'average_norm_j'
+    'variance_norm_j'
+    'num_j_greaterhalf'
+    'num_j_lesserhalf'
+    'sum_div_j_if_greaterhalf'
+    'sum_div_j_if_lesserhalf'
+    'sum_abs_div_j_if_greaterhalf'
+    'sum_abs_div_j_if_lesserhalf'
+    'sum_sqr_div_j_if_greaterhalf'
+    'sum_sqr_div_j_if_lesserhalf'
+
+    'sum_jR_error_if_greaterhalf'
+    'sum_jR_error_if_lesserhalf'
+    'sum_sqr_jR_error_if_greaterhalf'
+    'sum_sqr_jR_error_if_lesserhalf'
+    'sum_jR_error_over_norm_jR_if_greaterhalf'
+    'sum_jR_error_over_norm_jR_if_lesserhalf'
+    'sum_jR_error_over_norm_j_if_greaterhalf'
+    'sum_jR_error_over_norm_j_if_lesserhalf'
+
+
 
 if __name__ == '__main__':
     ##################

@@ -187,6 +187,62 @@ Notes:
         reload(jitFORTRAN_exe)
 
 
+boolean operations paraview
+#SWMF/share/Library/src/ModConst.f90
+  ! Proton mass [kg]
+  real, parameter:: cProtonMass = 1.6726E-27
+...
+  ! Vacuum permeability [H/m]
+  real, parameter:: cMu = cPi*4E-7
+
+#SWMF/GM/BATSRUS/src/ModPhysics.f90
+  use ModConst, ONLY: rSun, mSun, RotationPeriodSun, cSecondPerDay, &
+       cProtonMass, cElectronCharge, cGyroElectron, cLightSpeed, &
+       cRadiation, cGravitation, cAU, cBoltzmann, cMu, cRadToDeg
+...
+    use CON_planet,  ONLY: get_planet, NamePlanet
+...
+    select case(NameThisComp)
+    case('GM')
+       call get_planet( &
+            RadiusPlanetOut   = rPlanetSi, &
+            MassPlanetOut     = MassBodySi, &
+            RotationPeriodOut = RotPeriodSi)
+...
+    select case(TypeNormalization)
+    case("PLANETARY")
+       ! rPlanet, rPlanet/sec, amu/cm^3
+       No2Si_V(UnitX_)   = rPlanetSi
+       No2Si_V(UnitU_)   = rPlanetSi
+       No2Si_V(UnitRho_) = 1000000*cProtonMass ! AtomicMass
+...       
+    No2Si_V(UnitB_)          = No2Si_V(UnitU_) &
+         *sqrt(cMu*No2Si_V(UnitRho_))                               ! T
+...
+    No2Si_V(UnitJ_)          = No2Si_V(UnitB_)/( No2Si_V(UnitX_)*cMu ) ! A/m^2
+    
+    
+#SWMF/share/Library/src/CON_planet.f90
+  use ModPlanetConst
+...
+  subroutine get_planet( &
+       NamePlanetOut, RadiusPlanetOut, MassPlanetOut, OmegaPlanetOut, &
+       RotationPeriodOut, IonosphereHeightOut, &
+       UseRotationOut, DipoleStrengthOut, DoUpdateB0Out, DtUpdateB0Out)
+...
+    if(present(RadiusPlanetOut))    RadiusPlanetOut     = RadiusPlanet
+    if(present(MassPlanetOut))      MassPlanetOut       = MassPlanet
+
+
+#SWMF/share/Library/src/ModPlanetConst.f90
+     NamePlanet_I(Earth_)                = 'EARTH'
+
+     rPlanet_I(Earth_)                   = 6378.0e+3               ! [ m]
+     mPlanet_I(Earth_)                   = 5.976e+24               ! [kg]
+     rOrbitPlanet_I(Earth_)              = cAU                     ! [ m]
+     OrbitalPeriodPlanet_I(Earth_)       = 365.24218967 * cDay     ! [ s]
+     RotationPeriodPlanet_I(Earth_)      = cDay                    ! [ s]
+
 TODO:
     use mead to write new vtu and run derivatives on it
     branch for modified vtk_export

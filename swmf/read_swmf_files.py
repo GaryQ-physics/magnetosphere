@@ -213,6 +213,8 @@ def read_all(filetag):
         import spacepy.pybats.bats as bats
         import read_swmf_files as rswmf
         data = bats.Bats2d(filetag + ".out")
+        header = "R R R Mp/cc km/s km/s km/s J/m3 nT nT nT nT nT nT nPa uA/m2 uA/m2 uA/m2 --"
+        assert(header == data.meta['header'].strip())
     else:
         data = read_out_file(filetag) # TODO : eventually
     dTREE = read_tree_file(filetag)
@@ -271,6 +273,13 @@ def read_all(filetag):
     #assert(np.all( points[ind,:] == reconstructed_points ))
     return [data, dTREE, ind, block2node, node2block]
 
+def get_block_data(filetag):
+    data, dTREE, ind, block2node, node2block = read_all(filetag)
+    nBlock, nI, nJ, nK = block2node.size, dTREE['nI'], dTREE['nJ'], dTREE['nK']
+    block_data = {}
+    for key in 'x y z jx jy jz bx by bz b1x b1y b1z'.split(' '):
+        block_data[key] = data[key][ind].reshape((nBlock, nI, nJ, nK))
+    return [block_data, nBlock, nI, nJ, nK]
 
 def interpolate(filetag, point, var='p', debug=False):
     """
