@@ -10,8 +10,63 @@ from units_and_constants import phys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../swmf/')
 import read_swmf_files as rswmf
 
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../../jitFORTRAN/')
+import jitFORTRAN
 
-def main(run, time, debug=False, saveall=False):
+### printed out keys:
+#curl_b1_z
+#norm_curl_b1
+#curl_b1_x
+#curl_b1_y
+#div_b1
+#relative_div_j
+#div_over_curl_b
+#relative_div_b
+#jR_error
+#curl_j_x
+#curl_j_y
+#curl_j_z
+#norm_b1
+#FNdel_b1
+#norm_j
+#gridspacing
+#jR_fractional_error
+#div_j
+#jRx
+#FNdel_b
+#curl_b_x
+#curl_b_y
+#curl_b_z
+#div_b
+#jRz
+#jRy
+#FNdel_j
+#jx
+#jy
+#jz
+#normalized_div_j
+#normalized_div_b1
+#normalized_div_b
+#bx
+#by
+#bz
+#norm_curl_b
+#div_over_curl_b1
+#norm_curl_j
+#FNdel_jR
+#relative_div_b1
+#norm_jR
+#div_jR
+#norm_b
+#y
+#x
+#z
+#b1z
+#b1x
+#b1y
+##
+
+def main(run, time, debug=False, saveall=False, frobenius_norm=None):
     if debug: print('filetag '+util.time2CDFfilename(run,time)[:-8])
 
     block_data, nBlock, nI, nJ, nK = rswmf.get_block_data(util.time2CDFfilename(run,time)[:-8])
@@ -66,8 +121,9 @@ def main(run, time, debug=False, saveall=False):
         block_data['norm_curl_'+vvar] = np.sqrt( block_data['curl_'+vvar+'_x']**2 \
                                                + block_data['curl_'+vvar+'_y']**2 \
                                                + block_data['curl_'+vvar+'_z']**2  )
+        block_data['FNdel_'+vvar] = frobenius_norm(partials)#np.linalg.norm(partials, ord='fro', axis=(4,5))
 
-    unitmu0 = phys['mu0']*(phys['muA']/phys['m']**2)
+    unitmu0 = np.float32( phys['mu0']*(phys['muA']/phys['m']**2) )
     block_data['jRx'] = block_data['curl_b1_x']/unitmu0
     block_data['jRy'] = block_data['curl_b1_y']/unitmu0
     block_data['jRz'] = block_data['curl_b1_z']/unitmu0
@@ -104,26 +160,34 @@ def main(run, time, debug=False, saveall=False):
                     jRpartials[:,i,j,k, 2,2] = (block_data['jRz'][:, i  , j  , k+1] - block_data['jRz'][:, i  , j  , k-1])/(2*epsilons)
 
     block_data['div_jR'] = jRpartials[:,:,:,:,0,0]+jRpartials[:,:,:,:,1,1]+jRpartials[:,:,:,:,2,2]
+    block_data['FNdel_jR'] = frobenius_norm(jRpartials)#np.linalg.norm(jRpartials, ord='fro', axis=(4,5))
 
     for vvar in ['j','b','b1','jR']:
         block_data['norm_'+vvar] = np.sqrt( block_data[vvar+'x']**2 \
                                           + block_data[vvar+'y']**2 \
                                           + block_data[vvar+'z']**2  )
+    for vvar in ['j','b','b1']:
         block_data['relative_div_'+vvar] = block_data['div_'+vvar]/block_data['norm_'+vvar]
         #!!!!block_data['relative_div_'+vvar][np.isinf(block_data['relative_div_'+vvar])] = np.nan
+        block_data['normalized_div_'+vvar] = block_data['div_'+vvar]/block_data['FNdel_'+vvar]
+    for vvar in ['b','b1']:
+        block_data['div_over_curl_'+vvar] = block_data['div_'+vvar]/block_data['norm_curl_'+vvar]
 
-    block_data['relative_div_b1'] = block_data['div_b1']/block_data['norm_b1']
     block_data['jR_error'] = np.sqrt( 
                               (block_data['jRx']-block_data['jx'])**2 \
                             + (block_data['jRy']-block_data['jy'])**2 \
                             + (block_data['jRz']-block_data['jz'])**2  )
-
     block_data['jR_fractional_error'] = 2.*block_data['jR_error']/(block_data['norm_jR']+block_data['norm_j'])
     #!!!!block_data['jR_fractional_error'][np.isinf(block_data['jR_fractional_error'])] = np.nan
 
     ######## check things work #############
     for key in block_data.keys():
         assert( block_data[key].shape == (nBlock,nI,nJ,nK) )
+        assert( block_data[key].dtype == np.float32 )
+        print(key)
+    assert(not np.isfortran(block_data['FNdel_j']))
+    assert(not np.isfortran(block_data['FNdel_b1']))
+    assert(not np.isfortran(block_data['FNdel_b']))
    ########################################
 
     for key in block_data.keys():
@@ -147,7 +211,9 @@ def main(run, time, debug=False, saveall=False):
         fname_summary = direct + '%.2d%.2d%.2dT%.2d%.2d%.2d_summary.pkl'%util.tpad(time, length=6)
         by_epsilon = df.groupby('gridspacing')
         summary = by_epsilon.describe()
+        print('saving '+fname_summary)
         summary.to_pickle(fname_summary)
+        print('saved '+fname_summary)
 
 if __name__ == '__main__':
     ##################

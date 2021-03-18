@@ -16,8 +16,10 @@ elif os.path.exists('/home/gary/'):
     base = '/home/gary/magnetosphere/'
     storage = base +'data/'
     #https://stackoverflow.com/questions/16779497/how-to-set-memory-limit-for-thread-or-process-in-python
-    soft, hard = 10*2**30, 10*2**30
+    soft, hard = int(6.0625*2**30), int(6.0625*2**30)
     resource.setrlimit(resource.RLIMIT_AS,(soft, hard))
+    if '-s' in sys.argv:
+        storage = '/home/gary/media_sunspot/'
 
 elif os.path.exists('/home/gquaresi/'):
     base = '/home/gquaresi/magnetosphere/'
