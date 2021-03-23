@@ -385,18 +385,18 @@ def urlretrieve(url, fname):
             print("'" + url + "' is not a valid URL")
     else:
         import urllib, urllib2, ssl
-        try:
-            context = ssl._create_unverified_context()
-            urllib2.urlopen(url) 
-            res = urllib.urlretrieve(url, fname, context=context)
-            return res
-#https://stackoverflow.com/questions/16778435/python-check-if-website-exists
-        except urllib2.HTTPError, e: 
-            return(e.code)
-        except urllib2.URLError, e:
-            return(e.args)
-        except ValueError:
-            print("'" + url + "' is not a valid URL")
+#        try:
+#            context = ssl._create_unverified_context()
+#            urllib2.urlopen(url) 
+#            res = urllib.urlretrieve(url, fname, context=context)
+#            return res
+##https://stackoverflow.com/questions/16778435/python-check-if-website-exists
+#        except urllib2.HTTPError, e: 
+#            return(e.code)
+#        except urllib2.URLError, e:
+#            return(e.args)
+#        except ValueError:
+#            print("'" + url + "' is not a valid URL")
 
             
 def dlfile(filename, debug=False):
