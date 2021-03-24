@@ -1,9 +1,3 @@
-#import numpy as np
-#current = np.load('/home/gary/magnetosphere/data/DIPTSUR2-derived/derivatives/native_grid/20190902T041000_summary.pkl.npy')
-#cached  = np.load('/home/gary/magnetosphere/data/DIPTSUR2-derived/derivatives/native_grid/cache/20190902T041000_summary.pkl.npy')
-#np.allclose(cached, current, rtol=1e-05, atol=1e-08, equal_nan=True)
-#np.allclose(current,cached, rtol=1e-08, atol=1e-12, equal_nan=True)
-
 import os
 import sys
 import numpy as np
@@ -78,13 +72,13 @@ from named_var_indexes import index2str, nVarTot, nVarNeeded, \
 _derivs_b = (_bx ,_by ,_bz ,_norm_b ,_div_b, _curl_b_x ,_curl_b_y ,_curl_b_z ,_norm_curl_b ,_FNdel_b ,_relative_div_b ,_normalized_div_b ,_div_over_curl_b )
 _derivs_b1= (_b1x,_b1y,_b1z,_norm_b1,_div_b1,_curl_b1_x,_curl_b1_y,_curl_b1_z,_norm_curl_b1,_FNdel_b1,_relative_div_b1,_normalized_div_b1,_div_over_curl_b1)
 _derivs_j = (_jx ,_jy ,_jz ,_norm_j ,_div_j ,_curl_j_x ,_curl_j_y ,_curl_j_z ,_norm_curl_j ,_FNdel_j ,_relative_div_j ,_normalized_div_j ,_div_over_curl_j )
-
 vectors = (_derivs_b,_derivs_b1,_derivs_j)
 scalars = (_x,_y,_z,_rho,_e,_p)
 
+unitmu0 = np.float32( phys['mu0']*(phys['muA']/phys['m']**2) )
 
 @njit(error_model='numpy')
-def get_summary(NeededData):
+def get_summary(NeededData, rcut):
     unique_epsilons = np.array([  0.0625,
                                   0.1250,
                                   0.2500,
@@ -131,6 +125,13 @@ def get_summary(NeededData):
         for i in range(nI):
             for j in range(nJ):
                 for k in range(nK):
+                    distanceSquared = ( NeededData[_x, iBlockP, i,j,k]**2 \
+                                      + NeededData[_y, iBlockP, i,j,k]**2 \
+                                      + NeededData[_z, iBlockP, i,j,k]**2 )
+                    if distanceSquared <= rcut**2:
+                        continue
+
+                    increment(_gridspacing,i_eps, epsilon)
                     for i_var in scalars:
                         increment(i_var,i_eps, NeededData[i_var, iBlockP, i,j,k])
                     for _derivs_f in vectors:
@@ -157,6 +158,8 @@ def get_summary(NeededData):
                             partials[2,1] = (NeededData[_fy, iBlockP, i  , j  , k+1] - NeededData[_fy, iBlockP, i  , j  , k-1])/(2*epsilon)
                             partials[2,2] = (NeededData[_fz, iBlockP, i  , j  , k+1] - NeededData[_fz, iBlockP, i  , j  , k-1])/(2*epsilon)
 
+
+
                         div = partials[0,0]+partials[1,1]+partials[2,2]
                         increment(_div_f,i_eps, div)
 
@@ -165,9 +168,23 @@ def get_summary(NeededData):
                                            + curl_tens[2,0]**2 \
                                            + curl_tens[0,1]**2  )
 
+                        if _norm_f == _norm_b1:
+                            jR = (1./unitmu0)*np.array([curl_tens[1,2],curl_tens[2,0],curl_tens[0,1]])
+                            normjR = np.sqrt(jR[0]**2 + jR[1]**2 + jR[2]**2)
+                            jRerror = np.sqrt( (NeededData[_jx,iBlockP,i,j,k]-jR[0])**2 \
+                                             + (NeededData[_jy,iBlockP,i,j,k]-jR[1])**2 \
+                                             + (NeededData[_jz,iBlockP,i,j,k]-jR[2])**2 )
+
+                            increment(_jRx                , i_eps, jR[0])
+                            increment(_jRy                , i_eps, jR[1])
+                            increment(_jRz                , i_eps, jR[2])
+                            increment(_norm_jR            , i_eps, normjR)
+                            increment(_jR_error           , i_eps, jRerror)
+                            increment(_jR_fractional_error, i_eps, jRerror/normjR)
+
                         increment(_curl_f_x,i_eps, curl_tens[1,2])
-                        increment(_curl_f_x,i_eps, curl_tens[2,0])
-                        increment(_curl_f_x,i_eps, curl_tens[0,1])
+                        increment(_curl_f_y,i_eps, curl_tens[2,0]) #!!!!!!!! was _curl_f_x
+                        increment(_curl_f_z,i_eps, curl_tens[0,1])
                         increment(_norm_curl_f,i_eps, norm_curl )
 
                         FNdel = np.sqrt(np.sum(partials**2))
@@ -176,6 +193,7 @@ def get_summary(NeededData):
                         increment(_relative_div_f,i_eps, div/norm)
                         increment(_normalized_div_f,i_eps, div/FNdel)
                         increment(_div_over_curl_f,i_eps, div/norm_curl)
+
 
     summary_arr[:,:,_mean ] = summary_arr[:,:,_mean ]/summary_arr[:,:,_count]
     summary_arr[:,:,_sndMo] = summary_arr[:,:,_sndMo]/summary_arr[:,:,_count]
@@ -192,7 +210,7 @@ def summarize(run, time, debug=False, rcut=2.):
         NeededData[index,:,:,:,:] = data[index2str[index]][ind].reshape((nBlock, nI, nJ, nK))
     del data, dTREE, ind, block2node, node2block
 
-    summary_arr = get_summary(NeededData)
+    summary_arr = get_summary(NeededData, rcut)
 
     direct = conf[run+'_derived'] + 'derivatives/native_grid/'
     if not os.path.exists(direct): os.makedirs(direct)
@@ -254,16 +272,14 @@ def stitch_together(run, n_times=None):
 
         for i_eps in range(len(epsilons)):
             for i_t in range(len(times)):
-                summaryDF[epsilons[i_eps]]['count'][dtimes[i_t]] = list_summaries[i_t][i_var,i_eps, _count] #!! why is this not working 
-                summaryDF[epsilons[i_eps]]['mean' ][dtimes[i_t]] = list_summaries[i_t][i_var,i_eps, _mean ]
-                summaryDF[epsilons[i_eps]]['sndMo'][dtimes[i_t]] = list_summaries[i_t][i_var,i_eps, _sndMo]
-                summaryDF[epsilons[i_eps]]['std'  ][dtimes[i_t]] = list_summaries[i_t][i_var,i_eps, _std  ]
-                summaryDF[epsilons[i_eps]]['min'  ][dtimes[i_t]] = list_summaries[i_t][i_var,i_eps, _min  ]
-                summaryDF[epsilons[i_eps]]['max'  ][dtimes[i_t]] = list_summaries[i_t][i_var,i_eps, _max  ]
+                summaryDF.loc[dtimes[i_t], (epsilons[i_eps],'count')] = list_summaries[i_t][i_var,i_eps, _count]
+                summaryDF.loc[dtimes[i_t], (epsilons[i_eps],'mean' )] = list_summaries[i_t][i_var,i_eps, _mean ]
+                summaryDF.loc[dtimes[i_t], (epsilons[i_eps],'sndMo')] = list_summaries[i_t][i_var,i_eps, _sndMo]
+                summaryDF.loc[dtimes[i_t], (epsilons[i_eps],'std'  )] = list_summaries[i_t][i_var,i_eps, _std  ]
+                summaryDF.loc[dtimes[i_t], (epsilons[i_eps],'min'  )] = list_summaries[i_t][i_var,i_eps, _min  ]
+                summaryDF.loc[dtimes[i_t], (epsilons[i_eps],'max'  )] = list_summaries[i_t][i_var,i_eps, _max  ]
 
         summaryDF.to_pickle(direct+'summaryDF_%s.pkl'%(index2str[i_var]))
-
-
 
 if __name__ == '__main__':
     ##################
@@ -282,7 +298,8 @@ if __name__ == '__main__':
     ##################
 
     #main(run, time, debug=debug)
-    n_times = 4
+
+    n_times = None
     para = True
     summarize_all(run,para=para,n_times=n_times,debug=debug)
     stitch_together(run, n_times=n_times)
