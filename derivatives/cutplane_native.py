@@ -73,7 +73,7 @@ from named_var_indexes import index2str, nVarTot, nVarNeeded, \
 def xzplane(NeededData):
     #16384==128**2
     print('starting')
-    planedata = np.empty((3,16384), dtype=np.float32); planedata[:,:]=np.nan
+    planedata = np.empty((4,16384), dtype=np.float32); planedata[:,:]=np.nan
     nBlock, nI, nJ, nK = NeededData.shape[1:]
     print('check1')
     counter = 0
@@ -91,9 +91,13 @@ def xzplane(NeededData):
                     planedata[0,counter] = NeededData[_x,iBlockP,i,j,k]
                     planedata[1,counter] = NeededData[_z,iBlockP,i,j,k]
                     if i != 0 and j != 0 and k != 0 and i != nI-1 and j != nJ-1 and k != nK-1:
-                        planedata[2,counter] = (NeededData[_bx, iBlockP, i+1, j  , k  ] - NeededData[_bx, iBlockP, i-1, j  , k  ])/(2*epsilon) \
-                                             + (NeededData[_by, iBlockP, i  , j+1, k  ] - NeededData[_by, iBlockP, i  , j-1, k  ])/(2*epsilon) \
-                                             + (NeededData[_bz, iBlockP, i  , j  , k+1] - NeededData[_bz, iBlockP, i  , j  , k-1])/(2*epsilon)
+                        planedata[2,counter] = (NeededData[_b1x, iBlockP, i+1, j  , k  ] - NeededData[_b1x, iBlockP, i-1, j  , k  ])/(2*epsilon) \
+                                             + (NeededData[_b1y, iBlockP, i  , j+1, k  ] - NeededData[_b1y, iBlockP, i  , j-1, k  ])/(2*epsilon) \
+                                             + (NeededData[_b1z, iBlockP, i  , j  , k+1] - NeededData[_b1z, iBlockP, i  , j  , k-1])/(2*epsilon)
+
+                    planedata[3,counter] = np.sqrt( NeededData[_b1x,iBlockP,i,j,k]**2 \
+                                                  + NeededData[_b1y,iBlockP,i,j,k]**2 \
+                                                  + NeededData[_b1z,iBlockP,i,j,k]**2 )
 
                     counter += 1
 
@@ -108,9 +112,9 @@ def xzplane_wrap(run, time):
         NeededData[index,:,:,:,:] = data[index2str[index]][ind].reshape((nBlock, nI, nJ, nK))
     del data, dTREE, ind, block2node, node2block
 
-    direct = conf[run+'_derived'] + 'derivatives/native_grid/'
+    direct = '/home/gary/magnetosphere/images/'+run+'/cutplane_native/'
     if not os.path.exists(direct): os.makedirs(direct)
-    fname = direct + '%.2d%.2d%.2dT%.2d%.2d%.2d_x_z_divB1.npy'%util.tpad(time, length=6)
+    fname = direct + '%.2d%.2d%.2dT%.2d%.2d%.2d_x_z_divB1_normB1.npy'%util.tpad(time, length=6)
     planedata = xzplane(NeededData)
     print('saving '+fname)
     np.save(fname,planedata)
@@ -122,8 +126,8 @@ if __name__ == '__main__':
     debug = True
 
     if run == 'DIPTSUR2':
-        #time = (2019,9,2,6,30,0,0)
-        time = (2019,9,2,4,10,0,0)
+        time = (2019,9,2,6,30,0,0)
+        #time = (2019,9,2,4,10,0,0)
     if run == 'IMP10_RUN_SAMPLE':
         time = (2019,9,2,7,0,0,0)
     if run == 'TESTANALYTIC':
@@ -132,4 +136,6 @@ if __name__ == '__main__':
         time = (2000,1,1,0,0,0,0)
     ##################
 
-    xzplane_wrap(run, time)
+    xzplane_wrap(run, (2019,9,2,6,30,0,0))
+    xzplane_wrap(run, (2019,9,2,4,10,0,0))
+
