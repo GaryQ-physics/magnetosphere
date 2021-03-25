@@ -60,4 +60,4 @@ but is nonegative and not expected to be zero,
 it may be usefull to consider the ratio of the two. We will denote the ratio
 of divergence_b1 to FNdel_b1 as normalized_div_b1.
 
-![normalized_div_b1_std.png]
+![](normalized_div_b1_std.png)
