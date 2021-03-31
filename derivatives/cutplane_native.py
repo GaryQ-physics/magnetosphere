@@ -105,20 +105,12 @@ def xzplane(NeededData):
     return planedata
 
 def xzplane_wrap(run, time):
-    data, dTREE, ind, block2node, node2block = rswmf.read_all(util.time2CDFfilename(run,time)[:-8])
-    nBlock, nI, nJ, nK = block2node.size, dTREE['nI'], dTREE['nJ'], dTREE['nK']
-    NeededData = np.empty((nVarNeeded, nBlock, nI, nJ, nK), dtype=np.float32); NeededData[:,:,:,:,:] = np.nan
-    for index in range(nVarNeeded):
-        NeededData[index,:,:,:,:] = data[index2str[index]][ind].reshape((nBlock, nI, nJ, nK))
-    del data, dTREE, ind, block2node, node2block
-
     direct = '/home/gary/magnetosphere/images/'+run+'/cutplane_native/'
     if not os.path.exists(direct): os.makedirs(direct)
     fname = direct + '%.2d%.2d%.2dT%.2d%.2d%.2d_x_z_divB1_normB1.npy'%util.tpad(time, length=6)
-    planedata = xzplane(NeededData)
+    planedata = xzplane(rswmf.get_needed_array(run, time))
     print('saving '+fname)
     np.save(fname,planedata)
-
 
 if __name__ == '__main__':
     ##################

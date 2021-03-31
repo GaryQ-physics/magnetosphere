@@ -187,6 +187,8 @@ Notes:
         reload(jitFORTRAN_exe)
 
 
+
+
 boolean operations paraview
 #SWMF/share/Library/src/ModConst.f90
   ! Proton mass [kg]
@@ -244,20 +246,21 @@ boolean operations paraview
      RotationPeriodPlanet_I(Earth_)      = cDay                    ! [ s]
 
 TODO:
+    seperate out common in timeseries_summary and cutplane_native. prep for coulomb.
+    choose sample points and coulomb integral it
+    new version of timeseries_summary using cache array
+
     use mead to write new vtu and run derivatives on it
     branch for modified vtk_export
     StringIO
-    upload proof that interpolation and symetric difference commute (for native step size)
-    Improve biot-savart when point has nonzero J
 
 Q's:
     why x = X[:,0].copy() is needed
-    why not jitFORTRAN with two different script strings in same run
-
     line qotree.py 78 and 329 in Dan's branch. whats with the logs?
     #SAVEBINARY is false in PARAM.in (for DIPTSUR2)
 
 things to say:
+    Dealing with singular integrals on grid
     os.tmpnam() security warning
 
 for tree meet:

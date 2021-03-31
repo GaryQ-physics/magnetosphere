@@ -203,14 +203,7 @@ def get_summary(NeededData, rcut):
 
 
 def summarize(run, time, debug=False, rcut=2.):
-    data, dTREE, ind, block2node, node2block = rswmf.read_all(util.time2CDFfilename(run,time)[:-8])
-    nBlock, nI, nJ, nK = block2node.size, dTREE['nI'], dTREE['nJ'], dTREE['nK']
-    NeededData = np.empty((nVarNeeded, nBlock, nI, nJ, nK), dtype=np.float32); NeededData[:,:,:,:,:] = np.nan
-    for index in range(nVarNeeded):
-        NeededData[index,:,:,:,:] = data[index2str[index]][ind].reshape((nBlock, nI, nJ, nK))
-    del data, dTREE, ind, block2node, node2block
-
-    summary_arr = get_summary(NeededData, rcut)
+    summary_arr = get_summary(rswmf.get_needed_array(run,time), rcut)
 
     direct = conf[run+'_derived'] + 'derivatives/native_grid/'
     if not os.path.exists(direct): os.makedirs(direct)

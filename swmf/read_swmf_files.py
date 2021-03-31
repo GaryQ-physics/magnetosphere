@@ -1,5 +1,7 @@
 import numpy as np
 from swmf_constants import Used_,Status_,Level_,Parent_,Child0_,Child1_,Coord1_,CoordLast_,ROOTNODE_
+import util
+from named_var_indexes import nVarNeeded, index2str
 
 def F2P(fortran_index):
     return fortran_index - 1
@@ -281,6 +283,10 @@ def get_block_data(filetag):
         block_data[key] = data[key][ind].reshape((nBlock, nI, nJ, nK))
     return [block_data, nBlock, nI, nJ, nK]
 
+def find_index(point):
+    pass
+
+
 def interpolate(filetag, point, var='p', debug=False):
     """
     arguments:
@@ -392,6 +398,20 @@ def interpolate(filetag, point, var='p', debug=False):
     if debug: print(c)
     return c
 
+
+def get_needed_array(run, time):
+    data, dTREE, ind, block2node, node2block = read_all(util.time2CDFfilename(run,time)[:-8])
+    nBlock, nI, nJ, nK = block2node.size, dTREE['nI'], dTREE['nJ'], dTREE['nK']
+    NeededData = np.empty((nVarNeeded, nBlock, nI, nJ, nK), dtype=np.float32); NeededData[:,:,:,:,:] = np.nan
+    for index in range(nVarNeeded):
+        NeededData[index,:,:,:,:] = data[index2str[index]][ind].reshape((nBlock, nI, nJ, nK))
+    del data, dTREE, ind, block2node, node2block
+
+    return NeededData
+
+
 if __name__ == '__main__':
     point = np.array([-220., -124.,  -92.])
     print(interpolate("/home/gary/temp/3d__var_3_e20031120-070000-000",point,var='p', debug=True))
+
+    point = np.array([1., 0.,  0.])
