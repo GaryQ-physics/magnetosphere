@@ -246,9 +246,7 @@ boolean operations paraview
      RotationPeriodPlanet_I(Earth_)      = cDay                    ! [ s]
 
 TODO:
-    seperate out common in timeseries_summary and cutplane_native. prep for coulomb.
     choose sample points and coulomb integral it
-    new version of timeseries_summary using cache array
 
     use mead to write new vtu and run derivatives on it
     branch for modified vtk_export

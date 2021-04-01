@@ -15,7 +15,9 @@ import sys
 n_times =  None
 do_summary = False
 do_coulomb = False
+do_COULOMB = False
 do_biotsavart = False
+do_BIOTSAVART = False
 para = False
 verbose = False
 for arg in sys.argv:
@@ -30,8 +32,12 @@ for arg in sys.argv:
                 do_summary = True
             if char=='c':
                 do_coulomb = True
+            if char=='C':
+                do_COULOMB = True
             if char=='b':
                 do_biotsavart = True
+            if char=='B':
+                do_BIOTSAVART = True
             if char=='p':
                 para = True
             if char=='v':
@@ -43,10 +49,11 @@ import datetime
 from config import conf
 import util
 import read_swmf_files as rswmf
+from magnetometers import GetMagnetometerLocation
 if do_summary:
     from timeseries_summarize2 import get_summary
     from named_var_indexes import index2str, nVarTot
-if do_coulomb or do_biotsavart:
+if do_coulomb or do_biotsavart or do_COULOMB or do_BIOTSAVART:
     from coulomb import B_biotsavart, B_coulomb
 
 run = 'DIPTSUR2'
@@ -86,6 +93,27 @@ def wrap(time):
                         + '%.2d%.2d%.2dT%.2d%.2d%.2d_Bbs.npy'%util.tpad(time, length=6)
         if verbose: print('saving '+outname)
         np.save(outname, Bbs)
+
+    if do_COULOMB:
+        colaba = np.array(GetMagnetometerLocation('colaba', time, 'GSM', 'car'))
+        BCL = B_coulomb( colaba, NeededArray, rcut=rcut)
+
+        if not os.path.exists(direct+'do_COULOMB/'): os.makedirs(direct+'do_COULOMB/')
+        outname = direct+'do_COULOMB/' \
+                        + '%.2d%.2d%.2dT%.2d%.2d%.2d_BCL.npy'%util.tpad(time, length=6)
+        if verbose: print('saving '+outname)
+        np.save(outname, BCL)
+
+    if do_BIOTSAVART:
+        colaba = np.array(GetMagnetometerLocation('colaba', time, 'GSM', 'car'))
+        BBS = B_biotsavart( colaba, NeededArray, rcut=rcut)
+
+        if not os.path.exists(direct+'do_BIOTSAVART/'): os.makedirs(direct+'do_BIOTSAVART/')
+        outname = direct+'do_BIOTSAVART/' \
+                        + '%.2d%.2d%.2dT%.2d%.2d%.2d_BBS.npy'%util.tpad(time, length=6)
+        if verbose: print('saving '+outname)
+        np.save(outname, BBS)
+
 
 # loop through each time slice, in parallel or in serial, and execute wrapper
 times = list(util.get_available_slices(run)[1])
@@ -173,3 +201,29 @@ if do_biotsavart:
     df = pd.DataFrame(data=Bbss, columns = ['B_biotsavart_x','B_biotsavart_y','B_biotsavart_z'],
                         index=dtimes)
     df.to_pickle(direct+'df_biotsavart_integral_for_earth_center.pkl')
+
+if do_COULOMB:
+    dtimes = []
+    BCLs = []
+    for time in list(times):
+        dtimes.append(datetime.datetime(time[0],time[1],time[2],time[3],time[4],time[5]))
+        outname = direct+'do_COULOMB/' \
+                        + '%.2d%.2d%.2dT%.2d%.2d%.2d_BCL.npy'%util.tpad(time, length=6)
+        BCLs.append(np.load(outname))
+
+    df = pd.DataFrame(data=BCLs, columns = ['B_coulomb_x','B_coulomb_y','B_coulomb_z'],
+                        index=dtimes)
+    df.to_pickle(direct+'df_coulomb_integral_for_colaba.pkl')
+
+if do_BIOTSAVART:
+    dtimes = []
+    BBSs = []
+    for time in list(times):
+        dtimes.append(datetime.datetime(time[0],time[1],time[2],time[3],time[4],time[5]))
+        outname = direct+'do_BIOTSAVART/' \
+                        + '%.2d%.2d%.2dT%.2d%.2d%.2d_BBS.npy'%util.tpad(time, length=6)
+        BBSs.append(np.load(outname))
+
+    df = pd.DataFrame(data=BBSs, columns = ['B_biotsavart_x','B_biotsavart_y','B_biotsavart_z'],
+                        index=dtimes)
+    df.to_pickle(direct+'df_biotsavart_integral_for_colaba.pkl')
