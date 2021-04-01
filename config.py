@@ -104,6 +104,12 @@ if base + 'cutplane/' not in sys.path:
 if base + 'regions/' not in sys.path:
     sys.path.append(base + 'regions/')
 
+if base + 'derivatives/' not in sys.path:
+    sys.path.append(base + 'derivatives/')
+
+if base + 'swmf/' not in sys.path:
+    sys.path.append(base + 'swmf/')
+
 if not os.path.exists(conf['SWPC_cdf']):
     os.makedirs(conf['SWPC_cdf'])
     print('Created directory ' + conf['SWPC_cdf'])

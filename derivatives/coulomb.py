@@ -75,7 +75,6 @@ def earth_surface(mlat,mlon,time):
 
 @njit
 def B_biotsavart(point, NeededData, rcut=0.):
-    print('start')
     unique_epsilons = np.array([  0.0625,
                                   0.1250,
                                   0.2500,
@@ -145,7 +144,6 @@ def B_biotsavart(point, NeededData, rcut=0.):
 
 @njit
 def B_coulomb(point, NeededData, rcut=0.):
-    print('start')
     unique_epsilons = np.array([  0.0625,
                                   0.1250,
                                   0.2500,
@@ -210,16 +208,16 @@ def B_coulomb(point, NeededData, rcut=0.):
         return(np.sum(ret, axis=0))
 
 
-def dst(run, para=True, n_times=50, debug=False, rcut=0.):
+def earth_center(run, para=True, n_times=50, debug=False, rcut=0.):
     times = list(util.get_available_slices(run)[1])
     if n_times is not None:
         times = times[:10*n_times:10]
 
-    def dst_wrap(time):
+    def integrals_wrap(time):
         NeededData = rswmf.get_needed_array(run,time)
         Bbs = B_biotsavart( np.zeros(3), NeededData, rcut=rcut)
         Bcl = B_coulomb(    np.zeros(3), NeededData, rcut=rcut)
-        return (np.linalg.norm(Bbs),np.linalg.norm(Bcl))
+        return (np.linalg.norm(Bbs),np.linalg.norm(Bcl),Bbs[2],Bcl[2])
 
     if para:
         from joblib import Parallel, delayed
@@ -229,20 +227,20 @@ def dst(run, para=True, n_times=50, debug=False, rcut=0.):
             num_cores = len(times)
         print('Parallel processing {0:d} time slices using {1:d} cores'\
               .format(len(times), num_cores))
-        dsts = Parallel(n_jobs=num_cores)(\
-                        delayed(dst_wrap)(time) for time in times)
+        integrals = Parallel(n_jobs=num_cores)(\
+                        delayed(integrals_wrap)(time) for time in times)
     else:
-        dsts = []
+        integrals = []
         for time in times:
-            dsts.append(dst_wrap(time))
+            dsts.append(integrals_wrap(time))
 
     dtimes = []
     for time in times:
         dtimes.append(datetime.datetime(time[0],time[1],time[2],time[3],time[4],time[5]))
 
     print(dsts)
-    df_dst = pd.DataFrame(data=dsts, index=dtimes, columns=['dst_biotsavart', 'dst_coulomb'])
-    df_dst.to_pickle('df_dst.pkl') 
+    df = pd.DataFrame(data=integrals, index=dtimes, columns=['norm_biotsavart', 'norm_coulomb', 'z_biotsavart', 'z_coulomb'])
+    df.to_pickle('df_earth_center.pkl') 
 
 if __name__=='__main__':
     run = 'DIPTSUR2'
@@ -261,4 +259,4 @@ if __name__=='__main__':
     #                    rcut=util.get_rCurrents(run))
     #print(Bcl)
 
-    dst(run, para=True, rcut=util.get_rCurrents(run))
+    earth_center(run, para=True, rcut=util.get_rCurrents(run))
