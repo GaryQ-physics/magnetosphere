@@ -315,16 +315,17 @@ def interpolate(filetag, point, var='p', debug=False):
     iNode = find_tree_node(point, dTREE)
 
     # get the gridspacing in x,y,z
-    gridspacingX = getvar('x', iNode, 0,0,0) - getvar('x', iNode, 1,0,0)
-    gridspacingY = getvar('y', iNode, 0,0,0) - getvar('y', iNode, 0,1,0)
-    gridspacingZ = getvar('z', iNode, 0,0,0) - getvar('z', iNode, 0,0,1)
+    gridspacingX = getvar('x', iNode, 1,0,0) - getvar('x', iNode, 0,0,0)
+    gridspacingY = getvar('y', iNode, 0,1,0) - getvar('y', iNode, 0,0,0)
+    gridspacingZ = getvar('z', iNode, 0,0,1) - getvar('z', iNode, 0,0,0)
 
     # i0 is s.t. the highest index s.t. the x coordinate of the 
     #  corresponding cell block_data[iNode,i0,:,:]  is still less than point[0]
     i0 = int(np.floor( (point[0] - getvar('x', iNode, 0, 0, 0))/gridspacingX ))
     j0 = int(np.floor( (point[1] - getvar('y', iNode, 0, 0, 0))/gridspacingY ))
     k0 = int(np.floor( (point[2] - getvar('z', iNode, 0, 0, 0))/gridspacingZ ))
-
+    if debug: print(getvar('x', iNode, 0, 0, 0),getvar('y', iNode, 0, 0, 0),getvar('z', iNode, 0, 0, 0))
+    if debug: print(i0,j0,k0)
     #i1 = i0+1 is the lowest index s.t. the x coordinate of the 
     #  corresponding cell block_data[iNode,i1,:,:]  is still greater than point[0]
 
@@ -373,6 +374,9 @@ def interpolate(filetag, point, var='p', debug=False):
     if debug: print(getvar('x', iNode,  i0, j0, k0))
     if debug: print(getvar('y', iNode,  i0, j0, k0))
     if debug: print(getvar('z', iNode,  i0, j0, k0))
+    if debug: print('hellothere')
+    if debug: print((iNode, node2block[F2P(iNode)], i0, j0, k0))
+
 
     #https://en.wikipedia.org/wiki/Trilinear_interpolation
     c000 = getvar(var, iNode,  i0, j0, k0)

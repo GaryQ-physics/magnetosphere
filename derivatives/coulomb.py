@@ -125,6 +125,8 @@ def B_biotsavart(point, NeededData, rcut=0.):
                     r_y = point[1] - NeededData[_y, iBlockP, i, j, k]
                     r_z = point[2] - NeededData[_z, iBlockP, i, j, k]
                     r = np.sqrt(r_x**2 + r_y**2 + r_z**2)
+                    if r == 0:
+                        continue
 
                     integrand[2] = curl_B1_x*r_y - curl_B1_y*r_x
                     integrand[0] = curl_B1_y*r_z - curl_B1_z*r_y
@@ -191,6 +193,8 @@ def B_coulomb(point, NeededData, rcut=0.):
                     r_y = point[1] - NeededData[_y, iBlockP, i, j, k]
                     r_z = point[2] - NeededData[_z, iBlockP, i, j, k]
                     r = np.sqrt(r_x**2 + r_y**2 + r_z**2)
+                    if r == 0:
+                        continue
 
                     integrand[0] = div_B1*r_x
                     integrand[1] = div_B1*r_y

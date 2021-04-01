@@ -18,6 +18,7 @@ do_coulomb = False
 do_COULOMB = False
 do_biotsavart = False
 do_BIOTSAVART = False
+do_inmag = False
 para = False
 verbose = False
 for arg in sys.argv:
@@ -38,6 +39,8 @@ for arg in sys.argv:
                 do_biotsavart = True
             if char=='B':
                 do_BIOTSAVART = True
+            if char=='m':
+                do_inmag= True
             if char=='p':
                 para = True
             if char=='v':
@@ -50,11 +53,9 @@ from config import conf
 import util
 import read_swmf_files as rswmf
 from magnetometers import GetMagnetometerLocation
-if do_summary:
-    from timeseries_summarize2 import get_summary
-    from named_var_indexes import index2str, nVarTot
-if do_coulomb or do_biotsavart or do_COULOMB or do_BIOTSAVART:
-    from coulomb import B_biotsavart, B_coulomb
+from timeseries_summarize2 import get_summary
+from named_var_indexes import index2str, nVarTot,_b1x,_b1y,_b1z
+from coulomb import B_biotsavart, B_coulomb
 
 run = 'DIPTSUR2'
 
@@ -113,6 +114,26 @@ def wrap(time):
                         + '%.2d%.2d%.2dT%.2d%.2d%.2d_BBS.npy'%util.tpad(time, length=6)
         if verbose: print('saving '+outname)
         np.save(outname, BBS)
+
+    if do_inmag:
+        point = np.array([0.71875,0.09375,-3.71875])
+        assert(point[0] == NeededArray[0,9477, 3,1,4])
+        assert(point[1] == NeededArray[1,9477, 3,1,4])
+        assert(point[2] == NeededArray[2,9477, 3,1,4])
+
+        b1x_nat = NeededArray[_b1x,9477, 3,1,4]
+        b1y_nat = NeededArray[_b1y,9477, 3,1,4]
+        b1z_nat = NeededArray[_b1z,9477, 3,1,4]
+
+        Bcl = B_coulomb( point, NeededArray, rcut=rcut)
+        Bbs = B_biotsavart( point, NeededArray, rcut=rcut)
+        integrals = np.hstack([Bcl, Bbs, b1x_nat,b1y_nat,b1z_nat])
+
+        if not os.path.exists(direct+'do_inmag/'): os.makedirs(direct+'do_inmag/')
+        outname = direct+'do_inmag/' \
+                        + '%.2d%.2d%.2dT%.2d%.2d%.2d_integrals.npy'%util.tpad(time, length=6)
+        if verbose: print('saving '+outname)
+        np.save(outname, integrals)   
 
 
 # loop through each time slice, in parallel or in serial, and execute wrapper
@@ -227,3 +248,18 @@ if do_BIOTSAVART:
     df = pd.DataFrame(data=BBSs, columns = ['B_biotsavart_x','B_biotsavart_y','B_biotsavart_z'],
                         index=dtimes)
     df.to_pickle(direct+'df_biotsavart_integral_for_colaba.pkl')
+
+if do_inmag:
+    dtimes = []
+    integrals = []
+    for time in list(times):
+        dtimes.append(datetime.datetime(time[0],time[1],time[2],time[3],time[4],time[5]))
+        outname = direct+'do_inmag/' \
+                        + '%.2d%.2d%.2dT%.2d%.2d%.2d_integrals.npy'%util.tpad(time, length=6)
+        integrals.append(np.load(outname))
+
+    df = pd.DataFrame(data=integrals, columns = ['B_coulomb_x','B_coulomb_y','B_coulomb_z',
+                                            'B_biotsavart_x','B_biotsavart_y','B_biotsavart_z',
+                                            'b1x','b1y','b1z'],
+                        index=dtimes)
+    df.to_pickle(direct+'df_integrals_in_magnetosphere.pkl')
