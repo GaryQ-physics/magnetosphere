@@ -1,3 +1,6 @@
+from numba import types
+from numba.typed import Dict
+
 _x                         = 0
 _y                         = 1
 _z                         = 2
@@ -171,4 +174,11 @@ str2index = {
     'gridspacing'        :  _gridspacing         ,
 }
 
+str2index_typed = Dict.empty(
+    key_type=types.unicode_type,
+    value_type=types.int32,
+    )
+
+for key, val in str2index.items():
+    str2index_typed[key] = val
 

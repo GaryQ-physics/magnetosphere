@@ -2,14 +2,16 @@ import os
 import sys
 import numpy as np
 import pandas as pd
+import os
+import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 import util
 from units_and_constants import phys
 from numba import njit
 import datetime
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../swmf/')
-import read_swmf_files as rswmf
+from read_swmf_files2 import read_all
+from derivatives import get_partials
 
 from named_var_indexes import index2str, nVarTot, nVarNeeded, \
                             _x                   ,\
@@ -70,64 +72,73 @@ from named_var_indexes import index2str, nVarTot, nVarNeeded, \
 
 
 @njit(error_model='numpy')
-def xzplane(NeededData):
-    #16384==128**2
-    print('starting')
-    planedata = np.empty((4,16384), dtype=np.float32); planedata[:,:]=np.nan
-    nBlock, nI, nJ, nK = NeededData.shape[1:]
-    print('check1')
+def _jit_xzplane(DataArray, resolution, expectedNpts):
+    planedata = np.empty((5,expectedNpts), dtype=np.float32); planedata[:,:]=np.nan
+    nBlock, nI, nJ, nK = DataArray.shape[1:]
     counter = 0
-    print('check2')
 
     for iBlockP in range(nBlock):
-        epsilon = NeededData[_x,iBlockP,1,0,0] - NeededData[_x,iBlockP,0,0,0]
-        if epsilon != 0.0625:
+        if counter >= expectedNpts:
+            print('WARNING: exceeded expectedNpts')
+            break
+        epsilon = DataArray[_x,iBlockP,1,0,0] - DataArray[_x,iBlockP,0,0,0]
+        if epsilon != resolution:
             continue
         for j in range(nJ):
-            if 0.09375 != NeededData[_y, iBlockP, 0,j,0]:
+            if resolution*3./2. != DataArray[_y, iBlockP, 0,j,0]:
                 continue
             for i in range(nI):
                 for k in range(nK):
-                    planedata[0,counter] = NeededData[_x,iBlockP,i,j,k]
-                    planedata[1,counter] = NeededData[_z,iBlockP,i,j,k]
-                    if i != 0 and j != 0 and k != 0 and i != nI-1 and j != nJ-1 and k != nK-1:
-                        planedata[2,counter] = (NeededData[_b1x, iBlockP, i+1, j  , k  ] - NeededData[_b1x, iBlockP, i-1, j  , k  ])/(2*epsilon) \
-                                             + (NeededData[_b1y, iBlockP, i  , j+1, k  ] - NeededData[_b1y, iBlockP, i  , j-1, k  ])/(2*epsilon) \
-                                             + (NeededData[_b1z, iBlockP, i  , j  , k+1] - NeededData[_b1z, iBlockP, i  , j  , k-1])/(2*epsilon)
+                    planedata[0,counter] = DataArray[_x,iBlockP,i,j,k]
+                    planedata[1,counter] = DataArray[_z,iBlockP,i,j,k]
 
-                    planedata[3,counter] = np.sqrt( NeededData[_b1x,iBlockP,i,j,k]**2 \
-                                                  + NeededData[_b1y,iBlockP,i,j,k]**2 \
-                                                  + NeededData[_b1z,iBlockP,i,j,k]**2 )
+                    partials = get_partials(DataArray, 'b1', iBlockP,i,j,k)
+                   # if i != 0 and j != 0 and k != 0 and i != nI-1 and j != nJ-1 and k != nK-1:
+                   #     planedata[2,counter] = (NeededData[_b1x, iBlockP, i+1, j  , k  ] - NeededData[_b1x, iBlockP, i-1, j  , k  ])/(2*epsilon) \
+                   #                          + (NeededData[_b1y, iBlockP, i  , j+1, k  ] - NeededData[_b1y, iBlockP, i  , j-1, k  ])/(2*epsilon) \
+                   #                          + (NeededData[_b1z, iBlockP, i  , j  , k+1] - NeededData[_b1z, iBlockP, i  , j  , k-1])/(2*epsilon)
+                    planedata[2,counter] = partials[0,0]+partials[1,1]+partials[2,2]
+
+                    planedata[3,counter] = np.sqrt( DataArray[_b1x,iBlockP,i,j,k]**2 \
+                                                  + DataArray[_b1y,iBlockP,i,j,k]**2 \
+                                                  + DataArray[_b1z,iBlockP,i,j,k]**2 )
+
+                    curl_B1_tens = partials - partials.transpose()
+                    curl_B1_x = curl_B1_tens[1,2]
+                    curl_B1_y = curl_B1_tens[2,0]
+                    curl_B1_z = curl_B1_tens[0,1]
+
+                    planedata[4,counter] = np.sqrt( curl_B1_x**2 \
+                                                  + curl_B1_y**2 \
+                                                  + curl_B1_z**2 )
 
                     counter += 1
 
     print(counter)
     return planedata
 
-def xzplane_wrap(run, time):
-    direct = '/home/gary/magnetosphere/images/'+run+'/cutplane_native/'
-    if not os.path.exists(direct): os.makedirs(direct)
-    fname = direct + '%.2d%.2d%.2dT%.2d%.2d%.2d_x_z_divB1_normB1.npy'%util.tpad(time, length=6)
-    planedata = xzplane(rswmf.get_needed_array(run, time))
-    print('saving '+fname)
-    np.save(fname,planedata)
+def slice_xzplane(run, time, png=True, cache=None):
+    if cache is None:
+        cache = read_all(util.time2CDFfilename(run,time)[:-8])
+
+    inner_planedata = xzplane(cache['DataArray'], gridspacing=0.0625, expectedNtps=15360)
+    outer_planedata = xzplane(cache['DataArray'], gridspacing=0.125 , expectedNtps=17664)
+
+    if png:
+        png_outname = conf[run+'_derived'] + 'timeseries/slices/' \
+            + 'xzplane_%.2d%.2d%.2dT%.2d%.2d%.2d.png'%util.tpad(time, length=6)
+    else:
+        inner_outname = conf[run+'_derived'] + 'timeseries/slices/' \
+            + 'y=3_32_xzplane_%.2d%.2d%.2dT%.2d%.2d%.2d_x_z_divB1_normB1_normcurlB1.npy'%util.tpad(time, length=6)
+        outer_outname = conf[run+'_derived'] + 'timeseries/slices/' \
+            + 'y=3_16_xzplane_%.2d%.2d%.2dT%.2d%.2d%.2d_x_z_divB1_normB1_normcurlB1.npy'%util.tpad(time, length=6)
+        np.save(inner_outname,inner_planedata)
+        np.save(outer_outname,outer_planedata)
 
 if __name__ == '__main__':
     ##################
     run = 'DIPTSUR2'
-    debug = True
-
-    if run == 'DIPTSUR2':
-        time = (2019,9,2,6,30,0,0)
-        #time = (2019,9,2,4,10,0,0)
-    if run == 'IMP10_RUN_SAMPLE':
-        time = (2019,9,2,7,0,0,0)
-    if run == 'TESTANALYTIC':
-        time = (2000,1,1,0,10,0,0)
-    if run == 'LUHMANN1979':
-        time = (2000,1,1,0,0,0,0)
     ##################
 
     xzplane_wrap(run, (2019,9,2,6,30,0,0))
     xzplane_wrap(run, (2019,9,2,4,10,0,0))
-

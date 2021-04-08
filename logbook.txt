@@ -246,20 +246,29 @@ boolean operations paraview
      RotationPeriodPlanet_I(Earth_)      = cDay                    ! [ s]
 
 TODO:
-    choose sample points and coulomb integral it
+    threshold filter
+    git hub password
+    make integral plots
+    do paraview field lines still stop with analytic function?
+    select subsets of cells in paraview
+    in paraview AMRGaussianPulseSource
+    write high level overview for swmf_file_reader and share with weigel
 
     use mead to write new vtu and run derivatives on it
     branch for modified vtk_export
     StringIO
 
 Q's:
-    why x = X[:,0].copy() is needed
     line qotree.py 78 and 329 in Dan's branch. whats with the logs?
     #SAVEBINARY is false in PARAM.in (for DIPTSUR2)
 
 things to say:
     Dealing with singular integrals on grid
     os.tmpnam() security warning
+
+derivatives/coulomb.py -> derivatives/magnetic_field_integrals.py
+
+
 
 for tree meet:
     julia generated .vtu have the same points as .out but in DIFFERENT order

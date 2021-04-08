@@ -18,8 +18,8 @@ elif os.path.exists('/home/gary/'):
     #https://stackoverflow.com/questions/16779497/how-to-set-memory-limit-for-thread-or-process-in-python
     soft, hard = int(4*2**30), int(4*2**30)
     resource.setrlimit(resource.RLIMIT_AS,(soft, hard))
-    if '-s' in sys.argv:
-        storage = '/home/gary/media_sunspot/'
+    #if '-s' in sys.argv:
+    #    storage = '/home/gary/media_sunspot/'
 
 elif os.path.exists('/home/gquaresi/'):
     base = '/home/gquaresi/magnetosphere/'
@@ -86,11 +86,23 @@ if base + 'util/' not in sys.path:
 if base + 'physics/' not in sys.path:
     sys.path.append(base + 'physics/')
 
-if base + 'vtk/' not in sys.path:
-    sys.path.append(base + 'vtk/')
+if base + 'derivatives/' not in sys.path:
+    sys.path.append(base + 'derivatives/')
+
+if base + 'swmf/' not in sys.path:
+    sys.path.append(base + 'swmf/')
+
+if base + 'timeseries/' not in sys.path:
+    sys.path.append(base + 'timeseries/')
 
 if base + 'cutplane/' not in sys.path:
     sys.path.append(base + 'cutplane/')
+
+#if base + 'regions/' not in sys.path:
+#    sys.path.append(base + 'regions/')
+
+#if base + 'vtk/' not in sys.path:
+#    sys.path.append(base + 'vtk/')
 
 #if kameleon not in sys.path:
 #    sys.path.append(kameleon)
@@ -98,25 +110,18 @@ if base + 'cutplane/' not in sys.path:
 #if kameleon + 'ccmc/' not in sys.path:
 #    sys.path.append(kameleon + 'ccmc/')
 
-#if base + 'misc/' not in sys.path:
-#    sys.path.append(base + 'misc/')
 
-if base + 'regions/' not in sys.path:
-    sys.path.append(base + 'regions/')
+#if not os.path.exists(conf['DIPTSUR2_derived']+'timeseries/slices/'):
+#    os.makedirs(conf['DIPTSUR2_derived']+'timeseries/slices/')
+#    print('created directory '+conf['DIPTSUR2_derived']+'timeseries/slices/')
 
-if base + 'derivatives/' not in sys.path:
-    sys.path.append(base + 'derivatives/')
-
-if base + 'swmf/' not in sys.path:
-    sys.path.append(base + 'swmf/')
-
-if not os.path.exists(conf['SWPC_cdf']):
-    os.makedirs(conf['SWPC_cdf'])
-    print('Created directory ' + conf['SWPC_cdf'])
-
-if not os.path.exists(conf['SWPC_derived']):
-    os.makedirs(conf['SWPC_derived'])
-    print('Created directory ' + conf['SWPC_derived'])
+#if not os.path.exists(conf['SWPC_cdf']):
+#    os.makedirs(conf['SWPC_cdf'])
+#    print('Created directory ' + conf['SWPC_cdf'])
+#
+#if not os.path.exists(conf['SWPC_derived']):
+#    os.makedirs(conf['SWPC_derived'])
+#    print('Created directory ' + conf['SWPC_derived'])
 
 #if not os.path.exists(conf['SCARR5_cdf']):
 #    os.makedirs(conf['SCARR5_cdf'])

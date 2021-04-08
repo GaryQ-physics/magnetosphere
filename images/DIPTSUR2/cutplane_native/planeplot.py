@@ -1,13 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-planedata = np.load('20190902T041000_x_z_divB1_normB1.npy')
+planedata = np.load('y=3_16_20190902T063000_x_z_divB1_normB1_normcurlB1.npy')
+title = 'y = 3/16 R_E plane  at 6:30'
+name = 'y=3_16_at_6_30'
+
 print(planedata.shape)
 
 x = planedata[0,:]
 z = planedata[1,:]
 divB1 = planedata[2,:]
 normB1 = planedata[3,:]
+normcurlB1 = planedata[4,:]
 
 rcut=2.
 tr = 0.09375**2 + x**2 + z**2 <= rcut**2
@@ -29,19 +33,29 @@ print(np.count_nonzero(np.isnan(normB1)))
 plt.figure(figsize=(8,6))
 plt.scatter(x,z,c=divB1)
 plt.colorbar(label='div_b1 [$nT R_E^{-1}$]')
-plt.title('y = 3/32 R_E plane')
+plt.title(title)
 plt.xlabel('x [R_E]')
 plt.ylabel('z [R_E]')
-plt.savefig('div_b1_cutplane.png')
+plt.savefig(name+'-div_b1.png')
 #plt.show()
-plt.clf()
+#plt.clf()
 
 plt.figure(figsize=(8,6))
 plt.scatter(x,z,c=normB1)
 plt.colorbar(label='norm_b1 [$nT$]')
-plt.title('y = 3/32 R_E plane')
+plt.title(title)
 plt.xlabel('x [R_E]')
 plt.ylabel('z [R_E]')
-plt.savefig('norm_b1_cutplane.png')
+plt.savefig(name+'-norm_b1.png')
 #plt.show()
-plt.clf()
+#plt.clf()
+
+plt.figure(figsize=(8,6))
+plt.scatter(x,z,c=normcurlB1)
+plt.colorbar(label='norm_curl_b1 [$nT R_E^{-1}$]')
+plt.title(title)
+plt.xlabel('x [R_E]')
+plt.ylabel('z [R_E]')
+plt.savefig(name+'-norm_curl_b1.png')
+#plt.show()
+#plt.clf()

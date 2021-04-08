@@ -293,7 +293,6 @@ def time2CDFfilename(run, time, split=False, debug=True, ignore_miliseconds=True
     return conf[run + '_cdf'] + filename
     '''
 
-
 def CDFfilename2time(run, filename): #TODO: finish
     """Extract time stamp from file name"""
 

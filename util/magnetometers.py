@@ -1,3 +1,4 @@
+import numpy as np
 import cxtransform as cx
 
 
@@ -13,5 +14,5 @@ magnetometer_GEOs = {'YKC' : (62.480, 245.518), # (lat, lon) in GEO
 
 def GetMagnetometerLocation(station, time, csys_out, ctype_out):
     lat, lon = magnetometer_GEOs[station]
-    return cx.transform([1., lat, lon], time, 'GEO', csys_out, ctype_in='sph', ctype_out=ctype_out)
+    return cx.transform(np.array([1., lat, lon]), time, 'GEO', csys_out, ctype_in='sph', ctype_out=ctype_out)
 
