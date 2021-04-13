@@ -1,7 +1,12 @@
 import numpy as np
+import scipy.io as sio
 from swmf_constants import Used_,Status_,Level_,Parent_,Child0_,Child1_,Coord1_,CoordLast_,ROOTNODE_
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
+from config import conf
 import util
-from named_var_indexes import nVarNeeded, index2str
+from named_var_indexes import nVarNeeded, index2str, str2index
 
 def F2P(fortran_index):
     return fortran_index - 1
@@ -30,34 +35,18 @@ def read_tree_file(filetag):
     cache['nK'] = int(cache['BlockSize3'])
 
     ## Loading AMR tree
-    # directly read bytes
-    #f = open(filetag+".tree", 'rb')
-    #filebytes = np.fromfile(f, dtype=np.int32)
-    #f.close()
 
-    try:
-        # use scipy FortranFile
-        from scipy.io import FortranFile
-        ff = FortranFile(filetag+".tree", 'r')
-        if True:
-            nDim, nInfo, nNode = ff.read_reals(dtype=np.int32)
-            iRatio_D = ff.read_reals(dtype=np.int32) # Array of refinement ratios
-            nRoot_D = ff.read_reals(dtype=np.int32) # The number of root nodes in all dimension
-            iTree_IA = ff.read_reals(dtype=np.int32).reshape((nInfo,nNode), order='F')
-        else:
-            nDim, nInfo, nNode = ff.read_ints(dtype='i4')
-            iRatio_D = ff.read_ints(dtype='i4') # Array of refinement ratios
-            nRoot_D = ff.read_ints(dtype='i4') # The number of root nodes in all dimension
-            iTree_IA = ff.read_ints(dtype='i4').reshape((nInfo,nNode), order='fortran')
-    except:
-        raise RuntimeWarning ("scipy.io.FortranFile didnt work")
-        # use fortranfile
-        from fortranfile import FortranFile
-        ff = FortranFile(filetag+".tree") # read or write ???
-        nDim, nInfo, nNode = ff.readInts()
-        iRatio_D = ff.readInts() # Array of refinement ratios
-        nRoot_D = ff.readInts() # The number of root nodes in all dimension
-        iTree_IA = ff.readInts().reshape((nInfo,nNode), order='fortran')
+    ff = sio.FortranFile(filetag+".tree", 'r')
+    if True:#!!!!!!!!
+        nDim, nInfo, nNode = ff.read_reals(dtype=np.int32)
+        iRatio_D = ff.read_reals(dtype=np.int32) # Array of refinement ratios
+        nRoot_D = ff.read_reals(dtype=np.int32) # The number of root nodes in all dimension
+        iTree_IA = ff.read_reals(dtype=np.int32).reshape((nInfo,nNode), order='F')
+    else:
+        nDim, nInfo, nNode = ff.read_ints(dtype='i4')
+        iRatio_D = ff.read_ints(dtype='i4') # Array of refinement ratios
+        nRoot_D = ff.read_ints(dtype='i4') # The number of root nodes in all dimension
+        iTree_IA = ff.read_ints(dtype='i4').reshape((nInfo,nNode), order='fortran')
 
     ########################### check_thing_work #######################
     assert(cache['nDim'] == nDim)
@@ -95,8 +84,34 @@ def read_tree_file(filetag):
 
 
 def read_out_file(filetag):
-    pass
+    nDim = 3
+    ff = sio.FortranFile(filetag+".out", 'r')
 
+    header = str(ff.read_ints(dtype=np.uint8).tobytes())[2:-1] # slice changes b'*' into *
+    nStep, Time, nDimOut, nParam, nVar = ff.read_ints(dtype=np.int32)
+    n_D = ff.read_ints(dtype=np.int32)
+    tmp=str(ff.read_ints(dtype=np.uint8).tobytes())
+    print(tmp)
+    variables = str(ff.read_ints(dtype=np.uint8).tobytes())[2:-1] # slice changes b'*' into *
+    variables = variables.strip().split(' ')
+
+    XYZ = ff.read_reals(dtype=np.float32)
+    XYZ = XYZ.reshape(3,XYZ.size//3)
+
+    data = {'x' : XYZ[0,:],
+            'y' : XYZ[1,:],
+            'z' : XYZ[2,:] }
+
+    for i in range(3,1000):
+        try:
+            A = ff.read_reals(dtype=np.float32)
+            data[variables[i]] = A
+        except sio._fortran.FortranEOFError:
+            break
+
+    expectedheader = "R R R Mp/cc km/s km/s km/s J/m3 nT nT nT nT nT nT nPa uA/m2 uA/m2 uA/m2 --"
+    assert(expectedheader == header.strip())
+    return data
 
 # from SWMF/GM/BATSRUS/srcBATL/BATL_tree.f90 line 951 with substitutions
 def get_tree_position(iNode, cache, returnall=False):
@@ -220,10 +235,11 @@ def read_all(filetag):
         import spacepy.pybats.bats as bats
         import read_swmf_files as rswmf
         data = bats.Bats2d(filetag + ".out")
-        header = "R R R Mp/cc km/s km/s km/s J/m3 nT nT nT nT nT nT nPa uA/m2 uA/m2 uA/m2 --"
-        assert(header == data.meta['header'].strip())
+        expectedheader = "R R R Mp/cc km/s km/s km/s J/m3 nT nT nT nT nT nT nPa uA/m2 uA/m2 uA/m2 --"
+        assert(expectedheader == data.meta['header'].strip())
     else:
         data = read_out_file(filetag) # TODO : eventually
+
     cache = read_tree_file(filetag)
 
     # in what follows:
@@ -290,8 +306,31 @@ def read_all(filetag):
     return cache
 
 
-def find_index(point):
-    pass
+def find_index(filetag, point, cache=None, debug=False):
+    if cache is None:
+        cache = read_all(filetag)
+    else:
+        assert(cache['filetag'] == filetag)
+
+    def getvar(_var, iNode, i,j,k):
+        return cache['DataArray'][str2index[_var],:,:,:,:][cache['node2block'][F2P(iNode)],i,j,k]
+
+    iNode = find_tree_node(point, cache)
+
+    # get the gridspacing in x,y,z
+    gridspacingX = getvar('x', iNode, 1,0,0) - getvar('x', iNode, 0,0,0)
+    gridspacingY = getvar('y', iNode, 0,1,0) - getvar('y', iNode, 0,0,0)
+    gridspacingZ = getvar('z', iNode, 0,0,1) - getvar('z', iNode, 0,0,0)
+
+    # i0 is s.t. the highest index s.t. the x coordinate of the 
+    #  corresponding cell block_data[iNode,i0,:,:]  is still less than point[0]
+    i0 = (point[0] - getvar('x', iNode, 0, 0, 0))/gridspacingX
+    j0 = (point[1] - getvar('y', iNode, 0, 0, 0))/gridspacingY
+    k0 = (point[2] - getvar('z', iNode, 0, 0, 0))/gridspacingZ
+    if i0.is_integer() and j0.is_integer() and k0.is_integer():
+        return (cache['node2block'][F2P(iNode)],int(i0),int(j0),int(k0)) # (iBlockP,i,j,k)
+    else:
+        return None
 
 
 def interpolate(filetag, point, var='p', cache=None, debug=False):
@@ -319,7 +358,7 @@ def interpolate(filetag, point, var='p', cache=None, debug=False):
         assert(cache['filetag'] == filetag)
 
     def getvar(_var, iNode, i,j,k):
-        return cache['DataArray'][_var,:,:,:,:][node2block[F2P(iNode)],i,j,k]
+        return cache['DataArray'][str2index[_var],:,:,:,:][cache['node2block'][F2P(iNode)],i,j,k]
 
     iNode = find_tree_node(point, cache)
 
@@ -333,8 +372,7 @@ def interpolate(filetag, point, var='p', cache=None, debug=False):
     i0 = int(np.floor( (point[0] - getvar('x', iNode, 0, 0, 0))/gridspacingX ))
     j0 = int(np.floor( (point[1] - getvar('y', iNode, 0, 0, 0))/gridspacingY ))
     k0 = int(np.floor( (point[2] - getvar('z', iNode, 0, 0, 0))/gridspacingZ ))
-    if debug: print(getvar('x', iNode, 0, 0, 0),getvar('y', iNode, 0, 0, 0),getvar('z', iNode, 0, 0, 0))
-    if debug: print(i0,j0,k0)
+
     #i1 = i0+1 is the lowest index s.t. the x coordinate of the 
     #  corresponding cell block_data[iNode,i1,:,:]  is still greater than point[0]
 
@@ -383,8 +421,7 @@ def interpolate(filetag, point, var='p', cache=None, debug=False):
     if debug: print(getvar('x', iNode,  i0, j0, k0))
     if debug: print(getvar('y', iNode,  i0, j0, k0))
     if debug: print(getvar('z', iNode,  i0, j0, k0))
-    if debug: print('hellothere')
-    if debug: print((iNode, node2block[F2P(iNode)], i0, j0, k0))
+    if debug: print((iNode, cache['node2block'][F2P(iNode)], i0, j0, k0))
 
 
     #https://en.wikipedia.org/wiki/Trilinear_interpolation
@@ -412,9 +449,11 @@ def interpolate(filetag, point, var='p', cache=None, debug=False):
     return c
 
 
-
 if __name__ == '__main__':
-    point = np.array([-220., -124.,  -92.])
-    print(interpolate("/home/gary/temp/3d__var_3_e20031120-070000-000",point,var='p', debug=True))
-
-    point = np.array([1., 0.,  0.])
+    point = np.array([-146.,  -14.,  -14.])
+    ftag = "/home/gary/temp/3d__var_3_e20031120-070000-000"
+    cac = read_all(ftag)
+    print(interpolate(ftag,point,var='p', cache=cac))
+    indx = find_index(ftag,point, cache=cac)
+    print(indx)
+    print(cac['DataArray'][(14,*indx)])

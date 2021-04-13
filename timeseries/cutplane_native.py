@@ -78,9 +78,6 @@ def _jit_xzplane(DataArray, resolution, expectedNpts):
     counter = 0
 
     for iBlockP in range(nBlock):
-        if counter >= expectedNpts:
-            print('WARNING: exceeded expectedNpts')
-            break
         epsilon = DataArray[_x,iBlockP,1,0,0] - DataArray[_x,iBlockP,0,0,0]
         if epsilon != resolution:
             continue
@@ -89,6 +86,9 @@ def _jit_xzplane(DataArray, resolution, expectedNpts):
                 continue
             for i in range(nI):
                 for k in range(nK):
+                    if counter >= expectedNpts:
+                        print('WARNING: exceeded expectedNpts')
+                        break
                     planedata[0,counter] = DataArray[_x,iBlockP,i,j,k]
                     planedata[1,counter] = DataArray[_z,iBlockP,i,j,k]
 
@@ -113,20 +113,66 @@ def _jit_xzplane(DataArray, resolution, expectedNpts):
                                                   + curl_B1_z**2 )
 
                     counter += 1
-
-    print(counter)
     return planedata
 
-def slice_xzplane(run, time, png=True, cache=None):
+def slice_xzplane(run, time, rcut=None, png=True, cache=None):
     if cache is None:
         cache = read_all(util.time2CDFfilename(run,time)[:-8])
 
-    inner_planedata = xzplane(cache['DataArray'], gridspacing=0.0625, expectedNtps=15360)
-    outer_planedata = xzplane(cache['DataArray'], gridspacing=0.125 , expectedNtps=17664)
+    if rcut is None:
+        rcut = util.get_rCurrents(run)
+
+    inner_planedata = _jit_xzplane(cache['DataArray'], 0.0625, 15360)
+    outer_planedata = _jit_xzplane(cache['DataArray'], 0.125 , 17664)
 
     if png:
-        png_outname = conf[run+'_derived'] + 'timeseries/slices/' \
-            + 'xzplane_%.2d%.2d%.2dT%.2d%.2d%.2d.png'%util.tpad(time, length=6)
+        import matplotlib.pyplot as plt
+        #https://stackoverflow.com/questions/17201172/a-logarithmic-colorbar-in-matplotlib-scatter-plot
+        import matplotlib.colors as mplc
+
+        ## TODO:
+        #png_b1 = conf[run+'_derived'] + 'timeseries/slices/' \
+        #    + 'xzplane_normb1_%.2d%.2d%.2dT%.2d%.2d%.2d.png'%util.tpad(time, length=6)
+
+        png_derivs = conf[run+'_derived'] + 'timeseries/slices/' \
+            + 'xzplane_derivsb1_%.2d%.2d%.2dT%.2d%.2d%.2d.png'%util.tpad(time, length=6)
+
+        title = '%s at %.2d%.2d%.2dT%.2d%.2d%.2d.png'%(run,*util.tpad(time, length=6))
+
+        x =          np.concatenate([inner_planedata[0,:],outer_planedata[0,:]])# + 1e-25
+        z =          np.concatenate([inner_planedata[1,:],outer_planedata[1,:]])# + 1e-25
+        divB1 =      np.concatenate([inner_planedata[2,:],outer_planedata[2,:]])# + 1e-25
+        normB1 =     np.concatenate([inner_planedata[3,:],outer_planedata[3,:]])# + 1e-25
+        normcurlB1 = np.concatenate([inner_planedata[4,:],outer_planedata[4,:]])# + 1e-25
+
+        tr =  x**2 + z**2 <= rcut**2
+
+        x[tr] = np.nan
+        z[tr] = np.nan
+        divB1[tr] = np.nan
+        divB1[tr] = np.nan
+
+        fig, axes = plt.subplots(figsize=(32,6), nrows=1, ncols=2,dpi=300)
+
+        sc0=axes[0].scatter(x,z,c=np.abs(divB1), norm=mplc.LogNorm(vmin=1e-5, vmax=1e+4))
+        #axes[0].set_colorbar(label='|div_b1| [$nT R_E^{-1}$]')
+        axes[0].set_title('|div_b1|')
+        axes[0].set_xlabel('x [R_E]')
+        axes[0].set_ylabel('z [R_E]')
+        fig.colorbar(sc0, ax=axes[0], label='[$nT R_E^{-1}$]')
+
+        sc1=axes[1].scatter(x,z,c=normcurlB1, norm=mplc.LogNorm(vmin=1e-5, vmax=1e+4))
+        #axes[1].set_colorbar(label='norm_curl_b1 [$nT R_E^{-1}$]')
+        axes[1].set_title('norm_curl_b1')
+        axes[1].set_xlabel('x [R_E]')
+        axes[1].set_ylabel('z [R_E]')
+        fig.colorbar(sc1, ax=axes[1], label='[$nT R_E^{-1}$]')
+
+        fig.suptitle(title)
+        fig.savefig(png_derivs)
+        plt.clf()
+        del plt, fig, axes
+
     else:
         inner_outname = conf[run+'_derived'] + 'timeseries/slices/' \
             + 'y=3_32_xzplane_%.2d%.2d%.2dT%.2d%.2d%.2d_x_z_divB1_normB1_normcurlB1.npy'%util.tpad(time, length=6)
@@ -135,10 +181,15 @@ def slice_xzplane(run, time, png=True, cache=None):
         np.save(inner_outname,inner_planedata)
         np.save(outer_outname,outer_planedata)
 
+
+def stitch_xzplane(run, times, rcut=None, png=True):
+    pass
+
+
 if __name__ == '__main__':
     ##################
     run = 'DIPTSUR2'
     ##################
 
-    xzplane_wrap(run, (2019,9,2,6,30,0,0))
-    xzplane_wrap(run, (2019,9,2,4,10,0,0))
+    slice_xzplane(run, (2019,9,2,6,30,0,0))
+    slice_xzplane(run, (2019,9,2,4,10,0,0))

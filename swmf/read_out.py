@@ -11,8 +11,8 @@ import numpy as np
 
 usesp = True
 nDim = 3
-filetag = "3d__var_3_e20031120-070000-000"
-filetag = "../../Batsrus.jl-master/3d__var_1_n00002500"
+filetag = "/home/gary/temp/3d__var_3_e20031120-070000-000"
+#filetag = "../../Batsrus.jl-master/3d__var_1_n00002500"
 
 # directly read bytes
 f = open(filetag+".out", 'rb')
@@ -22,9 +22,9 @@ print(filebytes[:20])
 
 if usesp:
     # use scipy FortranFile
-    from scipy.io import FortranFile
-    ff = FortranFile(filetag+".out", 'r')
-    head = ff.read_ints(dtype=np.int8)
+    import scipy.io as sio
+    ff = sio.FortranFile(filetag+".out", 'r')
+    head = str(ff.read_ints(dtype=np.uint8).tobytes())[2:-1] # slice changes b'*' into *
     nStep, Time, nDimOut, nParam, nVar = ff.read_ints(dtype=np.int32)
     n_D = ff.read_ints(dtype=np.int32)
 else:
@@ -34,31 +34,56 @@ else:
     head = ff.readString()
     nStep, Time, nDimOut, nParam, nVar = ff.readInts()  # Time should be Real4_ ???
     n_D = ff.readInts()
-    
-     
-
-
 
 print(head)
 print((nStep, Time, nDimOut, nParam, nVar))
 print(n_D)
+print('\n\n##################################\n\n')
+
 
 if usesp:
-    A1 = ff.read_ints(dtype=np.int32)
-    A2 = ff.read_ints(dtype=np.int32)
+    if False:
+        A1 = ff.read_ints(dtype=np.int32)
+        A2 = ff.read_ints(dtype=np.int32)
+        print(A1.shape)
+        print(A2.shape)
+    else:
+        A1 = str(ff.read_ints(dtype=np.uint8).tobytes())
+        A2 = str(ff.read_ints(dtype=np.uint8).tobytes())
 else:
     A1 = ff.readInts()
     A2 = ff.readInts()
 
-print(A1.shape)
 print(A1)
-print(A2.shape)
 print(A2)
+
+print('\n\n##################################\n\n')
 
 A = None
 for i in range(50):
-    if usesp:
-        A = ff.read_reals(dtype=np.float32)
-    else:
-        A = ff.readReals()
-    print(A.shape)
+    try:
+        if usesp:
+            A = ff.read_reals(dtype=np.float32)
+        else:
+            A = ff.readReals()
+        print(A)
+        print(A.shape)
+    except sio._fortran.FortranEOFError:
+        break
+
+import spacepy.pybats.bats as bats
+data = bats.Bats2d(filetag+".out")
+print('x')
+print(data['x']      )
+print(data['x'].shape)
+print('y')
+print(data['y']      )
+print(data['y'].shape)
+print('z')
+print(data['z']      )
+print(data['z'].shape)
+print('rho')
+print(data['rho']    )
+print(data['rho'].shape)
+
+print(data['rho'].attrs)

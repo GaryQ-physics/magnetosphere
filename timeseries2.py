@@ -34,13 +34,14 @@ import util
 from read_swmf_files2 import read_all
 from integrals import slice_B_biotsavart, stitch_B_biotsavart, slice_B_coulomb, stitch_B_coulomb
 from stats_summary import slice_stats_summary, stitch_stats_summary
-from probe_locations import slice_probe, stitch_probe
+from probe_locations import slice_probe_b1, stitch_probe_b1
+from cutplane_native import slice_xzplane, stitch_xzplane
 
 # if rcut=None or not supplied in the job_config file, it defaults to rCurrents
 try:
     if rcut is None:
         rcut = util.get_rCurrents(run)
-except:
+except NameError:
     rcut = util.get_rCurrents(run)
 
 # make needed directories if not exists.
@@ -52,6 +53,9 @@ if not os.path.exists(conf[run+'_derived']+'timeseries/slices/'):
 #    while only loading the .out once per time slice. 
 def wrap(time):
     cache = read_all(util.time2CDFfilename(run,time)[:-8])
+
+    if do_cutplane:
+        slice_xzplane(run, time, rcut=rcut, cache=cache)
 
     if do_stats_summary:
         slice_stats_summary(run, time, rcut=rcut, cache=cache)
@@ -66,7 +70,7 @@ def wrap(time):
 
     if do_probing:
         for point in probe_points:
-            slice_probe(run, time, point, cache=cache)
+            slice_probe_b1(run, time, point, cache=cache)
 
 # loop through each time slice, in parallel or in serial, and execute wrapper
 times = list(util.get_available_slices(run)[1])
@@ -89,6 +93,9 @@ else:
         wrap(time)
 
 # stitch the written files together
+if do_cutplane:
+    stitch_xzplane(run, times, rcut=rcut)
+
 if do_stats_summary:
     stitch_stats_summary(run, times, rcut=rcut)
 
@@ -102,4 +109,4 @@ if do_coulomb_integral:
 
 if do_probing:
     for point in probe_points:
-        stitch_probe(run, times, point)
+        stitch_probe_b1(run, times, point)

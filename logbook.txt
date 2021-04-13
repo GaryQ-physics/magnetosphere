@@ -187,8 +187,6 @@ Notes:
         reload(jitFORTRAN_exe)
 
 
-
-
 boolean operations paraview
 #SWMF/share/Library/src/ModConst.f90
   ! Proton mass [kg]
