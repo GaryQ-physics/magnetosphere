@@ -361,43 +361,24 @@ def filelist(run):
         return files
 '''
 
+
 def urlretrieve(url, fname):
     """Python 2/3 urlretrieve compatability function.
-
-    If Python 3, returns
-    urllib.request.urlretrieve(url, fname)
-
-    If Python 2, returns
-    urllib.urlretrieve(url, fname)
     """
+    #https://stackoverflow.com/questions/17285464/whats-the-best-way-to-download-file-using-urllib3
+    import urllib3
+    import shutil
+    http = urllib3.PoolManager()
 
-    import sys
+    with http.request('GET', url, preload_content=False) as req:
+        if req.status == 200:
+            with open(fname,'wb') as fl:
+                shutil.copyfileobj(req, fl)
+        else:
+            raise ConnectionError ('error in dowloading from '+url)
+        #req.release_conn() # with statement should do this automattically??
 
-    if sys.version_info[0] > 2:
-        import urllib.request, urllib.error
-        try:
-            res = urllib.request.urlretrieve(url, fname)
-            return res
-        except urllib.error.URLError as e:
-            print(e)
-        except ValueError as e:
-            print("'" + url + "' is not a valid URL")
-    else:
-        import urllib, urllib2, ssl
-#        try:
-#            context = ssl._create_unverified_context()
-#            urllib2.urlopen(url) 
-#            res = urllib.urlretrieve(url, fname, context=context)
-#            return res
-##https://stackoverflow.com/questions/16778435/python-check-if-website-exists
-#        except urllib2.HTTPError, e: 
-#            return(e.code)
-#        except urllib2.URLError, e:
-#            return(e.args)
-#        except ValueError:
-#            print("'" + url + "' is not a valid URL")
 
-            
 def dlfile(filename, debug=False):
 
     assert(filename[0] == '/')

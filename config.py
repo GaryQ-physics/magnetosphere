@@ -34,17 +34,17 @@ else:
 conf = {
         'storage': storage,
         'run_url': 'http://mag.gmu.edu/git-data/sblake/SCARR5_GM_IO2/IO2/',
-        'run_path': storage + 'data/SCARR5_GM_IO2/IO2/',
+        'run_path': storage + 'SCARR5_GM_IO2-nowold/IO2/', #kept for backwards compatibility
         'run_path_derived': storage + 'SCARR5_GM_IO2-derived/',
         'base': base,
         'SWPC_raw': storage + 'SWPC_SWMF_052811_2/raw_output/',
         'SWPC_cdf_path': storage + 'SWPC_SWMF_052811_2/GM_CDF/',
 
-        'SWPC_cdf': storage + 'SWPC_SWMF_052811_2/GM_CDF/', # = SWPC_cdf_path
+        'SWPC_cdf': storage + 'SWPC_SWMF_052811_2/GM_CDF/',
         'SWPC_derived': storage + 'SWPC_SWMF_052811_2-derived/',
 
-        'SCARR5_cdf': storage + 'SCARR5/GM/IO2/', # = run_path
-        'SCARR5_derived': storage + 'SCARR5-derived/', # = run_path_derived
+        'SCARR5_cdf': storage + 'SCARR5/GM/IO2/',
+        'SCARR5_derived': storage + 'SCARR5-derived/',
         'SCARR5_magfile': storage + 'SCARR5/MAG_FILES/',
 
         'SCARR1_cdf': storage + 'SCARR1/tmp/',
@@ -56,6 +56,9 @@ conf = {
 
         'DIPTSUR2_cdf' : storage + 'DIPTSUR2/GM/IO2/',
         'DIPTSUR2_derived' : storage + 'DIPTSUR2-derived/',
+
+        'DIPTSUR2_4HOUR_cdf' : storage + 'DIPTSUR2_4HOUR/GM/IO2/',
+        'DIPTSUR2_4HOUR_derived' : storage + 'DIPTSUR2_4HOUR-derived/',
 
         'LUHMANN1979_cdf' : storage + 'LUHMANN1979/',
         'LUHMANN1979_derived' : storage + 'LUHMANN1979-derived/',
@@ -97,6 +100,9 @@ if base + 'timeseries/' not in sys.path:
 
 if base + 'cutplane/' not in sys.path:
     sys.path.append(base + 'cutplane/')
+
+if conf['interpolator'] + 'kameleon/lib/python2.7/site-packages/ccmc/' not in sys.path:
+    sys.path.append(conf['interpolator'] + 'kameleon/lib/python2.7/site-packages/ccmc/')
 
 #if base + 'regions/' not in sys.path:
 #    sys.path.append(base + 'regions/')

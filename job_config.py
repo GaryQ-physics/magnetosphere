@@ -1,7 +1,7 @@
 #### configuration file to be imported by timeseries.py  ####
 #### this is to be modified   ####
 
-run = 'DIPTSUR2'
+run = 'DIPTSUR2_4HOUR'
 
 do_stats_summary = True
 do_biotsavart_integral = True

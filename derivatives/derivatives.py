@@ -28,6 +28,7 @@ def get_partials(DataArray, vvar, iBlockP,i,j,k):
 
     if i == 0 or j == 0 or k == 0 or i == nI-1 or j == nJ-1 or k == nK-1:
         return partials
+
     partials[0,0] = (DataArray[_fx, iBlockP, i+1, j  , k  ] - DataArray[_fx, iBlockP, i-1, j  , k  ])/(2*epsilon)
     partials[0,1] = (DataArray[_fy, iBlockP, i+1, j  , k  ] - DataArray[_fy, iBlockP, i-1, j  , k  ])/(2*epsilon)
     partials[0,2] = (DataArray[_fz, iBlockP, i+1, j  , k  ] - DataArray[_fz, iBlockP, i-1, j  , k  ])/(2*epsilon)

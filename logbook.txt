@@ -187,6 +187,8 @@ Notes:
         reload(jitFORTRAN_exe)
 
 
+/media/sunspot/git-data/sblake/kameleon-converter/kameleon-converter-v5.2.0/c_src
+
 boolean operations paraview
 #SWMF/share/Library/src/ModConst.f90
   ! Proton mass [kg]
