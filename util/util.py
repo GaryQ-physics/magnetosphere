@@ -616,6 +616,8 @@ def isclose_32(arr1, arr2):
 def get_rCurrents(run):  # todo:  get from PARAM file
     if run == 'DIPTSUR2':
         return 1.8
+    if run == 'DIPTSUR2_4HOUR':
+        return 1.8
     if run == 'IMP10_RUN_SAMPLE':
         return 1.7
     if run == 'TESTANALYTIC':
@@ -626,6 +628,8 @@ def get_rCurrents(run):  # todo:  get from PARAM file
 
 def get_rBody(run):  # todo:  get from PARAM file
     if run == 'DIPTSUR2':
+        return 1.5
+    if run == 'DIPTSUR2_4HOUR':
         return 1.5
     if run == 'IMP10_RUN_SAMPLE':
         pass
