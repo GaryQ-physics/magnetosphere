@@ -12,7 +12,7 @@ import util
 from swmf_file_reader.read_swmf_files import read_all
 from derivatives import get_partials
 from units_and_constants import phys
-from named_var_indexes import index2str, nVarTot, nVarNeeded, \
+from swmf_file_reader.named_var_indexes import index2str, nVarTot, nVarNeeded, \
                             _x                   ,\
                             _y                   ,\
                             _z                   ,\

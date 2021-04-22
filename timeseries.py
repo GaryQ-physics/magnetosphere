@@ -5,7 +5,7 @@
  --nfiles : set equal to n_files (default: None, i.e. all files)
 
 eg:
-python timeseries2.py -pv --nfiles=4
+python timeseries.py -pv --nfiles=4
 '''
 from job_config import *
 

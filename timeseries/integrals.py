@@ -13,7 +13,7 @@ import util
 from swmf_file_reader.read_swmf_files import read_all
 from derivatives import get_partials
 from magnetometers import GetMagnetometerLocation
-from named_var_indexes import _x,_y,_z
+from swmf_file_reader.named_var_indexes import _x,_y,_z
 
 @njit
 def _jit_B_biotsavart(DataArray, obs_point, rcut):

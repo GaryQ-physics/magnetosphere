@@ -10,7 +10,7 @@ import util
 from swmf_file_reader.read_swmf_files import read_all, find_index, interpolate
 from derivatives import get_partials
 from magnetometers import GetMagnetometerLocation
-from named_var_indexes import _x,_y,_z,_b1x,_b1y,_b1z
+from swmf_file_reader.named_var_indexes import _x,_y,_z,_b1x,_b1y,_b1z
 import pandas as pd
 
 @njit

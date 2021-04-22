@@ -1,6 +1,6 @@
 import numpy as np
 from numba import njit
-from named_var_indexes import _x,_b1x,_b1y,_b1z,_bx,_by,_bz,_jx,_jy,_jz,_ux,_uy,_uz
+from swmf_file_reader.named_var_indexes import _x,_b1x,_b1y,_b1z,_bx,_by,_bz,_jx,_jy,_jz,_ux,_uy,_uz
 
 @njit
 def get_partials(DataArray, vvar, iBlockP,i,j,k):
