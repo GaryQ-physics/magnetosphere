@@ -34,7 +34,7 @@ for arg in sys.argv:
 
 from config import conf
 import util
-from read_swmf_files import read_all
+from swmf_file_reader.read_swmf_files import read_all
 from integrals import slice_B_biotsavart, stitch_B_biotsavart, slice_B_coulomb, stitch_B_coulomb
 from stats_summary import slice_stats_summary, stitch_stats_summary
 from probe_locations import slice_probe_b1, stitch_probe_b1

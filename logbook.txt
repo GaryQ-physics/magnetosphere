@@ -185,6 +185,8 @@ Notes:
         I found it can be fixed by simply adding one line to
         the Fortran_Subroutine class (in compile method):
         reload(jitFORTRAN_exe)
+2021/04/22:
+    calling swmf_file_reader as separate package now, and not using the one in magnetosphere/swmf/ (to rem ove later)
 
 
 /media/sunspot/git-data/sblake/kameleon-converter/kameleon-converter-v5.2.0/c_src
@@ -259,6 +261,7 @@ TODO:
     StringIO
 
 Q's:
+    in setup.py can I include only scipy.io (not all of scipy)
     line qotree.py 78 and 329 in Dan's branch. whats with the logs?
     #SAVEBINARY is false in PARAM.in (for DIPTSUR2)
 

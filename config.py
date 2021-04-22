@@ -16,7 +16,7 @@ elif os.path.exists('/home/gary/'):
     base = '/home/gary/magnetosphere/'
     storage = base +'data/'
     #https://stackoverflow.com/questions/16779497/how-to-set-memory-limit-for-thread-or-process-in-python
-    soft, hard = int(4*2**30), int(4*2**30)
+    soft, hard = int(13*2**30), int(13*2**30)
     resource.setrlimit(resource.RLIMIT_AS,(soft, hard))
     #if '-s' in sys.argv:
     #    storage = '/home/gary/media_sunspot/'
@@ -60,6 +60,12 @@ conf = {
         'DIPTSUR2_4HOUR_cdf' : storage + 'DIPTSUR2_4HOUR/GM/IO2/',
         'DIPTSUR2_4HOUR_derived' : storage + 'DIPTSUR2_4HOUR-derived/',
 
+        'UNALT_DIPOLE_cdf' : storage + 'UNALT_DIPOLE/GM/IO2/',
+        'UNALT_DIPOLE_derived' : storage + 'UNALT_DIPOLE-derived/',
+
+        'UNALT_DIPOLE4_cdf' : storage + 'UNALT_DIPOLE4/GM/IO2/',
+        'UNALT_DIPOLE4_derived' : storage + 'UNALT_DIPOLE4-derived/',
+
         'LUHMANN1979_cdf' : storage + 'LUHMANN1979/',
         'LUHMANN1979_derived' : storage + 'LUHMANN1979-derived/',
 
@@ -92,8 +98,8 @@ if base + 'physics/' not in sys.path:
 if base + 'derivatives/' not in sys.path:
     sys.path.append(base + 'derivatives/')
 
-if base + 'swmf/' not in sys.path:
-    sys.path.append(base + 'swmf/')
+#if base + 'swmf/' not in sys.path:
+#    sys.path.append(base + 'swmf/')
 
 if base + 'timeseries/' not in sys.path:
     sys.path.append(base + 'timeseries/')

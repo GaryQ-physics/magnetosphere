@@ -10,7 +10,7 @@ import util
 from units_and_constants import phys
 from numba import njit
 import datetime
-from read_swmf_files2 import read_all
+from swmf_file_reader.read_swmf_files import read_all
 from derivatives import get_partials
 
 from named_var_indexes import index2str, nVarTot, nVarNeeded, \

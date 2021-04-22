@@ -10,7 +10,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 import util
-from read_swmf_files2 import read_all
+from swmf_file_reader.read_swmf_files import read_all
 from derivatives import get_partials
 from magnetometers import GetMagnetometerLocation
 from named_var_indexes import _x,_y,_z

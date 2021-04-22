@@ -1,5 +1,6 @@
 from numba import types
 from numba.typed import Dict
+print('\n\n\n\nnamed_var_indexes from magnetosphere/derivatives!!!!!!!!!\n\n\n\n')
 
 _x                         = 0
 _y                         = 1

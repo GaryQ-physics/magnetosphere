@@ -618,6 +618,10 @@ def get_rCurrents(run):  # todo:  get from PARAM file
         return 1.8
     if run == 'DIPTSUR2_4HOUR':
         return 1.8
+    if run == 'UNALT_DIPOLE':
+        return 1.8
+    if run == 'UNALT_DIPOLE4':
+        return 1.8
     if run == 'IMP10_RUN_SAMPLE':
         return 1.7
     if run == 'TESTANALYTIC':
@@ -631,10 +635,14 @@ def get_rBody(run):  # todo:  get from PARAM file
         return 1.5
     if run == 'DIPTSUR2_4HOUR':
         return 1.5
+    if run == 'UNALT_DIPOLE':
+        return 1.5
+    if run == 'UNALT_DIPOLE4':
+        return 1.5
     if run == 'IMP10_RUN_SAMPLE':
-        pass
+        assert(False)
     if run == 'TESTANALYTIC':
-        pass
+        assert(False)
     if run == 'LUHMANN1979':
         return 1.
     assert(False)
