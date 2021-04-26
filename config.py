@@ -18,14 +18,12 @@ elif os.path.exists('/home/gary/'):
     #https://stackoverflow.com/questions/16779497/how-to-set-memory-limit-for-thread-or-process-in-python
     soft, hard = int(13*2**30), int(13*2**30)
     resource.setrlimit(resource.RLIMIT_AS,(soft, hard))
-    #if '-s' in sys.argv:
-    #    storage = '/home/gary/media_sunspot/'
 
 elif os.path.exists('/home/gquaresi/'):
     base = '/home/gquaresi/magnetosphere/'
     storage = '/media/sunspot/git-data/sblake/'
     #https://stackoverflow.com/questions/16779497/how-to-set-memory-limit-for-thread-or-process-in-python
-    soft, hard = 72*2**30, 72*2**30
+    soft, hard = 90*2**30, 90*2**30
     resource.setrlimit(resource.RLIMIT_AS,(soft, hard))
 else:
     assert(False)

@@ -248,15 +248,15 @@ boolean operations paraview
      RotationPeriodPlanet_I(Earth_)      = cDay                    ! [ s]
 
 TODO:
+    integrate surface b1, and add point near boundary to runs
+
     threshold filter
     git hub password
     make integral plots
     do paraview field lines still stop with analytic function?
     select subsets of cells in paraview
     in paraview AMRGaussianPulseSource
-    write high level overview for swmf_file_reader and share with weigel
 
-    use mead to write new vtu and run derivatives on it
     branch for modified vtk_export
     StringIO
 
@@ -269,12 +269,6 @@ things to say:
     Dealing with singular integrals on grid
     os.tmpnam() security warning
 
-derivatives/coulomb.py -> derivatives/magnetic_field_integrals.py
-
-
-
-for tree meet:
-    julia generated .vtu have the same points as .out but in DIFFERENT order
 
 https://sourceforge.net/p/irbem/code/HEAD/tree/docs/
 http://svn.code.sf.net/p/irbem/code/trunk/
@@ -361,98 +355,41 @@ SWMF/GM/BATSRUS/srcBATL_/BATL_tree.f90
   !============================================================================
     line 1582
 
-
-
-git clone http  blabla@github
-https://www.freecodecamp.org/news/how-to-fix-git-always-asking-for-user-credentials/
-https://www.mathcha.io/
-
-https://people.sc.fsu.edu/~jburkardt/
-
-https://docs.pyvista.org/examples/00-load/create-tri-surface.html#sphx-glr-examples-00-load-create-tri-surface-py
-
-https://github.com/nasa/Kamodo/blob/master/kamodo/readers/swmf_gm.py line 117
-
 ModWriteLogSatFile.f90
     use ModNumConst, ONLY: cPi
     dst '=' 1/(4*cPi) * integral(JcrossR/R^3) 
 ModNumConst.f90
        cPi        =  3.1415926535897932384626433832795
 
-
-
-
-paraview contour surfaces for dB_north
-
-check mag grid files for DIPSURE2 (compare)
-    want plot of earth surf at 6:30 using :
-        maggrid files
-        surf_deltaB
-        png on google drive
-
-
 change TESTANALYTIC so shell is inside 1Re
 
 test the -> loc rotation against something analytic
 
+also --show-origin doesnt work on sunspot. update git version?
+
+https://www.freecodecamp.org/news/how-to-fix-git-always-asking-for-user-credentials/
+https://www.mathcha.io/
+https://people.sc.fsu.edu/~jburkardt/
+https://docs.pyvista.org/examples/00-load/create-tri-surface.html#sphx-glr-examples-00-load-create-tri-surface-py
+https://github.com/nasa/Kamodo/blob/master/kamodo/readers/swmf_gm.py line 117
 http://kirkmcd.princeton.edu/examples/
-
 https://github.com/MSTEM-QUDA
-
-
 https://searchcode.com/?q=vtkStreamTracer
 https://vtk.org/doc/nightly/html/graph_legend.html
-
 https://github.com/rweigel/kameleon
-
-http://numba.pydata.org/
-
-on mag: sudo mount /var/www/git-data/sblake
-
-
-
-also --show-origin doesnt work on sunspot. TODO: check git verison
-
-warning: push.default is unset; its implicit value has changed in
-Git 2.0 from 'matching' to 'simple'. To squelch this message
-and maintain the traditional behavior, use:
-
-  git config --global push.default matching
-
-To squelch this message and adopt the new behavior now, use:
-
-  git config --global push.default simple
-
-When push.default is set to 'matching', git will push local branches
-to the remote branches that already exist with the same name.
-
-Since Git 2.0, Git defaults to the more conservative 'simple'
-behavior, which only pushes the current branch to the corresponding
-remote branch that 'git pull' uses to update the current branch.
-
-See 'git help config' and search for 'push.default' for further information.
-(the 'simple' mode was introduced in Git 1.7.11. Use the similar mode
-'current' instead of 'simple' if you sometimes use older versions of Git)
-
-
 http://web.mit.edu/6.013_book/www/chapter8/8.4.html
 https://www.open.edu/openlearn/science-maths-technology/engineering-technology/superconductivity/content-section-3.2
-
-
 https://en.wikipedia.org/wiki/K%C3%A4ll%C3%A9n%E2%80%93Lehmann_spectral_representation
-
 https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2020SW002551
+https://opensource.com/article/17/4/grok-gil
 
 The radial component of B1 on the ghost face is set as B1rGhost = B1rCoef*B1rTrue at the inner boundary. B1rCoef=-1 corresponds to a reflective boundary, while B1rCoef=1 is a floating (zero gradient) boundary. Any value between -1 and 1 is possible. Using floating condition, however, will not work well for strong storms, as there is no mechanism to restore the dipole after the storm. Reflective will recover the dipole, but it may result in some less stable behavior. The optimal value may be problem dependent. The default value corresponding to reflection is shown above.
 
 peter.willliam.schuck@gmail.com 240-810-6807
 
-
 two body pair correlation function
 https://en.wikipedia.org/wiki/Radial_distribution_function
 percolation model
-
-https://opensource.com/article/17/4/grok-gil
 
 SWMF_user_man.pdf pg 147 "Since the normalized current is defined as curl B"
 SWMF.pdf pg 155 "Since the normalized current is defined as curl B"

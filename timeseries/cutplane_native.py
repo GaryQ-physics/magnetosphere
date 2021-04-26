@@ -170,8 +170,10 @@ def slice_xzplane(run, time, rcut=None, png=True, cache=None):
 
         fig.suptitle(title)
         fig.savefig(png_derivs)
-        plt.clf()
-        del plt, fig, axes
+
+        # needed for figs reference to be garbage collected after function call
+        # without raises 'figure.max_open_warning'
+        plt.close(fig)
 
     else:
         inner_outname = conf[run+'_derived'] + 'timeseries/slices/' \

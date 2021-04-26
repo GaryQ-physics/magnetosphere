@@ -1,5 +1,5 @@
 '''man
- -s : (only summarize overide?)
+ -s : only stitch, do not regenerate slices. (if slices not already on disk, this will error out)
  -p : compute in parallel
  -v : verbose, print details ect
  --nfiles : set equal to n_files (default: None, i.e. all files)
@@ -16,6 +16,7 @@ import sys
 n_times = None
 para = False
 verbose = False
+stitch_only = False
 for arg in sys.argv:
     if arg[0:2] == '--':
         if '--nfiles' == arg[0:8]:
@@ -25,7 +26,7 @@ for arg in sys.argv:
     elif arg[0] == '-':
         for char in arg[1:]:
             if char=='s':
-                pass
+                stitch_only = True
             if char=='p':
                 para = True
             if char=='v':
@@ -80,20 +81,21 @@ times = list(util.get_available_slices(run)[1])
 if n_times is not None:
     times = times[:1*n_times:1]
 
-if para:
-    from joblib import Parallel, delayed
-    import multiprocessing
-    num_cores = multiprocessing.cpu_count()
-    if num_cores is None:
-        assert(False)
-    num_cores = min(num_cores, len(times), 20)
-    print('Parallel processing {0:d} time slices using {1:d} cores'\
-          .format(len(times), num_cores))
-    Parallel(n_jobs=num_cores)(\
-              delayed(wrap)(time) for time in list(times))
-else:
-    for time in list(times):
-        wrap(time)
+if not stitch_only: # typically always runs unless overriden by -s option
+    if para:
+        from joblib import Parallel, delayed
+        import multiprocessing
+        num_cores = multiprocessing.cpu_count()
+        if num_cores is None:
+            assert(False)
+        num_cores = min(num_cores, len(times), 20)
+        print('Parallel processing {0:d} time slices using {1:d} cores'\
+              .format(len(times), num_cores))
+        Parallel(n_jobs=num_cores)(\
+                  delayed(wrap)(time) for time in list(times))
+    else:
+        for time in list(times):
+            wrap(time)
 
 # stitch the written files together
 if do_cutplane:
