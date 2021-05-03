@@ -1,5 +1,3 @@
-import os
-import sys
 import numpy as np
 import pandas as pd
 import os
@@ -185,8 +183,10 @@ def slice_xzplane(run, time, rcut=None, png=True, cache=None):
 
 
 def stitch_xzplane(run, times, rcut=None, png=True):
-    pass
-
+    sl_dir = conf[run+'_derived'] + 'timeseries/slices/'
+    os.system('cd %s && ffmpeg -framerate 10 -pattern_type glob'%(sl_dir) \
+               + ' -i "xzplane_derivsb1_*.png"' \
+               + ' ../xzplane_derivsb1.mp4')
 
 if __name__ == '__main__':
     ##################

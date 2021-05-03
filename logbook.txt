@@ -187,7 +187,14 @@ Notes:
         reload(jitFORTRAN_exe)
 2021/04/22:
     calling swmf_file_reader as separate package now, and not using the one in magnetosphere/swmf/ (to rem ove later)
-
+2021/04/26:
+    bug in numpy.mgrid found. It doesnt work for float32
+    this is used in 
+        magnetosphere/swmf/writevtk_test1.py
+        magnetosphere/swmf/generate_test_block_array.py
+        magnetosphere/swmf/read_swmf_files.py
+        swmf_file_reader/swmf_file_reader/read_swmf_files*.py
+            in both swmf2vtk and the old read_all
 
 /media/sunspot/git-data/sblake/kameleon-converter/kameleon-converter-v5.2.0/c_src
 
@@ -248,6 +255,7 @@ boolean operations paraview
      RotationPeriodPlanet_I(Earth_)      = cDay                    ! [ s]
 
 TODO:
+    swmf2vtk use of mgrid affected by bug?
     integrate surface b1, and add point near boundary to runs
 
     threshold filter
@@ -269,6 +277,10 @@ things to say:
     Dealing with singular integrals on grid
     os.tmpnam() security warning
 
+to grep
+    "#!!"
+    "todo"
+    "= np.nan"
 
 https://sourceforge.net/p/irbem/code/HEAD/tree/docs/
 http://svn.code.sf.net/p/irbem/code/trunk/

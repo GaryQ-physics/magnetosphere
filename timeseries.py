@@ -8,6 +8,15 @@ eg:
 python timeseries.py -pv --nfiles=4
 '''
 from job_config import *
+from config import conf
+import util
+import time as tm
+from swmf_file_reader.read_swmf_files import read_all
+# The following located in magnetosphere/timeseries/ directory
+from integrals import slice_B_biotsavart, stitch_B_biotsavart, slice_B_coulomb, stitch_B_coulomb
+from stats_summary import slice_stats_summary, stitch_stats_summary
+from probe_locations import slice_probe_b1, stitch_probe_b1
+from cutplane_native import slice_xzplane, stitch_xzplane
 
 ##### interperate command line inputs ##################################
 import os
@@ -31,15 +40,21 @@ for arg in sys.argv:
                 para = True
             if char=='v':
                 verbose = True
-########################################################################
 
-from config import conf
-import util
-from swmf_file_reader.read_swmf_files import read_all
-from integrals import slice_B_biotsavart, stitch_B_biotsavart, slice_B_coulomb, stitch_B_coulomb
-from stats_summary import slice_stats_summary, stitch_stats_summary
-from probe_locations import slice_probe_b1, stitch_probe_b1
-from cutplane_native import slice_xzplane, stitch_xzplane
+# start logging
+t0 = tm.time() ; t0ASC = tm.asctime()
+log = open(f'./.logs/timeseries_{t0}.log', 'w')
+log.write(f'job started: {t0ASC}\n\n')
+log.write(f' COPIED job_config.py:\n')
+with open('./job_config.py','r') as fi:
+    for line in fi.readlines():
+        log.write(line)
+log.write(f'\n COPIED config.py:\n')
+with open('./config.py','r') as fi:
+    for line in fi.readlines():
+        log.write(line)
+log.write('\n')
+########################################################################
 
 # if rcut=None or not supplied in the job_config file, it defaults to rCurrents
 try:
@@ -64,17 +79,17 @@ def wrap(time):
     if do_stats_summary:
         slice_stats_summary(run, time, rcut=rcut, cache=cache)
 
-    if do_biotsavart_integral:
-        for point in integral_points:
-            slice_B_biotsavart(run, time, point, rcut=rcut, cache=cache)
+    for pnt in points:
+        if pnt['do_biotsavart_integral']:
+            slice_B_biotsavart(run, time, pnt['point'], rcut=rcut, cache=cache)
 
-    if do_coulomb_integral:
-        for point in integral_points:
-            slice_B_coulomb(run, time, point, rcut=rcut, cache=cache)
+        if pnt['do_coulomb_integral']:
+            slice_B_coulomb(run, time, pnt['point'], rcut=rcut, cache=cache)
 
-    if do_probing:
-        for point in probe_points:
-            slice_probe_b1(run, time, point, cache=cache)
+        if pnt['do_probing']:
+            for var in pnt['probe_vars']:
+                if var=='b1': slice_probe_b1(run, time, pnt['point'], cache=cache)
+
 
 # loop through each time slice, in parallel or in serial, and execute wrapper
 times = list(util.get_available_slices(run)[1])
@@ -89,11 +104,13 @@ if not stitch_only: # typically always runs unless overriden by -s option
         if num_cores is None:
             assert(False)
         num_cores = min(num_cores, len(times), 20)
-        print('Parallel processing {0:d} time slices using {1:d} cores'\
-              .format(len(times), num_cores))
+        print(f'Parallel processing {len(times)} time slices using {num_cores} cores')
+        log.write(f'Parallel processing {len(times)} time slices using {num_cores} cores\n')
         Parallel(n_jobs=num_cores)(\
                   delayed(wrap)(time) for time in list(times))
     else:
+        print(f'Serial processing {len(times)} time slices')
+        log.write(f'Serial processing {len(times)} time slices\n')
         for time in list(times):
             wrap(time)
 
@@ -104,14 +121,16 @@ if do_cutplane:
 if do_stats_summary:
     stitch_stats_summary(run, times, rcut=rcut)
 
-if do_biotsavart_integral:
-    for point in integral_points:
-        stitch_B_biotsavart(run, times, point, rcut=rcut)
+for pnt in points:
+    if pnt['do_biotsavart_integral']:
+        stitch_B_biotsavart(run, time, pnt['point'], rcut=rcut)
 
-if do_coulomb_integral:
-    for point in integral_points:
-        stitch_B_coulomb(run, times, point, rcut=rcut)
+    if pnt['do_coulomb_integral']:
+        stitch_B_coulomb(run, time, pnt['point'], rcut=rcut)
 
-if do_probing:
-    for point in probe_points:
-        stitch_probe_b1(run, times, point)
+    if pnt['do_probing']:
+        for var in pnt['probe_vars']:
+            if var=='b1': stitch_probe_b1(run, time, pnt['point'])
+
+log.write(f'job finished in {(tm.time()-t0)/3600.} hours\n')
+log.close()

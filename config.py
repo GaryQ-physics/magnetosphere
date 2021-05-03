@@ -120,6 +120,9 @@ if conf['interpolator'] + 'kameleon/lib/python2.7/site-packages/ccmc/' not in sy
 #if kameleon + 'ccmc/' not in sys.path:
 #    sys.path.append(kameleon + 'ccmc/')
 
+if not os.path.exists(base +'.logs/'):
+    os.makedirs(base +'.logs/')
+    print('created directory ' + base +'.logs/')
 
 #if not os.path.exists(conf['DIPTSUR2_derived']+'timeseries/slices/'):
 #    os.makedirs(conf['DIPTSUR2_derived']+'timeseries/slices/')
