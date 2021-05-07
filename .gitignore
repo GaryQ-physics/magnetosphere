@@ -1,7 +1,10 @@
 *~
 *.pyc
 *.vtk
+*.bin
+*.ipynb
 data/*
 kameleon/*
 Round2/*
+.logs/*
 .DS_Store

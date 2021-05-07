@@ -1,0 +1,114 @@
+(base) gary@gary-Inspiron-5567:~/magnetosphere/issues$ conda --version
+conda 4.9.2
+(base) gary@gary-Inspiron-5567:~/magnetosphere/issues$ conda create --name tmp37 python=3.7
+Collecting package metadata (current_repodata.json): done
+Solving environment: done
+
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 4.9.2
+  latest version: 4.10.1
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+
+
+## Package Plan ##
+
+  environment location: /home/gary/miniconda3/envs/tmp37
+
+  added / updated specs:
+    - python=3.7
+
+
+The following NEW packages will be INSTALLED:
+
+  _libgcc_mutex      pkgs/main/linux-64::_libgcc_mutex-0.1-main
+  ca-certificates    pkgs/main/linux-64::ca-certificates-2021.4.13-h06a4308_1
+  certifi            pkgs/main/linux-64::certifi-2020.12.5-py37h06a4308_0
+  ld_impl_linux-64   pkgs/main/linux-64::ld_impl_linux-64-2.33.1-h53a641e_7
+  libffi             pkgs/main/linux-64::libffi-3.3-he6710b0_2
+  libgcc-ng          pkgs/main/linux-64::libgcc-ng-9.1.0-hdf63c60_0
+  libstdcxx-ng       pkgs/main/linux-64::libstdcxx-ng-9.1.0-hdf63c60_0
+  ncurses            pkgs/main/linux-64::ncurses-6.2-he6710b0_1
+  openssl            pkgs/main/linux-64::openssl-1.1.1k-h27cfd23_0
+  pip                pkgs/main/linux-64::pip-21.0.1-py37h06a4308_0
+  python             pkgs/main/linux-64::python-3.7.10-hdb3f193_0
+  readline           pkgs/main/linux-64::readline-8.1-h27cfd23_0
+  setuptools         pkgs/main/linux-64::setuptools-52.0.0-py37h06a4308_0
+  sqlite             pkgs/main/linux-64::sqlite-3.35.4-hdfb4753_0
+  tk                 pkgs/main/linux-64::tk-8.6.10-hbc83047_0
+  wheel              pkgs/main/noarch::wheel-0.36.2-pyhd3eb1b0_0
+  xz                 pkgs/main/linux-64::xz-5.2.5-h7b6447c_0
+  zlib               pkgs/main/linux-64::zlib-1.2.11-h7b6447c_3
+
+
+Proceed ([y]/n)? y
+
+Preparing transaction: done
+Verifying transaction: done
+Executing transaction: done
+#
+# To activate this environment, use
+#
+#     $ conda activate tmp37
+#
+# To deactivate an active environment, use
+#
+#     $ conda deactivate
+
+(base) gary@gary-Inspiron-5567:~/magnetosphere/issues$ 
+(base) gary@gary-Inspiron-5567:~/magnetosphere/issues$ conda activate tmp37
+(tmp37) gary@gary-Inspiron-5567:~/magnetosphere/issues$ pip install spacepy
+Collecting spacepy
+  Using cached spacepy-0.2.2-cp37-cp37m-linux_x86_64.whl
+Collecting networkx>=1.0
+  Using cached networkx-2.5.1-py3-none-any.whl (1.6 MB)
+Collecting python-dateutil>=1.4
+  Using cached python_dateutil-2.8.1-py2.py3-none-any.whl (227 kB)
+Collecting scipy>=0.11
+  Downloading scipy-1.6.3-cp37-cp37m-manylinux1_x86_64.whl (27.4 MB)
+     |████████████████████████████████| 27.4 MB 3.1 MB/s 
+Collecting matplotlib>=1.5
+  Using cached matplotlib-3.4.1-cp37-cp37m-manylinux1_x86_64.whl (10.3 MB)
+Collecting h5py>=2.6
+  Using cached h5py-3.2.1-cp37-cp37m-manylinux1_x86_64.whl (4.1 MB)
+Collecting numpy!=1.15.0,>=1.10
+  Using cached numpy-1.20.2-cp37-cp37m-manylinux2010_x86_64.whl (15.3 MB)
+Collecting cached-property
+  Using cached cached_property-1.5.2-py2.py3-none-any.whl (7.6 kB)
+Collecting pillow>=6.2.0
+  Using cached Pillow-8.2.0-cp37-cp37m-manylinux1_x86_64.whl (3.0 MB)
+Collecting kiwisolver>=1.0.1
+  Using cached kiwisolver-1.3.1-cp37-cp37m-manylinux1_x86_64.whl (1.1 MB)
+Collecting pyparsing>=2.2.1
+  Using cached pyparsing-2.4.7-py2.py3-none-any.whl (67 kB)
+Collecting cycler>=0.10
+  Using cached cycler-0.10.0-py2.py3-none-any.whl (6.5 kB)
+Collecting six
+  Downloading six-1.16.0-py2.py3-none-any.whl (11 kB)
+Collecting decorator<5,>=4.3
+  Using cached decorator-4.4.2-py2.py3-none-any.whl (9.2 kB)
+Installing collected packages: six, python-dateutil, pyparsing, pillow, numpy, kiwisolver, decorator, cycler, cached-property, scipy, networkx, matplotlib, h5py, spacepy
+Successfully installed cached-property-1.5.2 cycler-0.10.0 decorator-4.4.2 h5py-3.2.1 kiwisolver-1.3.1 matplotlib-3.4.1 networkx-2.5.1 numpy-1.20.2 pillow-8.2.0 pyparsing-2.4.7 python-dateutil-2.8.1 scipy-1.6.3 six-1.16.0 spacepy-0.2.2
+(tmp37) gary@gary-Inspiron-5567:~/magnetosphere/issues$ 
+(tmp37) gary@gary-Inspiron-5567:~/magnetosphere/issues$ python -c "import sys; print(sys.version); import spacepy; print(spacepy.__version__); import spacepy.pybats.bats"
+3.7.10 (default, Feb 26 2021, 18:47:35) 
+[GCC 7.3.0]
+0.2.2
+/home/gary/miniconda3/envs/tmp37/lib/python3.7/site-packages/spacepy/time.py:2294: UserWarning: Leapseconds may be out of date. Use spacepy.toolbox.update(leapsecs=True)
+  warnings.warn('Leapseconds may be out of date.'
+/home/gary/miniconda3/envs/tmp37/lib/python3.7/site-packages/spacepy/omni.py:415: UserWarning: Qin-Denton/OMNI2 data not found in current format. This module has limited functionality. Run spacepy.toolbox.update(QDomni=True) to download data.
+  "Qin-Denton/OMNI2 data not found in current format."
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/home/gary/miniconda3/envs/tmp37/lib/python3.7/site-packages/spacepy/pybats/__init__.py", line 119, in <module>
+    import spacepy.plot.apionly
+  File "/home/gary/miniconda3/envs/tmp37/lib/python3.7/site-packages/spacepy/plot/__init__.py", line 98, in <module>
+    plt.register_cmap(name='plasma', cmap=_plasma)
+  File "/home/gary/miniconda3/envs/tmp37/lib/python3.7/site-packages/matplotlib/cm.py", line 149, in register_cmap
+    raise ValueError(msg)
+ValueError: Trying to re-register the builtin cmap 'plasma'.
+(tmp37) gary@gary-Inspiron-5567:~/magnetosphere/issues$ 

@@ -7,7 +7,7 @@ from scipy.interpolate import RegularGridInterpolator
 
 
 def interpolate(lamb, phi, var, filename): # return var(lambda_in, phi_in) 
-    cdf = pycdf.CDF(filename)
+    cdf = pycdf.CDF(filename, readonly=True)
     #keys = cdf.keys()
 
     lamb_ax = cdf['theta'][...][0,:]
