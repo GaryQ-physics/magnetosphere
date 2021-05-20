@@ -37,9 +37,6 @@ def main(run, LAT, LON , NStep=20, debug=False, plot_kwargs=None):
 
         time_common = time_common[::NStep, :]
         cdf_filenames = cdf_filenames[::NStep]
-        time_common = time_common[0:1, :]
-        cdf_filenames = cdf_filenames[0:1]
-
         assert(time_common.shape[0] == cdf_filenames.size)
 
         with open(times_fname, 'w') as f:
@@ -82,10 +79,11 @@ def main(run, LAT, LON , NStep=20, debug=False, plot_kwargs=None):
             time = time_common[i,:]
 
             if (LAT,LON)==(18.907, 72.815) and csyst=='GEO': #colaba
-                namefromstitch = f'/home/gary/media_sunspot/{run}-derived/timeseries/slices/' \
+                namefromstitch = conf[run+'_derived']+'timeseries/slices/' \
                         + 'B_biotsavart_%.2d%.2d%.2dT%.2d%.2d%.2d'%util.tpad(time, length=6) \
                         + '_obs_point=colaba_rcut=%f.npy'%(util.get_rCurrents(run))
-                dB_calc[i, 0:3] = np.load(namefromstitch)
+                dB_calc[i, 0:3] =    dB_calc[:,:] = (8**3/(8-2)**3) * dB_calc # to account for the fact that calculated integral excluded the cells at 
+np.load(namefromstitch)
 
             #dB_calc[i, 0:3] = 
             #dB_calc[i, 3:6] = 
