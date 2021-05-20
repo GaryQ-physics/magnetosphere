@@ -42,10 +42,10 @@ import numpy as np
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
-from util import dlfile, tpad
+from util import dlfile, tpad, time2CDFfilename
 
 
-def time2mag_grid_file(time):
+def time2mag_grid_file_old(time):
     """
     takes in tuple/list/array of time
     returns mag .out filename associated with that time
@@ -64,6 +64,11 @@ def time2mag_grid_file(time):
         + '%04d%02d%02d-%02d%02d%02d' % tpad(time, length=6) + '.out'
     return filename
 
+
+def time2mag_grid_file(run, time):
+    cdfname = time2CDFfilename(run, time)
+    return f'{cdfname[:-12]}.out'.replace('3d__var_2_','mag_grid_')
+
 def mag_grid_file2time(filename):
     """Extract time stamp from file name"""
 
@@ -73,31 +78,9 @@ def mag_grid_file2time(filename):
     f = 0
     return [y, m, d, h, M, s, f]
 
-def getdata(run, time, debug=True):
-    """
-
-    Parameters
-    ----------!!!!!
-
-    Returns
-    -------
-    list of np arrays = [data, headers]
-    
-    where data is (N,17) array of N datapoints given in the file and 
-    headers is (17,) array of string for the corresponding quantities of data
-    
-    if the file doesnt exist, it is downloaded form mag.gmu.edu
-    
-    """
-
-    filename = conf[run + '_cdf'] + time2mag_grid_file(time)
-
-    if not os.path.exists(filename):
-        dlfile(filename)
-        if debug:
-            print('Downloading' + filename)
-
-    data = np.genfromtxt(filename, skip_header=4)
+def getdata(run, time, debug=True, filename=None, meta_only=False):
+    if filename is None:
+        filename = time2mag_grid_file(run,time)
 
     f = open(filename, 'r')
     first = f.readline()
@@ -106,25 +89,27 @@ def getdata(run, time, debug=True):
     headerline = f.readline()
     f.close()
 
-    headers = headerline[:-1].split(' ')
+    headers = tuple(headerline[:-1].split(' '))
     assert(first[:19] == 'Magnetometer grid (')
     csyst = first[19:22]
 
-    #headers = np.loadtxt(filename, dtype=str, skiprows=3, max_rows=1)
+    if meta_only:
+        return headers, csyst
 
-    return [data, headers, csyst]
+    data = np.genfromtxt(filename, skip_header=4)
+    return data, headers, csyst
 
-def analyzedata(filename, MLAT, MLON, debug=True):
+def analyzedata(filename, LAT, LON, debug=False):
     """
 
     Parameters
     ----------
     filename : string or tuple/list/array
-        if tuple/list/array, it's treated as time and converted to filename str
-    MLAT : float
-        input magnetic latitude in degrees.
-    MLON : float
-        input magnetic longitude in degrees.
+        TODO:if tuple/list/array, it's treated as time and converted to filename str
+    LAT : float
+        input (magnetic) latitude in degrees. If the coord syst in the file is "MAG", then its magnetic latitude, if its "GEO" then its geographic.
+    LON : float
+        input (magnetic) longitude in degrees. If the coord syst in the file is "MAG", then its magnetic latitude, if its "GEO" then its geographic.
 
 
     debug : boolean, OPTIONAL
@@ -139,14 +124,11 @@ def analyzedata(filename, MLAT, MLON, debug=True):
         if debug=True then this prints all the magnetic field information for that datapoint
         
     """
-    data, headers = getdata(filename, debug=debug)
+    data, headers, csyst = getdata(None,None, filename=filename, debug=debug)
+    k, __spot_on = find_index(data, headers, LAT, LON)
+    print(__spot_on)
     if debug:
-        print(headers)
-    Tr = np.all([MLON-0.5 <= data[:, 0], 
-                 data[:, 0] <= MLON+0.5, MLAT-0.5 <= data[:, 1],
-                 data[:, 1] <= MLAT+0.5], axis=0)
-    k = np.where(Tr==True)[0][0]
-    if debug:
+        print(csyst)
         print(k)
         print(data[k, 0],data[k, 1])
     ret = [k]
@@ -159,5 +141,24 @@ def analyzedata(filename, MLAT, MLON, debug=True):
     if debug:
         print(headers[5+0] + '  ' + headers[5+1] + '  '+  headers[5+2])
         print('dB_norm_Mhd = ' + str(dB_norm_Mhd))
+        print(headers)
 
     return ret
+
+
+
+
+def find_index(data, headers, LAT, LON):
+    assert(headers[0]=='Lon' and headers[1]=='Lat')
+
+    Tr = np.all([LON-0.5 <= data[:, 0], 
+                 data[:, 0] <= LON+0.5, LAT-0.5 <= data[:, 1],
+                 data[:, 1] <= LAT+0.5], axis=0)
+    k = np.where(Tr==True)[0][0]
+
+    if data[k,0] == LON and abs(data[k,1]-LAT)<1e-7:
+        spot_on = True
+    else:
+        spot_on = False
+
+    return k, spot_on

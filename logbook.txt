@@ -255,6 +255,11 @@ boolean operations paraview
      RotationPeriodPlanet_I(Earth_)      = cDay                    ! [ s]
 
 TODO:
+    fieldline rep:
+        create vtk_object from numpy array for trace_vtk
+        get rid of while loop
+        fix setup.py git+
+
     swmf2vtk use of mgrid affected by bug?
     integrate surface b1, and add point near boundary to runs
 
@@ -274,13 +279,67 @@ Q's:
     #SAVEBINARY is false in PARAM.in (for DIPTSUR2)
 
 things to say:
-    Dealing with singular integrals on grid
+    hapiclient datetick running out of memory
     os.tmpnam() security warning
+
+'''RAM SHOT UP AND JUST STARTED SWAPPING
+(python3.7) gary@gary-Inspiron-5567:~/magnetosphere/misc$ python reproduce_mag_files.py 
+
+
+ util path: ~/magnetosphere/util/util.py 
+
+
+/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/spacepy/time.py:2294: UserWarning: Leapseconds may be out of date. Use spacepy.toolbox.update(leapsecs=True)
+  warnings.warn('Leapseconds may be out of date.'
+/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/hapiclient/plot/datetick.py:175: UserWarning: Warning: Cannot create accurate time labels with this time resolution.
+  warnings.warn("Warning: Cannot create accurate time labels with this time resolution.")
+/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/hapiclient/plot/datetick.py:186: UserWarning: Warning: Cannot create accurate time labels with this time resolution.
+  warnings.warn("Warning: Cannot create accurate time labels with this time resolution.")
+^C^CTraceback (most recent call last):
+  File "reproduce_mag_files.py", line 146, in <module>
+    main('DIPTSUR2', 18.907, 72.815)
+  File "reproduce_mag_files.py", line 134, in main
+    datetick('x')
+  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/hapiclient/plot/datetick.py", line 421, in datetick
+    draw(fig) # Render new labels so updated for next line
+  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/hapiclient/plot/datetick.py", line 108, in draw
+    def draw(fig): fig.canvas.draw()
+  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/matplotlib/backends/backend_agg.py", line 393, in draw
+    self.figure.draw(self.renderer)
+  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/matplotlib/artist.py", line 38, in draw_wrapper
+    return draw(artist, renderer, *args, **kwargs)
+  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/matplotlib/figure.py", line 1736, in draw
+^C  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/matplotlib/image.py", line 137, in _draw_list_compositing_images
+    a.draw(renderer)
+  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/matplotlib/artist.py", line 38, in draw_wrapper
+    return draw(artist, renderer, *args, **kwargs)
+  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/matplotlib/axes/_base.py", line 2630, in draw
+    mimage._draw_list_compositing_images(renderer, self, artists)
+  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/matplotlib/image.py", line 137, in _draw_list_compositing_images
+    a.draw(renderer)
+  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/matplotlib/artist.py", line 38, in draw_wrapper
+    return draw(artist, renderer, *args, **kwargs)
+  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/matplotlib/axis.py", line 1227, in draw
+    ticks_to_draw = self._update_ticks()
+  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/matplotlib/axis.py", line 1103, in _update_ticks
+    major_locs = self.get_majorticklocs()
+  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/matplotlib/axis.py", line 1348, in get_majorticklocs
+    return self.major.locator()
+  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/matplotlib/dates.py", line 1757, in __call__
+    return self.tick_values(dmin, dmax)
+  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/matplotlib/dates.py", line 1763, in tick_values
+    ticks = self._wrapped_locator.tick_values(nmin, nmax)
+  File "/home/gary/miniconda3/envs/python3.7/lib/python3.7/site-packages/matplotlib/ticker.py", line 1934, in tick_values
+    locs = vmin - step + np.arange(n + 3) * step
+KeyboardInterrupt'''
+
+
 
 to grep
     "#!!"
     "todo"
     "= np.nan"
+
 
 https://sourceforge.net/p/irbem/code/HEAD/tree/docs/
 http://svn.code.sf.net/p/irbem/code/trunk/
@@ -395,7 +454,14 @@ https://en.wikipedia.org/wiki/K%C3%A4ll%C3%A9n%E2%80%93Lehmann_spectral_represen
 https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2020SW002551
 https://opensource.com/article/17/4/grok-gil
 
-The radial component of B1 on the ghost face is set as B1rGhost = B1rCoef*B1rTrue at the inner boundary. B1rCoef=-1 corresponds to a reflective boundary, while B1rCoef=1 is a floating (zero gradient) boundary. Any value between -1 and 1 is possible. Using floating condition, however, will not work well for strong storms, as there is no mechanism to restore the dipole after the storm. Reflective will recover the dipole, but it may result in some less stable behavior. The optimal value may be problem dependent. The default value corresponding to reflection is shown above.
+The radial component of B1 on the ghost face is set as B1rGhost = B1rCoef*B1rTrue
+at the inner boundary. B1rCoef=-1 corresponds to a reflective boundary,
+while B1rCoef=1 is a floating (zero gradient) boundary.
+Any value between -1 and 1 is possible. Using floating condition, however,
+will not work well for strong storms, as there is no mechanism to restore the dipole after the storm.
+Reflective will recover the dipole, but it may result in some less stable behavior.
+The optimal value may be problem dependent.
+The default value corresponding to reflection is shown above.
 
 peter.willliam.schuck@gmail.com 240-810-6807
 
