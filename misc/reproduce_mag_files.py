@@ -82,8 +82,7 @@ def main(run, LAT, LON , NStep=20, debug=False, plot_kwargs=None):
                 namefromstitch = conf[run+'_derived']+'timeseries/slices/' \
                         + 'B_biotsavart_%.2d%.2d%.2dT%.2d%.2d%.2d'%util.tpad(time, length=6) \
                         + '_obs_point=colaba_rcut=%f.npy'%(util.get_rCurrents(run))
-                dB_calc[i, 0:3] =    dB_calc[:,:] = (8**3/(8-2)**3) * dB_calc # to account for the fact that calculated integral excluded the cells at 
-np.load(namefromstitch)
+                dB_calc[i, 0:3] = (8**3/(8-2)**3) * np.load(namefromstitch) #!!!!!!!!! to account for the fact that calculated integral excluded the cells at block edges
 
             #dB_calc[i, 0:3] = 
             #dB_calc[i, 3:6] = 
@@ -138,7 +137,7 @@ np.load(namefromstitch)
     plt.ylabel('nano Tesla')
     plt.title(f"deltaB at {LAT},{LON}  {plot_kwargs['contributor']} {plot_kwargs['component']}")
     plt.legend()
-    plt.savefig(direct + 'dB_plot.png')
+    plt.savefig(f'{direct}dB_plot.png')
     #plt.show()
     plt.clf()
 

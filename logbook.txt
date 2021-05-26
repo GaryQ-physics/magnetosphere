@@ -257,8 +257,6 @@ boolean operations paraview
 TODO:
     fieldline rep:
         create vtk_object from numpy array for trace_vtk
-        get rid of while loop
-        fix setup.py git+
 
     swmf2vtk use of mgrid affected by bug?
     integrate surface b1, and add point near boundary to runs

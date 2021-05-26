@@ -15,8 +15,9 @@ from swmf_file_reader.read_swmf_files import read_all
 # The following located in magnetosphere/timeseries/ directory
 from integrals import slice_B_biotsavart, stitch_B_biotsavart, slice_B_coulomb, stitch_B_coulomb
 from stats_summary import slice_stats_summary, stitch_stats_summary
-from probe_locations import slice_probe_b1, stitch_probe_b1
+from probe_locations import slice_probe, stitch_probe_b1
 from cutplane_native import slice_xzplane, stitch_xzplane
+from gap_region import slice_gap_region
 
 ##### interperate command line inputs ##################################
 import os
@@ -45,6 +46,7 @@ for arg in sys.argv:
 t0 = tm.time() ; t0ASC = tm.asctime()
 log = open(f'./.logs/timeseries_{t0}.log', 'w')
 log.write(f'job started: {t0ASC}\n\n')
+log.write(f'sys.argv -> {sys.argv}\n')
 log.write(f' COPIED job_config.py:\n')
 with open('./job_config.py','r') as fi:
     for line in fi.readlines():
@@ -88,8 +90,10 @@ def wrap(time):
 
         if pnt['do_probing']:
             for var in pnt['probe_vars']:
-                if var=='b1': slice_probe_b1(run, time, pnt['point'], cache=cache)
+                slice_probe(run, time, pnt['point'], var, cache=cache)
 
+        if pnt['do_gap_region']:
+            slice_gap_region(run, time, pnt['point'], cache=cache)
 
 # loop through each time slice, in parallel or in serial, and execute wrapper
 times = list(util.get_available_slices(run)[1])
@@ -123,14 +127,14 @@ if do_stats_summary:
 
 for pnt in points:
     if pnt['do_biotsavart_integral']:
-        stitch_B_biotsavart(run, time, pnt['point'], rcut=rcut)
+        stitch_B_biotsavart(run, times, pnt['point'], rcut=rcut)
 
     if pnt['do_coulomb_integral']:
-        stitch_B_coulomb(run, time, pnt['point'], rcut=rcut)
+        stitch_B_coulomb(run, times, pnt['point'], rcut=rcut)
 
     if pnt['do_probing']:
         for var in pnt['probe_vars']:
-            if var=='b1': stitch_probe_b1(run, time, pnt['point'])
+            if var=='b1': stitch_probe_b1(run, times, pnt['point'])
 
 log.write(f'job finished in {(tm.time()-t0)/3600.} hours\n')
 log.close()

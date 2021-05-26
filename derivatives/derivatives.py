@@ -26,16 +26,43 @@ def get_partials(DataArray, vvar, iBlockP,i,j,k):
         _fy = _jy
         _fz = _jz
 
-    if i == 0 or j == 0 or k == 0 or i == nI-1 or j == nJ-1 or k == nK-1:
-        return partials
+    if i == 0:
+        partials[0,0] = (DataArray[_fx, iBlockP, 1, j  , k  ] - DataArray[_fx, iBlockP, 0, j  , k  ])/(epsilon)
+        partials[0,1] = (DataArray[_fy, iBlockP, 1, j  , k  ] - DataArray[_fy, iBlockP, 0, j  , k  ])/(epsilon)
+        partials[0,2] = (DataArray[_fz, iBlockP, 1, j  , k  ] - DataArray[_fz, iBlockP, 0, j  , k  ])/(epsilon)
+    elif i == nI-1:
+        partials[0,0] = (DataArray[_fx, iBlockP, nI-1, j  , k  ] - DataArray[_fx, iBlockP, nI-2, j  , k  ])/(epsilon)
+        partials[0,1] = (DataArray[_fy, iBlockP, nI-1, j  , k  ] - DataArray[_fy, iBlockP, nI-2, j  , k  ])/(epsilon)
+        partials[0,2] = (DataArray[_fz, iBlockP, nI-1, j  , k  ] - DataArray[_fz, iBlockP, nI-2, j  , k  ])/(epsilon)
+    else:
+        partials[0,0] = (DataArray[_fx, iBlockP, i+1, j  , k  ] - DataArray[_fx, iBlockP, i-1, j  , k  ])/(2*epsilon)
+        partials[0,1] = (DataArray[_fy, iBlockP, i+1, j  , k  ] - DataArray[_fy, iBlockP, i-1, j  , k  ])/(2*epsilon)
+        partials[0,2] = (DataArray[_fz, iBlockP, i+1, j  , k  ] - DataArray[_fz, iBlockP, i-1, j  , k  ])/(2*epsilon)
 
-    partials[0,0] = (DataArray[_fx, iBlockP, i+1, j  , k  ] - DataArray[_fx, iBlockP, i-1, j  , k  ])/(2*epsilon)
-    partials[0,1] = (DataArray[_fy, iBlockP, i+1, j  , k  ] - DataArray[_fy, iBlockP, i-1, j  , k  ])/(2*epsilon)
-    partials[0,2] = (DataArray[_fz, iBlockP, i+1, j  , k  ] - DataArray[_fz, iBlockP, i-1, j  , k  ])/(2*epsilon)
-    partials[1,0] = (DataArray[_fx, iBlockP, i  , j+1, k  ] - DataArray[_fx, iBlockP, i  , j-1, k  ])/(2*epsilon)
-    partials[1,1] = (DataArray[_fy, iBlockP, i  , j+1, k  ] - DataArray[_fy, iBlockP, i  , j-1, k  ])/(2*epsilon)
-    partials[1,2] = (DataArray[_fz, iBlockP, i  , j+1, k  ] - DataArray[_fz, iBlockP, i  , j-1, k  ])/(2*epsilon)
-    partials[2,0] = (DataArray[_fx, iBlockP, i  , j  , k+1] - DataArray[_fx, iBlockP, i  , j  , k-1])/(2*epsilon)
-    partials[2,1] = (DataArray[_fy, iBlockP, i  , j  , k+1] - DataArray[_fy, iBlockP, i  , j  , k-1])/(2*epsilon)
-    partials[2,2] = (DataArray[_fz, iBlockP, i  , j  , k+1] - DataArray[_fz, iBlockP, i  , j  , k-1])/(2*epsilon)
+    if j == 0:
+        partials[1,0] = (DataArray[_fx, iBlockP, i  , 1, k  ] - DataArray[_fx, iBlockP, i  , 0, k  ])/(epsilon)
+        partials[1,1] = (DataArray[_fy, iBlockP, i  , 1, k  ] - DataArray[_fy, iBlockP, i  , 0, k  ])/(epsilon)
+        partials[1,2] = (DataArray[_fz, iBlockP, i  , 1, k  ] - DataArray[_fz, iBlockP, i  , 0, k  ])/(epsilon)
+    elif j == nJ-1:
+        partials[1,0] = (DataArray[_fx, iBlockP, i  , nJ-1, k  ] - DataArray[_fx, iBlockP, i  , nJ-2, k  ])/(epsilon)
+        partials[1,1] = (DataArray[_fy, iBlockP, i  , nJ-1, k  ] - DataArray[_fy, iBlockP, i  , nJ-2, k  ])/(epsilon)
+        partials[1,2] = (DataArray[_fz, iBlockP, i  , nJ-1, k  ] - DataArray[_fz, iBlockP, i  , nJ-2, k  ])/(epsilon)
+    else:
+        partials[1,0] = (DataArray[_fx, iBlockP, i  , j+1, k  ] - DataArray[_fx, iBlockP, i  , j-1, k  ])/(2*epsilon)
+        partials[1,1] = (DataArray[_fy, iBlockP, i  , j+1, k  ] - DataArray[_fy, iBlockP, i  , j-1, k  ])/(2*epsilon)
+        partials[1,2] = (DataArray[_fz, iBlockP, i  , j+1, k  ] - DataArray[_fz, iBlockP, i  , j-1, k  ])/(2*epsilon)
+
+    if k == 0:
+        partials[2,0] = (DataArray[_fx, iBlockP, i  , j  , 1] - DataArray[_fx, iBlockP, i  , j  , 0])/(epsilon)
+        partials[2,1] = (DataArray[_fy, iBlockP, i  , j  , 1] - DataArray[_fy, iBlockP, i  , j  , 0])/(epsilon)
+        partials[2,2] = (DataArray[_fz, iBlockP, i  , j  , 1] - DataArray[_fz, iBlockP, i  , j  , 0])/(epsilon)
+    elif k == nK-1:
+        partials[2,0] = (DataArray[_fx, iBlockP, i  , j  , nK-1] - DataArray[_fx, iBlockP, i  , j  , nK-2])/(epsilon)
+        partials[2,1] = (DataArray[_fy, iBlockP, i  , j  , nK-1] - DataArray[_fy, iBlockP, i  , j  , nK-2])/(epsilon)
+        partials[2,2] = (DataArray[_fz, iBlockP, i  , j  , nK-1] - DataArray[_fz, iBlockP, i  , j  , nK-2])/(epsilon)
+    else:
+        partials[2,0] = (DataArray[_fx, iBlockP, i  , j  , k+1] - DataArray[_fx, iBlockP, i  , j  , k-1])/(2*epsilon)
+        partials[2,1] = (DataArray[_fy, iBlockP, i  , j  , k+1] - DataArray[_fy, iBlockP, i  , j  , k-1])/(2*epsilon)
+        partials[2,2] = (DataArray[_fz, iBlockP, i  , j  , k+1] - DataArray[_fz, iBlockP, i  , j  , k-1])/(2*epsilon)
+
     return partials

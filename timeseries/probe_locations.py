@@ -1,5 +1,4 @@
 import numpy as np
-from numba import njit
 import pandas as pd
 import datetime
 import os
@@ -10,16 +9,11 @@ import util
 from swmf_file_reader.read_swmf_files import read_all, find_index, interpolate
 from derivatives import get_partials
 from magnetometers import GetMagnetometerLocation
-from swmf_file_reader.named_var_indexes import _x,_y,_z,_b1x,_b1y,_b1z
+from swmf_file_reader.named_var_indexes import str2index,_b1x,_b1y,_b1z
 import pandas as pd
 
-@njit
-def _jit_probe_b1():
-    # needed ?
-    pass
 
-
-def slice_probe_b1(run, time, obs_point, cache=None):
+def slice_probe(run, time, obs_point, var, cache=None):
     ftag = util.time2CDFfilename(run,time)[:-8]
     if cache is None:
         cache = read_all(ftag)
@@ -32,35 +26,42 @@ def slice_probe_b1(run, time, obs_point, cache=None):
             obs_point = GetMagnetometerLocation(obs_point_str, time, 'GSM', 'car')
     else:
         obs_point_str = '[%f,%f,%f]'%(obs_point[0],obs_point[1],obs_point[2])
+    obs_point = np.array(obs_point)
 
     outname = conf[run+'_derived'] + 'timeseries/slices/' \
-        + 'b1_%.2d%.2d%.2dT%.2d%.2d%.2d'%util.tpad(time, length=6) \
+        + var+'_%.2d%.2d%.2dT%.2d%.2d%.2d'%util.tpad(time, length=6) \
         + '_obs_point=%s.npy'%(obs_point_str)
 
-    b1x = interpolate(ftag, obs_point, var='b1x', cache=cache)
-    b1y = interpolate(ftag, obs_point, var='b1y', cache=cache)
-    b1z = interpolate(ftag, obs_point, var='b1z', cache=cache)
+    if var in ['b1','b','j','u']:
+        Fx = interpolate(ftag, obs_point, var=var+'x', cache=cache)
+        Fy = interpolate(ftag, obs_point, var=var+'y', cache=cache)
+        Fz = interpolate(ftag, obs_point, var=var+'z', cache=cache)
 
-    ########### check things for obs_point being a naive gridpoint
-    indx = find_index(ftag, obs_point, cache=cache)
-    if not obs_point_str in ['origin','colaba']:
-        assert(indx is not None)
+        ########### check things for obs_point being a naive gridpoint
+        if var == 'b1':
+            indx = find_index(ftag, obs_point, cache=cache)
+            if not obs_point_str in ['origin','colaba']:
+                assert(indx is not None)
 
-    if indx is not None:
-        assert(obs_point[0] == cache['DataArray'][(0,*indx)])
-        assert(obs_point[1] == cache['DataArray'][(1,*indx)])
-        assert(obs_point[2] == cache['DataArray'][(2,*indx)])
+            if indx is not None:
+                assert(obs_point[0] == cache['DataArray'][(0,*indx)])
+                assert(obs_point[1] == cache['DataArray'][(1,*indx)])
+                assert(obs_point[2] == cache['DataArray'][(2,*indx)])
 
-        tx = np.allclose( b1x , cache['DataArray'][(_b1x,*indx)] )
-        ty = np.allclose( b1y , cache['DataArray'][(_b1y,*indx)] )
-        tz = np.allclose( b1z , cache['DataArray'][(_b1z,*indx)] )
-        if not (tx and ty and tx):
-            print(b1x , cache['DataArray'][(_b1x,*indx)])
-            print(b1y , cache['DataArray'][(_b1y,*indx)])
-            print(b1z , cache['DataArray'][(_b1z,*indx)])
-    ###########
+                tx = np.allclose( Fx , cache['DataArray'][(_b1x,*indx)] )
+                ty = np.allclose( Fy , cache['DataArray'][(_b1y,*indx)] )
+                tz = np.allclose( Fz , cache['DataArray'][(_b1z,*indx)] )
+                if not (tx and ty and tx):
+                    print('WARNING')
+                    print(Fx , cache['DataArray'][(_b1x,*indx)])
+                    print(Fy , cache['DataArray'][(_b1y,*indx)])
+                    print(Fz , cache['DataArray'][(_b1z,*indx)])
+        ###########
 
-    np.save(outname, np.array([b1x,b1y,b1z], dtype=np.float32))
+        np.save(outname, np.array([Fx,Fy,Fz], dtype=np.float32))
+    else:
+        F = interpolate(ftag, obs_point, var=var, cache=cache)
+        np.save(outname, np.array([F], dtype=np.float32))
 
 
 def stitch_probe_b1(run, times, obs_point):

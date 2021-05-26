@@ -37,8 +37,8 @@ def _jit_B_biotsavart(DataArray, obs_point, rcut):
         for i in range(nI):
             for j in range(nJ):
                 for k in range(nK):
-                    if i == 0 or j == 0 or k == 0 or i == nI-1 or j == nJ-1 or k == nK-1:
-                        continue
+                    #if i == 0 or j == 0 or k == 0 or i == nI-1 or j == nJ-1 or k == nK-1:
+                    #    continue
                     distanceSquared = ( DataArray[_x, iBlockP, i,j,k]**2 \
                                       + DataArray[_y, iBlockP, i,j,k]**2 \
                                       + DataArray[_z, iBlockP, i,j,k]**2 )
@@ -183,8 +183,8 @@ def _jit_B_coulomb(DataArray, obs_point, rcut):
         for i in range(nI):
             for j in range(nJ):
                 for k in range(nK):
-                    if i == 0 or j == 0 or k == 0 or i == nI-1 or j == nJ-1 or k == nK-1:
-                        continue
+                    #if i == 0 or j == 0 or k == 0 or i == nI-1 or j == nJ-1 or k == nK-1:
+                    #    continue
                     distanceSquared = ( DataArray[_x, iBlockP, i,j,k]**2 \
                                       + DataArray[_y, iBlockP, i,j,k]**2 \
                                       + DataArray[_z, iBlockP, i,j,k]**2 )
