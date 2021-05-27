@@ -32,8 +32,6 @@ lons.shape
 so while lons in steps of 1. , lats are insteps of 175./174 
 (to some decimal aprox that is not completely consistent between elements)
 so someone probably screwed up the linspace and meant to use (176,)
-
-
 """
 
 import os
@@ -43,7 +41,7 @@ import numpy as np
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from config import conf
 from util import dlfile, tpad, time2CDFfilename
-
+from magnetometers import GetMagnetometerLocation
 
 def time2mag_grid_file_old(time):
     """
@@ -172,8 +170,6 @@ def analyzedata(filename, LAT, LON, debug=False):
     return ret
 
 
-
-
 def find_index(data, headers, LAT, LON):
     assert(headers[0]=='Lon' and headers[1]=='Lat')
 
@@ -188,3 +184,21 @@ def find_index(data, headers, LAT, LON):
         spot_on = False
 
     return k, spot_on
+
+
+def get_mag_grid_values(run, time, surface_location):
+    headers, csyst = getmetadata(run,time)
+    data = getdata(run, time)
+    assert(headers[5:] == ( 'dBnMhd', 'dBeMhd', 'dBdMhd',
+                            'dBnFac', 'dBeFac', 'dBdFac',
+                            'dBnHal', 'dBeHal', 'dBdHal',
+                            'dBnPed', 'dBePed', 'dBdPed') )
+
+    if isinstance(surface_location, str):
+        __r, LAT, LON = GetMagnetometerLocation(surface_location, time, csyst, 'sph')
+    else:
+        LAT, LON = obs_point
+
+    kIndex, __spot_on = rmg.find_index(data, headers, LAT, LON)
+    return data[kIndex, 5:].copy()
+
