@@ -199,6 +199,6 @@ def get_mag_grid_values(run, time, surface_location):
     else:
         LAT, LON = obs_point
 
-    kIndex, __spot_on = rmg.find_index(data, headers, LAT, LON)
+    kIndex, __spot_on = find_index(data, headers, LAT, LON)
     return data[kIndex, 5:].copy()
 

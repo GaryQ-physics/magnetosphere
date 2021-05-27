@@ -22,13 +22,15 @@ def plot_magfile_calc(run, surface_location , NStep=20, debug=False, plot_kwargs
     times = times[::NStep, :]
     cdf_filenames = cdf_filenames[::NStep]
 
+    dB_magfile = np.empty((times.shape[0],12))
+    dB_calc = np.empty((times.shape[0],12))
 
     for i in range(times.shape[0]):
         time = times[i,:]
         dB_magfile[i, :] = rmg.get_mag_grid_values(run, time, surface_location)
 
-        dB_calc[i, 0:3] = rcp.volScale*get_mhd_values(run, time, surface_location , "B_biotsavart")
-        dB_calc[i, 3:6] = rcp.get_mhd_values(run, time, surface_location , "B_FAC")
+        dB_calc[i, 0:3] = volScale*rcp.get_mhd_values(run, time, surface_location , "B_biotsavart")
+        dB_calc[i, 3:6] = rcp.get_mhd_values(run, time, surface_location , "B_fac", norcut=True)
         #dB_calc[i, 6:9] = 
         #dB_calc[i, 9:12] = 
 
@@ -74,7 +76,7 @@ def plot_magfile_calc(run, surface_location , NStep=20, debug=False, plot_kwargs
     plt.ylabel('nano Tesla')
     plt.title(f"deltaB at {surface_location}  {plot_kwargs['contributor']} {plot_kwargs['component']}")
     plt.legend()
-    plt.savefig(f'{direct}dB_plot.png')
+    plt.savefig(f"{direct}dB_plot_{plot_kwargs['contributor']}_{plot_kwargs['component']}.png")
     #plt.show()
     plt.clf()
 
