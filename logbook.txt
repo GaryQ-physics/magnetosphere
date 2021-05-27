@@ -277,6 +277,7 @@ Q's:
     #SAVEBINARY is false in PARAM.in (for DIPTSUR2)
 
 things to say:
+    sunspot processes
     hapiclient datetick running out of memory
     os.tmpnam() security warning
 

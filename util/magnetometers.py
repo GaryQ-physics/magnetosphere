@@ -1,4 +1,5 @@
 import numpy as np
+from config import defined_magnetometers
 import cxtransform as cx
 
 
@@ -16,3 +17,15 @@ def GetMagnetometerLocation(station, time, csys_out, ctype_out):
     lat, lon = magnetometer_GEOs[station]
     return cx.transform(np.array([1., lat, lon]), time, 'GEO', csys_out, ctype_in='sph', ctype_out=ctype_out)
 
+def GetMagnetometerCoordinates(station, time, csys_out, ctype_out):
+    csys_in, ctype_in, c1,c2,c3 = defined_magnetometers[station]
+    return cx.transform(np.array([c1,c2,c3]), time, csys_in, csys_out, ctype_in=ctype_in, ctype_out=ctype_out)
+
+class Magnetometer:
+    def __init__(self, name):
+        self.name = name
+        self.fixedEarth
+        self.fixedGM
+        self.coords
+        self.csys
+        self.ctype

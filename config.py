@@ -29,11 +29,18 @@ else:
     assert(False)
 
 
+defined_magnetometers = {
+    'YKC'      : ('GEO','sph', 1.,  62.480 ,  245.518 ), # radius, lat, lon   in GEO
+    'FRN'      : ('GEO','sph', 1.,  37.0913, -119.7193),
+    'FUR'      : ('GEO','sph', 1.,  48.17  ,  11.28   ),
+    'colaba'   : ('GEO','sph', 1.,  18.907 ,  72.815  ),
+    'GMpoint1' : ('GSM','car', 1.,  18.907 ,  72.815  ),
+
+    }
+
+
 conf = {
         'storage': storage,
-        'run_url': 'http://mag.gmu.edu/git-data/sblake/SCARR5_GM_IO2/IO2/',
-        'run_path': storage + 'SCARR5_GM_IO2-nowold/IO2/', #kept for backwards compatibility
-        'run_path_derived': storage + 'SCARR5_GM_IO2-derived/',
         'base': base,
         'SWPC_raw': storage + 'SWPC_SWMF_052811_2/raw_output/',
         'SWPC_cdf_path': storage + 'SWPC_SWMF_052811_2/GM_CDF/',
@@ -71,9 +78,6 @@ conf = {
 
         'SWPC_raw': storage + 'SWPC_SWMF_052811_2/raw_output/',
         'SWPC_iono': storage + 'SWPC_SWMF_052811_2/IONO-2D_CDF/',
-
-        #'SCARR5_raw': storage + 'SCARR5_GM_IO2/IO2/',
-        #'SCARR5_iono': storage + 'SCARR5_GM_IO2/IO2/',
 
         'TESTANALYTIC_cdf' : storage + 'TESTANALYTIC/GM/IO2/',
         'TESTANALYTIC_derived' : storage + 'TESTANALYTIC-derived/',

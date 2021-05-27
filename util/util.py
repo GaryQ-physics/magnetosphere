@@ -7,6 +7,8 @@ from config import conf
 
 print('\n\n util path: ~/magnetosphere/util/util.py \n\n')
 
+def tform(time):
+    return '%.2d%.2d%.2dT%.2d%.2d%.2d'%tpad(time, length=6)
 
 def tpad(time, length=7):
 

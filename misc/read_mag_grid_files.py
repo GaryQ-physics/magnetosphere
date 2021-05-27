@@ -99,6 +99,32 @@ def getdata(run, time, debug=True, filename=None, meta_only=False):
     data = np.genfromtxt(filename, skip_header=4)
     return data, headers, csyst
 
+
+def getmetadata(run, time, filename=None):
+    if filename is None:
+        filename = time2mag_grid_file(run,time)
+
+    f = open(filename, 'r')
+    first = f.readline()
+    second = f.readline()
+    third = f.readline()
+    headerline = f.readline()
+    f.close()
+
+    headers = tuple(headerline[:-1].split(' '))
+    assert(first[:19] == 'Magnetometer grid (')
+    csyst = first[19:22]
+
+    return headers, csyst
+
+
+def getdata(run, time, filename=None):
+    if filename is None:
+        filename = time2mag_grid_file(run,time)
+
+    return np.genfromtxt(filename, skip_header=4)
+
+
 def analyzedata(filename, LAT, LON, debug=False):
     """
 
