@@ -161,6 +161,26 @@ def stitch_B_biotsavart(run, times, obs_point, rcut=None):
     df.to_pickle(df_name)
 
 
+def get_B_biotsavart(run, time, obs_point, rcut=None, cache=None):
+    if rcut is None:
+        rcut = util.get_rCurrents(run)
+
+    if isinstance(obs_point,str):
+        obs_point_str = obs_point
+        if obs_point == "origin":
+            obs_point = np.zeros(3)
+        else:
+            obs_point = GetMagnetometerLocation(obs_point_str, time, 'GSM', 'car')
+    else:
+        obs_point_str = '[%f,%f,%f]'%(obs_point[0],obs_point[1],obs_point[2])
+
+    outname = conf[run+'_derived'] + 'timeseries/slices/' \
+        + 'B_biotsavart_%.2d%.2d%.2dT%.2d%.2d%.2d'%util.tpad(time, length=6) \
+        + '_obs_point=%s_rcut=%f.npy'%(obs_point_str, rcut)
+
+    return np.load(outname)
+
+
 @njit
 def _jit_B_coulomb(DataArray, obs_point, rcut):
     unique_epsilons = np.array([  0.0625,

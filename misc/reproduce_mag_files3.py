@@ -11,8 +11,6 @@ import util
 import read_mag_grid_files as rmg
 import read_computed as rcp
 
-volScale = (8**3/(8-2)**3)
-volScale = 1.
 
 def plot_magfile_calc(run, surface_location , NStep=20, debug=False, plot_kwargs=None):
     direct = conf[run+'_derived'] + f'rmf_{surface_location}/'
@@ -29,7 +27,7 @@ def plot_magfile_calc(run, surface_location , NStep=20, debug=False, plot_kwargs
         time = times[i,:]
         dB_magfile[i, :] = rmg.get_mag_grid_values(run, time, surface_location)
 
-        dB_calc[i, 0:3] = volScale*rcp.get_mhd_values(run, time, surface_location , "B_biotsavart")
+        dB_calc[i, 0:3] = rcp.get_mhd_values(run, time, surface_location , "B_biotsavart")
         dB_calc[i, 3:6] = rcp.get_mhd_values(run, time, surface_location , "B_fac", norcut=True)
         #dB_calc[i, 6:9] = 
         #dB_calc[i, 9:12] = 

@@ -1,6 +1,8 @@
 import numpy as np
 from numba import njit
 from swmf_file_reader.read_swmf_files import read_all, interpolate
+import datetime
+import pandas as pd
 
 import os
 import sys
@@ -188,9 +190,41 @@ def slice_gap_region(run, time, obs_point, nTheta=181,nPhi=180,nR=30, gap_csys='
     np.save(outname_fac, dB_fac)
     np.save(outname_surf, dB_mhd_SurfaceIntegral)
 
+def stitch_gap_region(run, times, obs_point, nTheta=181,nPhi=180,nR=30, gap_csys='SM'):
+    assert(gap_csys=='SM')
+
+    if isinstance(obs_point,str):
+        obs_point_str = obs_point
+    else:
+        obs_point_str = '[%f,%f,%f]'%(obs_point[0],obs_point[1],obs_point[2])
+
+    df_name = conf[run+'_derived']+'timeseries/df_gap_region' \
+            + '_obs_point=%s.pkl'%(obs_point_str)
+
+    dtimes = []
+    slice_arrays = []
+    for time in times:
+        dtimes.append(datetime.datetime(*time[:6]))
+        outname_fac = conf[run+'_derived'] + 'timeseries/slices/' \
+            + 'B_fac_%.2d%.2d%.2dT%.2d%.2d%.2d'%util.tpad(time, length=6) \
+            + '_obs_point=%s.npy'%(obs_point_str)
+        outname_surf = conf[run+'_derived'] + 'timeseries/slices/' \
+            + 'B_mhd_SurfaceIntegral_%.2d%.2d%.2dT%.2d%.2d%.2d'%util.tpad(time, length=6) \
+            + '_obs_point=%s.npy'%(obs_point_str)
+
+        dB_fac = np.load(outname_fac)
+        dB_mhd_SurfaceIntegral = np.load(outname_surf)
+
+        slice_arrays.append(np.concatenate([dB_fac,dB_mhd_SurfaceIntegral]))
+
+    columns = ('B_fac_x','B_fac_y','B_fac_z', 'B_mhd_SurfaceIntegral_x', 'B_mhd_SurfaceIntegral_y', 'B_mhd_SurfaceIntegral_z')
+    df = pd.DataFrame(data=slice_arrays, columns = columns,
+                        index=dtimes)
+    df.to_pickle(df_name)
 
 if __name__ == '__main__':
     run = 'DIPTSUR2'
-    time = (2019,9,2,6,30,0)
-    obs_point = np.array([0.,0.,0.])
-    slice_gap_region(run,time,obs_point)
+    #time = (2019,9,2,6,30,0)
+    #obs_point = np.array([0.,0.,0.])
+    #slice_gap_region(run,time,obs_point)
+    #stitch_gap_region(run,list(util.get_available_slices(run)[1]), "colaba")
