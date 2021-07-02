@@ -1,6 +1,9 @@
 logbook
 
 
+in ie file local noon is 0 deg in phi
+
+
 runs:
 
     SWPC:
@@ -198,6 +201,11 @@ Notes:
 
 /media/sunspot/git-data/sblake/kameleon-converter/kameleon-converter-v5.2.0/c_src
 
+
+magnetometer radius: ModGroundMagPerturb.f90 line 1393
+    hard coded to 1.0
+    
+
 boolean operations paraview
 #SWMF/share/Library/src/ModConst.f90
   ! Proton mass [kg]
@@ -255,23 +263,19 @@ boolean operations paraview
      RotationPeriodPlanet_I(Earth_)      = cDay                    ! [ s]
 
 TODO:
-    fieldline rep:
-        create vtk_object from numpy array for trace_vtk
-
     swmf2vtk use of mgrid affected by bug?
-    integrate surface b1, and add point near boundary to runs
 
     threshold filter
     git hub password
-    make integral plots
-    do paraview field lines still stop with analytic function?
-    select subsets of cells in paraview
+    vtk multigrid
     in paraview AMRGaussianPulseSource
 
-    branch for modified vtk_export
     StringIO
 
 Q's:
+    3d__var_2_e  vs  3d__var_3_e
+    what are the J's in the i_e files
+
     in setup.py can I include only scipy.io (not all of scipy)
     line qotree.py 78 and 329 in Dan's branch. whats with the logs?
     #SAVEBINARY is false in PARAM.in (for DIPTSUR2)
@@ -359,6 +363,8 @@ PYTHONPATH=/opt/anaconda3/envs/python2.7/lib/python2.7/site-packages:/opt/anacon
 PYTHONPATH=/home/gary/miniconda3/envs/python2.7/lib/python2.7/site-packages:/home/gary/miniconda3/envs/python2.7/lib/site-python:. paraview --script=demo.py
  -> Original error was: /home/gary/miniconda3/envs/python2.7/lib/python2.7/site-packages/numpy/core/_multiarray_umath.so: undefined symbol: _PyUnicodeUCS4_IsWhitespace
 
+PYTHONPATH=/home/gary/.local/miniconda3/envs/python2.7/lib/python2.7/site-packages:/home/gary/Documents/code_repos/magnetovis:. magnetovis --script=tmp.py
+
 https://github.com/spacecataz/spacepy/tree/octtree
 https://github.com/spacecataz/spacepy/blob/octtree/spacepy/pybats/bats.py line 589
 https://github.com/spacecataz/spacepy/blob/octtree/spacepy/pybats/qotree.py 78 and 329
@@ -437,6 +443,9 @@ test the -> loc rotation against something analytic
 
 also --show-origin doesnt work on sunspot. update git version?
 
+https://www.cs.odu.edu/~zeil/cs390/latest/Public/texmath/demo.html
+https://www.mathcha.io/
+
 https://www.freecodecamp.org/news/how-to-fix-git-always-asking-for-user-credentials/
 https://www.mathcha.io/
 https://people.sc.fsu.edu/~jburkardt/
@@ -473,3 +482,7 @@ SWMF.pdf pg 155 "Since the normalized current is defined as curl B"
 
 #ModWriteLogSatFile.f90  line 618
 ModGroundMagPerturb.f90  line 430
+
+
+Model Selection and Multimodel Inference: A Practical Information-Theoretic Approach by Kenneth P. Burnham (Author), David R. Anderson (Author)
+

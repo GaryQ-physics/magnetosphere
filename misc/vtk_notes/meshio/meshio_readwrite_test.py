@@ -1,10 +1,7 @@
 """
 pip install meshio
-
 only runs with python3
-"""
 
-"""
 Typical output:
     
 num points is  576000
@@ -26,8 +23,7 @@ Conclusions:
        debuged by changing binary to False
 """
 
-# meshio_test1
-
+import os
 import sys
 import time
 import numpy as np
@@ -38,6 +34,7 @@ if sys.version_info.major != 3:
       
 in_fname = 'mesh_test1_import.vtk'
 out_fname = 'mesh_test1_export.vtk'
+if os.path.exists(in_fname): os.system(f'rm {in_fname}')
 
 a = 60
 b = 80
@@ -57,117 +54,85 @@ p_np = np.column_stack((B1, B2, B3))
 fvals = 0.1*p_np[:,0]*p_np[:,1]*p_np[:,2]
 
 to = time.time()
-
-fil = open(in_fname,'w')
-
-fil.write('# vtk DataFile Version 2.0\n')
-fil.write('test data structured grid with scalar associated with each point\n')
-fil.write('ASCII\n')
-fil.write('DATASET STRUCTURED_GRID\n')
-fil.write('DIMENSIONS ' + str(a) + ' ' + str(b) + ' ' + str(c) + '\n')
-fil.write('POINTS ' + str(a*b*c) + ' int\n')
-for l in range(p_np.shape[0]):
-    fil.write(str(p_np[l,0]) + ' ' + str(p_np[l,1]) + ' ' + str(p_np[l,2]) + '\n')
-fil.write('POINT_DATA ' + str(a*b*c) + '\n')
-fil.write('SCALARS sample_scalars float 1\n')
-fil.write('LOOKUP_TABLE my_table\n')
-for l in range(p_np.shape[0]):
-    fil.write(str(fvals[l]) + ' ')
-
-fil.close()
+with open(in_fname,'w') as fil:
+    fil.write('# vtk DataFile Version 2.0\n')
+    fil.write('test data structured grid with scalar associated with each point\n')
+    fil.write('ASCII\n')
+    fil.write('DATASET STRUCTURED_GRID\n')
+    fil.write('DIMENSIONS ' + str(a) + ' ' + str(b) + ' ' + str(c) + '\n')
+    fil.write('POINTS ' + str(a*b*c) + ' int\n')
+    for l in range(p_np.shape[0]):
+        fil.write(str(p_np[l,0]) + ' ' + str(p_np[l,1]) + ' ' + str(p_np[l,2]) + '\n')
+    fil.write('POINT_DATA ' + str(a*b*c) + '\n')
+    fil.write('SCALARS sample_scalars float 1\n')
+    fil.write('LOOKUP_TABLE my_table\n')
+    for l in range(p_np.shape[0]):
+        fil.write(str(fvals[l]) + ' ')
 
 tf = time.time()
 print('{0:.2f}s: Write ASCII VTK with structured_grid using loop'.format(tf - to))
 
-def run(Try):
-    # in function so that memory is released after each try.
-    if Try==1:
+def read_method(method):
+    if method==0:
         to = time.time()
-        mesh1 = meshio.read(
+        mesh = meshio.read(
             in_fname,  # string, os.PathLike, or a buffer/open file
             file_format="vtk"  # optional if filename is a path; inferred from extension
         )
-        """
-        when using python 2, gives error: Unknown file format 'vtk' 
-        if the optional file_format isn't given, gives error: Only VTK
-        UNSTRUCTURED_GRID supported (not STRUCTURED_GRID)
-        """
-    
+        # when using python 2, gives error: Unknown file format 'vtk' 
+        # if the optional file_format isn't given, gives error: Only VTK
+        # UNSTRUCTURED_GRID supported (not STRUCTURED_GRID)
         tf = time.time()
         print('{0:.2f}s: Read ASCII VTK with structured grid using meshio.read()'.format(tf - to))
-    
-    if Try==2 or Try==3:
+
+    if method==1:
         to = time.time()
-        mesh2 = meshio.vtk.read(in_fname)
+        mesh = meshio.vtk.read(in_fname)
         tf = time.time()
         print('{0:.2f}s: Read ASCII VTK with structured grid using meshio.vtk.read()'.format(tf - to))
-    
-    if Try==4:
+
+    if method==2:
         to = time.time()
-        mesh4 = meshio.Mesh.read(in_fname, "vtk")  # same arguments as meshio.read
+        mesh = meshio.Mesh.read(in_fname, "vtk")  # same arguments as meshio.read
         tf = time.time()
         print('{0:.2f}s: Read ASCII VTK with structured grid using meshio.Mesh.read()'.format(tf - to))
-        
+
+def write_method(method):
+    mesh = meshio.vtk.read(in_fname)
     # all are comparable speed except meshio.vtk.write(...,binary=False)
-    
-    if Try==1:
+    if method==0:
         to = time.time()
         meshio.write(
             out_fname,  # str, os.PathLike, or buffer/ open file
-            mesh1,
+            mesh,
             file_format="vtk",  # optional if first argument is a path; inferred from extension
         )
         tf = time.time()
         print('{0:.2f}s: Write with meshio.write()'.format(tf - to))
     
-    if Try==2:
+    if method==1:
         to = time.time()
         # writes ascii unstructured grid but with cells
-        meshio.vtk.write(out_fname, mesh2, binary=True) 
+        meshio.vtk.write(out_fname, mesh, binary=True) 
         tf = time.time()
         print('{0:.2f}s: Write with meshio.vtk.write()'.format(tf - to))
-    
-    if Try==3:
+
+    if method==2:
         to = time.time()
-        meshio.vtk.write(out_fname, mesh2, binary=False)
+        meshio.vtk.write(out_fname, mesh, binary=False)
         tf = time.time()
         print('{0:.2f}s: Write with meshio.write(..., binary=False)'.format(tf - to))
     
-    if Try==4:
+    if method==3:
         to = time.time()
         # same arguments as meshio.write, besides `mesh`
-        mesh4.write(out_fname, file_format="vtk")  
+        mesh.write(out_fname, file_format="vtk")  
         tf = time.time()
         print('{0:.2f}s: Write with mesh.write(..., file_format="vtk")'.format(tf - to))
 
 for i in range(4):
-    run(i+1)
+    read_method(i)
 
-if False:
-    points = np.array([
-        [0.0, 0.0, 0.0],
-        [0.0, 1.0, 0.0],
-        [0.0, 0.0, 1.0],
-        ])
-    cells = [
-        ("triangle", np.array([[0, 1, 2]]))
-    ]
-    '''
-    meshio.write_points_cells(
-        out_fname,
-        points,
-        cells,
-        # Optionally provide extra data on points, cells, etc.
-        # point_data=point_data,
-        # cell_data=cell_data,
-        # field_data=field_data
-        )
-    '''
-    
-    mesh = meshio.Mesh(points, cells)
-    meshio.write(
-        out_fname,  # str, os.PathLike, or buffer/ open file
-        mesh,
-        file_format="vtk",  # optional if first argument is a path; inferred from extension
-    )
-    print(mesh.points)
+for i in range(4):
+    write_method(i)
+    os.system(f'rm {out_fname}')

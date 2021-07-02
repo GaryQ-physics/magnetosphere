@@ -38,10 +38,13 @@ import os
 import sys
 import numpy as np
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from config import conf
-from util import dlfile, tpad, time2CDFfilename
-from magnetometers import GetMagnetometerLocation
+try:
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
+    from config import conf
+    from util import dlfile, tpad, time2CDFfilename
+    from magnetometers import GetMagnetometerLocation
+except:
+    print('excepted')
 
 def time2mag_grid_file_old(time):
     """
@@ -76,27 +79,6 @@ def mag_grid_file2time(filename):
     f = 0
     return [y, m, d, h, M, s, f]
 
-def getdata(run, time, debug=True, filename=None, meta_only=False):
-    if filename is None:
-        filename = time2mag_grid_file(run,time)
-
-    f = open(filename, 'r')
-    first = f.readline()
-    second = f.readline()
-    third = f.readline()
-    headerline = f.readline()
-    f.close()
-
-    headers = tuple(headerline[:-1].split(' '))
-    assert(first[:19] == 'Magnetometer grid (')
-    csyst = first[19:22]
-
-    if meta_only:
-        return headers, csyst
-
-    data = np.genfromtxt(filename, skip_header=4)
-    return data, headers, csyst
-
 
 def getmetadata(run, time, filename=None):
     if filename is None:
@@ -123,7 +105,23 @@ def getdata(run, time, filename=None):
     return np.genfromtxt(filename, skip_header=4)
 
 
-def analyzedata(filename, LAT, LON, debug=False):
+def find_index(data, headers, LAT, LON):
+    assert(headers[0]=='Lon' and headers[1]=='Lat')
+
+    Tr = np.all([LON-0.5 <= data[:, 0], 
+                 data[:, 0] <= LON+0.5, LAT-0.5 <= data[:, 1],
+                 data[:, 1] <= LAT+0.5], axis=0)
+    k = np.where(Tr==True)[0][0]
+
+    if data[k,0] == LON and abs(data[k,1]-LAT)<1e-7:
+        spot_on = True
+    else:
+        spot_on = False
+
+    return k, spot_on
+
+
+def printdata(filename, LAT, LON, debug=False):
     """
 
     Parameters
@@ -168,37 +166,3 @@ def analyzedata(filename, LAT, LON, debug=False):
         print(headers)
 
     return ret
-
-
-def find_index(data, headers, LAT, LON):
-    assert(headers[0]=='Lon' and headers[1]=='Lat')
-
-    Tr = np.all([LON-0.5 <= data[:, 0], 
-                 data[:, 0] <= LON+0.5, LAT-0.5 <= data[:, 1],
-                 data[:, 1] <= LAT+0.5], axis=0)
-    k = np.where(Tr==True)[0][0]
-
-    if data[k,0] == LON and abs(data[k,1]-LAT)<1e-7:
-        spot_on = True
-    else:
-        spot_on = False
-
-    return k, spot_on
-
-
-def get_mag_grid_values(run, time, surface_location):
-    headers, csyst = getmetadata(run,time)
-    data = getdata(run, time)
-    assert(headers[5:] == ( 'dBnMhd', 'dBeMhd', 'dBdMhd',
-                            'dBnFac', 'dBeFac', 'dBdFac',
-                            'dBnHal', 'dBeHal', 'dBdHal',
-                            'dBnPed', 'dBePed', 'dBdPed') )
-
-    if isinstance(surface_location, str):
-        __r, LAT, LON = GetMagnetometerLocation(surface_location, time, csyst, 'sph')
-    else:
-        LAT, LON = obs_point
-
-    kIndex, __spot_on = find_index(data, headers, LAT, LON)
-    return data[kIndex, 5:].copy()
-

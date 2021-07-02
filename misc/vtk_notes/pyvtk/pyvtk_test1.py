@@ -1,10 +1,7 @@
 """
 pip install pyvtk
-
 runs with python2 or python3
-"""
 
-"""
 Demonstrates 3 different ways of writing basic structured grid using pyvtk:
 
 adjust npscal to determing wether you use np array or python callible function for the field values
@@ -21,8 +18,6 @@ Conclusion:
     all comparable and pretty slow
 
 """
-
-# pyvtk_test1
 
 #import sys
 #sys.path = ['..']+sys.path

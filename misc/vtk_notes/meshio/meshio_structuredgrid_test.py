@@ -30,12 +30,11 @@ if sys.version_info.major != 3:
 fname1 = 'mesh_test2_ToImport.vtk'
 fname2 = 'meshio_test2_FromNumpyArrays.vtk'
 
-a = 2
-b = 2
-c = 3
+a = 20
+b = 20
+c = 30
 
-# Make Needed Grids
-###################################################
+############### Make Needed Grids
 Xind = np.array([i for i in range(a)])
 Yind = np.array([j for j in range(b)])
 Zind = np.array([k for k in range(c)])
@@ -64,32 +63,6 @@ D1 = D1.flatten(order='C')
 D2 = D2.flatten(order='C')
 D3 = D3.flatten(order='C')
 cell_inds = np.column_stack((D1, D2, D3))
-####################################################
-
-'''
-def unflat(k, npar=False):
-    if k is None:
-        return None
-    if npar:
-        return cell_inds[k,:]
-    return tuple(cell_inds[k,:])
-
-def flat(i,j,k):
-    #https://stackoverflow.com/questions/16094563/numpy-get-index-where-value-is-true
-    return np.where(np.all([cell_inds[:,0]==i,cell_inds[:,1]==j,cell_inds[:,2]==k],axis=0))[0][0]
-
-def unflat2(k, npar=False):
-    if k is None:
-        return None
-    if npar:
-        return ind_p_np[k,:]
-    return tuple(ind_p_np[k,:])
-
-def flat2(i,j,k):
-    #https://stackoverflow.com/questions/16094563/numpy-get-index-where-value-is-true
-    return np.where(np.all([ind_p_np[:,0]==i,ind_p_np[:,1]==j,ind_p_np[:,2]==k],axis=0))[0][0]
-'''
-
 
 # the structured grid is just a rectangular grid of points with rectangular prism cells in usual way.
 # if there are a points along edge in x direction, then it will be made of a-1 segments of cells edges
@@ -101,29 +74,23 @@ print('num points = a*b*c =', a*b*c)
 print('num cells = (a-1)*(b-1)*(c-1) =', (a-1)*(b-1)*(c-1))
 
 
-# write ascii structured grid VTK grid via python loop
-################################
-fil = open(fname1,'w')
+############### write ascii structured grid VTK grid via python loop
+with open(fname1,'w') as fil:
+    fil.write('# vtk DataFile Version 2.0\n')
+    fil.write('Really cool data\n')
+    fil.write('ASCII\n')
+    fil.write('DATASET STRUCTURED_GRID\n')
+    fil.write('DIMENSIONS ' + str(a) + ' ' + str(b) + ' ' + str(c) + '\n')
+    fil.write('POINTS ' + str(a*b*c) + ' float\n')
+    for l in range(p_np.shape[0]):
+        fil.write(str(p_np[l,0]) + ' ' + str(p_np[l,1]) + ' ' + str(p_np[l,2]) + '\n')
+    fil.write('POINT_DATA ' + str(a*b*c) + '\n')
+    fil.write('SCALARS sample_scalars float 1\n')
+    fil.write('LOOKUP_TABLE my_table\n')
+    for l in range(p_np.shape[0]):
+        fil.write(str(fvals[l]) + ' ')
 
-fil.write('# vtk DataFile Version 2.0\n')
-fil.write('Really cool data\n')
-fil.write('ASCII\n')
-fil.write('DATASET STRUCTURED_GRID\n')
-fil.write('DIMENSIONS ' + str(a) + ' ' + str(b) + ' ' + str(c) + '\n')
-fil.write('POINTS ' + str(a*b*c) + ' float\n')
-for l in range(p_np.shape[0]):
-    fil.write(str(p_np[l,0]) + ' ' + str(p_np[l,1]) + ' ' + str(p_np[l,2]) + '\n')
-fil.write('POINT_DATA ' + str(a*b*c) + '\n')
-fil.write('SCALARS sample_scalars float 1\n')
-fil.write('LOOKUP_TABLE my_table\n')
-for l in range(p_np.shape[0]):
-    fil.write(str(fvals[l]) + ' ')
-
-fil.close()
-
-
-# Import mesh object (file_mesh) from the above written vtk
-########################################
+############### Import mesh object (file_mesh) from the above written vtk
 file_mesh = meshio.vtk.read(fname1)
 
 file_cells=file_mesh.cells_dict['hexahedron']
@@ -133,8 +100,7 @@ print(file_points.shape)
 print(file_cells.shape)
 
 
-# Create custom mesh object (cust_mesh) from numpy arrays
-#########################################
+############### Create custom mesh object (cust_mesh) from numpy arrays
 shifts = np.array( [[0, 0, 0],
                     [1, 0, 0],
                     [1, 1, 0],
@@ -143,8 +109,6 @@ shifts = np.array( [[0, 0, 0],
                     [1, 0, 1],
                     [1, 1, 1],
                     [0, 1, 1]] )
-
-print(shifts)
 
 cust_cells = np.nan*np.empty(((a-1)*(b-1)*(c-1), 8))
 for k in range((a-1)*(b-1)*(c-1)):
@@ -160,10 +124,7 @@ meshio.vtk.write(fname2, cust_mesh, binary=False)
 
 # Compair to make sure atributes are the same
 ##################
-
 print(np.all(file_points==p_np))
 print(np.all(file_mesh.points==cust_mesh.points))
-
 print(np.all(file_cells==cust_cells))
 print(np.all(file_mesh.cells_dict['hexahedron']==cust_mesh.cells_dict['hexahedron']))
-
